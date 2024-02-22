@@ -2211,9 +2211,11 @@ local function ScrollToActiveWorkOrder(customerName)
             if cusName == cusFrameCheck then
 				break
                 -- Found the active work order, break the loop
-			else
+			elseif frameInfo.Frame.minimized == false then
 				scrollPosition = scrollPosition + 222
-            end
+			elseif frameInfo.Frame.minimized == true then
+				scrollPosition = scrollPosition + 22
+			end
         end
     end
     -- Set the scroll position to bring the active work order into view
@@ -4035,7 +4037,7 @@ function CreateCusWorkOrder(customerName)
 			return frameInfo.Frame
         end
 	end
-	
+
 	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild())
 	frame.customerName = customerName
 	frame.frameID = frameID
@@ -4214,6 +4216,9 @@ tradehistoryEditBox:EnableMouse(true)
 tradehistoryEditBox:SetFontObject("GameFontHighlight")
 tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0)  -- Anchor bottom right to scrollChild
+tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
+	ProEnchantersCustomerNameEditBox:SetText(customerName)
+end)
 tradehistoryEditBox:SetScript("OnTextChanged", function(self)
 	scrollChild:SetHeight(self:GetHeight())
 end)
@@ -4263,7 +4268,65 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 		table.insert(ProEnchantersTradeHistory[customerName], firstline)
 	end
 
+	local minButton = CreateFrame("Button", nil, frame)
+    minButton:SetSize(80, 25)
+    minButton:SetPoint("TOP", frame, "TOP", -5, 2)
+	minButton:SetText("Minimize")
+	local minButtonText = minButton:GetFontString()
+	minButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	minButton:SetNormalFontObject("GameFontHighlight")
+	minButton:SetHighlightFontObject("GameFontNormal")
+	local minimized = false
+	frame.minimized = minimized
+	minButton:SetScript("OnClick", function()
+        if minimized == false then
+            tradeHistoryScrollFrame:SetSize(400, 0)
+            scrollChild:SetSize(400, 0)
+            customerBg:SetSize(420, 20)
+            frame:SetSize(420, 20)
+            -- Move all existing frames up if they are lower than the frame being deleted
+            for id, frameInfo in pairs(WorkOrderFrames) do
+                if id > frameID and not frameInfo.Completed then
+                    local newYOffset = frameInfo.Frame.yOffset + 200
+                    frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
+                    frameInfo.Frame.yOffset = newYOffset
+                end
+            end
 
+            yOffset = yOffset + 200 -- Increase for the next frame
+		    UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
+			minButton:SetText("Maximize")
+			tradehistoryEditBox:SetText("")
+			minimized = true
+			frame.minimized = minimized
+        elseif minimized == true then
+            tradeHistoryScrollFrame:SetSize(400, 180)
+            scrollChild:SetSize(400, 180)
+            customerBg:SetSize(420, 220)
+            frame:SetSize(420, 220)
+
+        -- Move all existing frames up if they are lower than the frame being deleted
+        for id, frameInfo in pairs(WorkOrderFrames) do
+            if id > frameID and not frameInfo.Completed then
+                local newYOffset = frameInfo.Frame.yOffset - 200
+                frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
+                frameInfo.Frame.yOffset = newYOffset
+            end
+        end
+
+        yOffset = yOffset - 200  -- Increase for the next frame
+		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
+		ProEnchantersCustomerNameEditBox:SetText(customerName)
+		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
+		minButton:SetText("Minimize")
+		minimized = false
+		frame.minimized = minimized
+		UpdateTradeHistory(customerName)
+    end
+end)
+
+
+	-- close Button
     local closeButton = CreateFrame("Button", nil, frame)
     closeButton:SetSize(25, 25)
     closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, 2)
@@ -4276,6 +4339,33 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 	--Close Frame Functions
 	local tradeLine = LIGHTGREEN .. "---- End of Workorder# " .. frameID .. " ----" .. ColorClose
     closeButton:SetScript("OnClick", function()
+		if minimized == true then
+            tradeHistoryScrollFrame:SetSize(400, 180)
+            scrollChild:SetSize(400, 180)
+            customerBg:SetSize(420, 220)
+            frame:SetSize(420, 220)
+
+        -- Move all existing frames up if they are lower than the frame being deleted
+        for id, frameInfo in pairs(WorkOrderFrames) do
+            if id > frameID and not frameInfo.Completed then
+                local newYOffset = frameInfo.Frame.yOffset - 200
+                frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
+                frameInfo.Frame.yOffset = newYOffset
+            end
+        end
+
+        yOffset = yOffset - 200  -- Increase for the next frame
+		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
+		local CurrentCustomer = ProEnchantersCustomerNameEditBox:GetText()
+		if CurrentCustomer == customerName then
+			ProEnchantersCustomerNameEditBox:SetText("")
+			ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
+		end
+		minButton:SetText("Minimize")
+		minimized = false
+		frame.minimized = minimized
+		UpdateTradeHistory(customerName)
+    end
         frame:Hide()
 		table.insert(ProEnchantersTradeHistory[customerName], tradeLine)
         WorkOrderFrames[frameID].Completed = true
@@ -4317,7 +4407,11 @@ function UpdateScrollChildHeight()
     local totalHeight = 0
     for id, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed then
+			if frameInfo.Frame.minimized == false then
             totalHeight = totalHeight + 222 -- Add height of each frame
+			elseif frameInfo.Frame.minimized == true then
+			totalHeight = totalHeight + 20
+			end
         end
     end
     ProEnchantersWorkOrderScrollFrame:GetScrollChild():SetHeight(totalHeight)
@@ -4896,6 +4990,9 @@ end
 
 function ProEnchantersUpdateTradeWindowButtons()
 	local SlotTypeInput = ""
+	C_Timer.After(.2, function()
+		local test = "test"
+	end)
 	local tItemLink = GetTradeTargetItemLink(7)
 
 		if tItemLink then
@@ -6279,6 +6376,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			local _, _, _, _, playerEnchant = GetTradePlayerItemInfo(7);
 
 		-- Self Items Traded
+		local customerName = PEtradeWho
 		if playerEnchant ~= nil then
 			PEtradeWhoItems.player[slot] = {link = playerItemLink, quantity = playerQuantity, enchant = playerEnchant}
 			ItemsTraded = true
