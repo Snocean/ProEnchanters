@@ -1,6 +1,24 @@
 -- ProEnchanters.lua localization
 --local _, L = ...;
  --print(L["Hello World!"]);
+function test8utf()
+	local line = ""
+	for k, v in pairs(utf8_lc_uc) do
+		line = line .. ", " .. k .. " = " .. v
+	end
+	print(line)
+end
+
+function CapFirstLetter(word)
+    if word == nil or word == "" then return word end  -- Check for empty or nil word
+    local firstLetter = string.sub(word, 1, 1)
+    local mappedLetter = utf8_lc_uc[firstLetter]  -- Direct lookup
+    if mappedLetter then
+        firstLetter = mappedLetter
+    end
+    local restOfWord = string.sub(word, 2)
+    return firstLetter .. restOfWord
+end
 
 
 -- First Initilizations
@@ -23,10 +41,10 @@ PEPlayerInvited = {}
 local useAllMats = false
 
 function InviteUnitPEAddon(name)
-	local nameCheck = string.lower(name)
-	local selfnameCheck = string.lower(selfPlayerName)
+	local nameCheck = string.utf8lower2(name)
+	local selfnameCheck = string.utf8lower2(selfPlayerName)
 	if selfnameCheck ~= nameCheck then
-		InviteUnit(nameCheck)
+		InviteUnit(name)
 	end
 end
 
@@ -42,11 +60,11 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
     button1 = "Invite",
     button2 = "Cancel",
     OnAccept = function(self, data)
-        local playerName, msg = unpack(data)
+        local playerName, msg, author2 = unpack(data)
 		AddonInvite = true
 		PEPlayerInvited[playerName] = msg
 		if AddonInvite == true then
-        	InviteUnitPEAddon(playerName)
+        	InviteUnitPEAddon(author2)
 		end
     end,
     timeout = 0,
@@ -95,10 +113,10 @@ local function WorkOrderPopup(playerName)
 end
 
 local function DelayedWorkOrder(playerName)
-	local playerName = playerName
+	local capPlayerName = CapFirstLetter(playerName)
 	if ProEnchantersOptions["WelcomeMsg"] then
 		local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
-		local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", playerName)
+		local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 		if FullWelcomeMsg == "" then
 			CreateCusWorkOrder(playerName)
 		else
@@ -190,31 +208,32 @@ local yOffsetoriginal = -80
 local enchyOffset = 5
 local enchyOffsetoriginal = -40
 
+
 --Color for Frames
-HeaderColor = {22/255, 26/255, 48/255}
+local HeaderColor = {22/255, 26/255, 48/255}
 local r1, g1, b1 = unpack(HeaderColor)
-HeaderOpaque = {r1, g1, b1, 1}
-HeaderTrans = {r1, g1, b1, 0.5}
+local HeaderOpaque = {r1, g1, b1, 1}
+local HeaderTrans = {r1, g1, b1, 0.5}
 
-TitleColor = {182/255, 187/255, 196/255}
+local TitleColor = {182/255, 187/255, 196/255}
 local r2, g2, b2 = unpack(TitleColor)
-TitleOpaque = {r2, g2, b2, 1}
-TitleTrans = {r2, g2, b2, 0.5}
+local TitleOpaque = {r2, g2, b2, 1}
+local TitleTrans = {r2, g2, b2, 0.5}
 
-LightBgColor = {240/255, 236/255, 229/255}
+local LightBgColor = {240/255, 236/255, 229/255}
 local r3, g3, b3 = unpack(LightBgColor)
-LightBgOpaque = {r3, g3, b3, 1}
-LightBgTrans = {r3, g3, b3, 0.5}
+local LightBgOpaque = {r3, g3, b3, 1}
+local LightBgTrans = {r3, g3, b3, 0.5}
 
-DarkBgColor = {49/255, 48/255, 77/255}
+local DarkBgColor = {49/255, 48/255, 77/255}
 local r4, g4, b4 = unpack(DarkBgColor)
-DarkBgOpaque = {r4, g4, b4, 1}
-DarkBgTrans = {r4, g4, b4, 0.5}
+local DarkBgOpaque = {r4, g4, b4, 1}
+local DarkBgTrans = {r4, g4, b4, 0.5}
 
-GreyedColor = {71/255, 71/255, 71/255}
-local r1, g1, b1 = unpack(GreyedColor)
-GreyedOpaque = {r1, g1, b1, 1}
-GreyedTrans = {r1, g1, b1, 0.5}
+local GreyedColor = {71/255, 71/255, 71/255}
+local r5, g5, b5 = unpack(GreyedColor)
+local GreyedOpaque = {r5, g5, b5, 1}
+local GreyedTrans = {r5, g5, b5, 0.5}
 
 -- Color Test
 local ColorsTable = {
@@ -542,7 +561,8 @@ PESupporters = {
 	"Pen",
 	"Braa",
 	"Emoree",
-	"Sechmann"
+	"Sechmann",
+	"Okazaki"
 }
 
 -- Filtered Words Table
@@ -1927,6 +1947,7 @@ end
 
 function GetAllReqMats(customerName)
     -- Count the occurrences of each enchantment
+	local customerName = string.utf8lower2(customerName)
     local enchantCounts = {}
 	for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
@@ -1976,6 +1997,7 @@ function GetAllReqMats(customerName)
 end
 
 function GetAllReqMatsNoLink(customerName)
+	local customerName = string.utf8lower2(customerName)
     local enchantCounts = {}
     for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
@@ -2077,6 +2099,7 @@ end
 
 
 function GetAllReqEnchNoLink(customerName)
+	local customerName = string.utf8lower2(customerName)
     -- Count the occurrences of each enchantment
     local enchantCounts = {}
 	local AllEnchsReq = ""
@@ -2159,12 +2182,14 @@ end]]
 
 
 function CheckIfPartyMember(customerName)
+	local customerName = string.utf8lower2(customerName)
     local inRaid = IsInRaid()
     local groupSize = GetNumGroupMembers()
     
     if inRaid then
         for i = 1, groupSize do
             local name, _, _, _, _, _, _, _ = GetRaidRosterInfo(i)
+			name = string.utf8lower2(name)
             if name and strsplit("-", name) == customerName then
                 return true
             end
@@ -2172,6 +2197,7 @@ function CheckIfPartyMember(customerName)
     else
         for i = 1, groupSize do
             local name = GetUnitName("party" .. i, true)
+			name = string.utf8lower2(name)
             if name and strsplit("-", name) == customerName then
                 return true
             end
@@ -2189,6 +2215,7 @@ ProEnchantersSettings = ProEnchantersSettings or {}
 
 
 local function ScrollToActiveWorkOrder(customerName)
+	local customerName = string.utf8lower2(customerName)
 	local scrollFrame = ProEnchantersWorkOrderScrollFrame
 
 	local scrollPosition = 0
@@ -2197,15 +2224,15 @@ local function ScrollToActiveWorkOrder(customerName)
 	local cusName = "test"
 
 	if customerName ~= nil or customerName ~= "" then
-		cusName = string.lower(customerName)
+		cusName = string.utf8lower2(customerName)
 	else
-    	cusName = string.lower(ProEnchantersCustomerNameEditBox:GetText())
+    	cusName = string.utf8lower2(ProEnchantersCustomerNameEditBox:GetText())
 	end
 
     for id, frameInfo in pairs(WorkOrderFrames) do
 
 		local frameInfoString = tostring(frameInfo)
-		local cusFrameCheck = string.lower(frameInfo.Frame.customerName)
+		local cusFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
 
         if frameInfo.Completed == false then
             if cusName == cusFrameCheck then
@@ -2447,8 +2474,8 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	local ClearAllButton = CreateFrame("Button", nil, WorkOrderFrame)
 	ClearAllButton:SetSize(110, 20)  -- Adjust size as needed
 	ClearAllButton:SetFrameLevel(9001)
-	ClearAllButton:SetPoint("LEFT", settingsButton, "RIGHT", 2, 0)  -- Adjust position as needed
-	ClearAllButton:SetText("Close All Work Orders")
+	ClearAllButton:SetPoint("LEFT", settingsButton, "RIGHT", 8, 0)  -- Adjust position as needed
+	ClearAllButton:SetText("Finish All Work Orders")
 	local ClearAllButtonText = ClearAllButton:GetFontString()
 	ClearAllButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	ClearAllButton:SetNormalFontObject("GameFontHighlight")
@@ -2482,6 +2509,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersTriggersFrame:Hide()
 		--ProEnchantersGoldLogFrame:Hide()
 		ProEnchantersCreditsFrame:Hide()
+		ProEnchantersColorsFrame:Hide()
 	end)
 
 	--WorkOrderFrame:SetScript("OnShow", function() end)
@@ -2730,7 +2758,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				local enchantStats1 = EnchantsStats[key]
 				local enchantStats2 = string.gsub(enchantStats1, "%(", "")
 				local enchantStats3 = string.gsub(enchantStats2, "%)", "")
-				local filterCheck = string.lower(enchantName .. enchantStats3)
+				local filterCheck = string.utf8lower2(enchantName .. enchantStats3)
 				if filterText == "" or filterCheck:find(filterText, 1, true) then
 					-- Show and position the button
 					enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
@@ -2782,6 +2810,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
         -- Set the script for the button's OnClick event
         enchantButton:SetScript("OnClick", function(self, button)
 			local customerName = ProEnchantersCustomerNameEditBox:GetText()
+			customerName = string.utf8lower2(customerName)
 			local reqEnchant = ench
 			local enchName, enchStats = GetEnchantName(reqEnchant)
 			filterEditBox.ClearFocus(filterEditBox)
@@ -2799,7 +2828,8 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				if ProEnchantersOptions["WhisperMats"] == true and cusName and cusName ~= "" then
 					SendChatMessage(msgReq, "WHISPER", nil, cusName)
 				elseif CheckIfPartyMember(customerName) == true then
-					SendChatMessage(customerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(customerName)
+					SendChatMessage(capPlayerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 				elseif cusName and cusName ~= "" then
 					SendChatMessage(msgReq, "WHISPER", nil, cusName)
 				else
@@ -2814,7 +2844,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				end
 				local confirmTradeTarget = UnitName("NPC")
 				if confirmTradeTarget == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
 					ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
 				end
 			elseif IsControlKeyDown() then -- Remove from current customer
@@ -2822,7 +2852,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 				local currentTradeTarget = UnitName("NPC")
 				if currentCusFocus == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 			elseif IsAltKeyDown() then -- Add to current trade target
@@ -2834,7 +2864,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				end
 				local confirmTradeTarget = UnitName("NPC")
 				if confirmTradeTarget == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
 					ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
 				end
 			else
@@ -2843,7 +2873,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 				local currentTradeTarget = UnitName("NPC")
 				if currentCusFocus == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 			end
@@ -3499,6 +3529,18 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersCreditsFrame:Show()
 	end)
 
+	local colorsButton = CreateFrame("Button", nil, OptionsFrame)
+	colorsButton:SetSize(60, 25)  -- Adjust size as needed
+	colorsButton:SetPoint("LEFT", creditsButton, "RIGHT", 10, 0)  -- Adjust position as needed
+	colorsButton:SetText("Colors")
+	local colorsButtonText = colorsButton:GetFontString()
+	colorsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	colorsButton:SetNormalFontObject("GameFontHighlight")
+	colorsButton:SetHighlightFontObject("GameFontNormal")
+	colorsButton:SetScript("OnClick", function()
+		ProEnchantersColorsFrame:Show()
+	end)
+
 	-- Help Reminder
 	local helpReminderHeader = OptionsFrame:CreateFontString(nil, "OVERLAY")
 	helpReminderHeader:SetFontObject("GameFontGreen")
@@ -3669,6 +3711,578 @@ function ProEnchantersCreateCreditsFrame()
 	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	return CreditsFrame
+end
+
+function ProEnchantersCreateColorsFrame()
+    local ColorsFrame = CreateFrame("Frame", "ProEnchantersColorsFrame", UIParent, "BackdropTemplate")
+    ColorsFrame:SetFrameStrata("TOOLTIP")
+    ColorsFrame:SetSize(400, 400)  -- Adjust height as needed
+    ColorsFrame:SetPoint("TOP", 0, -300)
+    ColorsFrame:SetMovable(true)
+    ColorsFrame:EnableMouse(true)
+    ColorsFrame:RegisterForDrag("LeftButton")
+    ColorsFrame:SetScript("OnDragStart", ColorsFrame.StartMoving)
+	ColorsFrame:SetScript("OnDragStop", function()
+		ColorsFrame:StopMovingOrSizing()
+	end)
+
+    ColorsFrame:Hide()
+
+    -- Create a full background texture
+    local bgTexture = ColorsFrame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(400, 375)
+    bgTexture:SetPoint("TOP", ColorsFrame, "TOP", 0, -25)
+
+    -- Create a title background
+    local titleBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetSize(400, 25)  -- Adjust size as needed
+    titleBg:SetPoint("TOP", ColorsFrame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader:SetText("Pro Enchanters Colors Settings")
+	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Create Instructions text
+	local titleHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
+	titleHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nChange the numbers and then do a /reload")
+	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Extract Colors from Table
+	local headerR, headerG, headerB = unpack(ProEnchantersOptions.Colors.HeaderColor)
+	local titleR, titleG, titleB = unpack(ProEnchantersOptions.Colors.TitleColor)
+	local lightR, lightG, lightB = unpack(ProEnchantersOptions.Colors.LightBgColor)
+	local darkR, darkG, darkB = unpack(ProEnchantersOptions.Colors.DarkBgColor)
+	local greyR, greyG, greyB = unpack(ProEnchantersOptions.Colors.GreyedColor)
+
+	local function RGBToWoWColorCode(red, green, blue)
+		-- Ensure alpha is set to FF for fully opaque
+		local alpha = "FF"
+		local red = red*255
+		local green = green*255
+		local blue = blue*255
+		
+		-- Convert RGB values to a hexadecimal string
+		local colorCode = string.format("|c%s%02x%02x%02x", alpha, red, green, blue)
+		
+		return colorCode
+	end
+
+	local colorsExamples = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	colorsExamples:SetColorTexture(unpack(TitleOpaque))  -- Set RGBA values for your preferred color and alpha
+	colorsExamples:SetSize(70, 150)  -- Adjust size as needed
+	colorsExamples:SetPoint("TOPLEFT", titleHeader, "TOPLEFT", 240, -60)
+
+	local mainColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	mainColorsExample:SetFontObject("GameFontHighlight")
+	mainColorsExample:SetPoint("TOPLEFT", colorsExamples, "TOPLEFT", 6, -8)
+	local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
+	mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+	mainColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+	local lightColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	lightColorsExample:SetFontObject("GameFontHighlight")
+	lightColorsExample:SetPoint("TOP", mainColorsExample, "BOTTOM", 0, -25)
+	local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
+	lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
+	lightColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+	local darkColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	darkColorsExample:SetFontObject("GameFontHighlight")
+	darkColorsExample:SetPoint("TOP", lightColorsExample, "BOTTOM", 0, -25)
+	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
+	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
+	darkColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+	local greyColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	greyColorsExample:SetFontObject("GameFontHighlight")
+	greyColorsExample:SetPoint("TOP", darkColorsExample, "BOTTOM", 0, -25)
+	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, GetParryChance())
+	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
+	greyColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+
+	-- Color Settings start
+	local mainColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	mainColorsHeader:SetFontObject("GameFontHighlight")
+	mainColorsHeader:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 70, -80)
+	mainColorsHeader:SetText("Main Colors")
+	mainColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local mainColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	mainColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	mainColorsRBg:SetSize(34, 24)  -- Adjust size as needed
+	mainColorsRBg:SetPoint("LEFT", mainColorsHeader, "RIGHT", 10, 0)
+
+	local mainColorsR = CreateFrame("EditBox", nil, ColorsFrame)
+	mainColorsR:SetSize(30, 20)
+	mainColorsR:SetPoint("LEFT", mainColorsHeader, "RIGHT", 14, 0)
+	mainColorsR:SetAutoFocus(false)
+	mainColorsR:SetNumeric(true)
+	mainColorsR:SetMaxLetters(3)
+	mainColorsR:SetMultiLine(false)
+	mainColorsR:EnableMouse(true)
+    mainColorsR:EnableKeyboard(true)
+	mainColorsR:SetFontObject("GameFontHighlight")
+	mainColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	mainColorsR:SetText(tostring(headerR*255))
+	mainColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	mainColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	mainColorsR:SetScript("OnTextChanged", function()
+		local new = tonumber(mainColorsR:GetText())
+		if new == nil then
+			headerR = 0
+		elseif new > 254 then
+			headerR = 1
+		else
+			headerR = new/255
+		end
+		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
+		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
+		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local mainColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	mainColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	mainColorsGBg:SetSize(34, 24)  -- Adjust size as needed
+	mainColorsGBg:SetPoint("LEFT", mainColorsR, "RIGHT", 10, 0)
+
+	local mainColorsG = CreateFrame("EditBox", nil, ColorsFrame)
+	mainColorsG:SetSize(30, 20)
+	mainColorsG:SetPoint("LEFT", mainColorsR, "RIGHT", 14, 0)
+	mainColorsG:SetAutoFocus(false)
+	mainColorsG:SetNumeric(true)
+	mainColorsG:SetMaxLetters(3)
+	mainColorsG:SetMultiLine(false)
+	mainColorsG:EnableMouse(true)
+    mainColorsG:EnableKeyboard(true)
+	mainColorsG:SetFontObject("GameFontHighlight")
+	mainColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	mainColorsG:SetText(tostring(headerG*255))
+	mainColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	mainColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	mainColorsG:SetScript("OnTextChanged", function()
+		local new = tonumber(mainColorsG:GetText())
+		if new == nil then
+			headerG = 0
+		elseif new > 254 then
+			headerG = 1
+		else
+			headerG = new/255
+		end
+		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
+		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
+		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local mainColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	mainColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	mainColorsBBg:SetSize(34, 24)  -- Adjust size as needed
+	mainColorsBBg:SetPoint("LEFT", mainColorsG, "RIGHT", 10, 0)
+
+	local mainColorsB = CreateFrame("EditBox", nil, ColorsFrame)
+	mainColorsB:SetSize(30, 20)
+	mainColorsB:SetPoint("LEFT", mainColorsG, "RIGHT", 14, 0)
+	mainColorsB:SetAutoFocus(false)
+	mainColorsB:SetNumeric(true)
+	mainColorsB:SetMaxLetters(3)
+	mainColorsB:SetMultiLine(false)
+	mainColorsB:EnableMouse(true)
+    mainColorsB:EnableKeyboard(true)
+	mainColorsB:SetFontObject("GameFontHighlight")
+	mainColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	mainColorsB:SetText(tostring(headerB*255))
+	mainColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	mainColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	mainColorsB:SetScript("OnTextChanged", function()
+		local new = tonumber(mainColorsB:GetText())
+		if new == nil then
+			headerB = 0
+		elseif new > 254 then
+			headerB = 1
+		else
+			headerB = new/255
+		end
+		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
+		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
+		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	-- Color Settings End
+	-- Color Settings start
+	local lightColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	lightColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	lightColorsRBg:SetSize(34, 24)  -- Adjust size as needed
+	lightColorsRBg:SetPoint("TOP", mainColorsR, "BOTTOM", -2, -15)
+	
+	local lightColorsR = CreateFrame("EditBox", nil, ColorsFrame)
+	lightColorsR:SetSize(30, 20)
+	lightColorsR:SetPoint("TOP", mainColorsR, "BOTTOM", 0, -20)
+	lightColorsR:SetAutoFocus(false)
+	lightColorsR:SetNumeric(true)
+	lightColorsR:SetMaxLetters(3)
+	lightColorsR:SetMultiLine(false)
+	lightColorsR:EnableMouse(true)
+	lightColorsR:EnableKeyboard(true)
+	lightColorsR:SetFontObject("GameFontHighlight")
+	lightColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	lightColorsR:SetText(tostring(lightR*255))
+	lightColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	lightColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	lightColorsR:SetScript("OnTextChanged", function()
+		local new = tonumber(lightColorsR:GetText())
+		if new == nil then
+			lightR = 0
+		elseif new > 254 then
+			lightR = 1
+		else
+			lightR = new/255
+		end
+		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
+		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
+		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+	
+	local lightColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	lightColorsHeader:SetFontObject("GameFontHighlight")
+	lightColorsHeader:SetPoint("RIGHT", lightColorsR, "LEFT", -15, 0)
+	lightColorsHeader:SetText("Scroll Bar Backgrounds")
+	lightColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	
+	local lightColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	lightColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	lightColorsGBg:SetSize(34, 24)  -- Adjust size as needed
+	lightColorsGBg:SetPoint("LEFT", lightColorsRBg, "RIGHT", 10, 0)
+	
+	local lightColorsG = CreateFrame("EditBox", nil, ColorsFrame)
+	lightColorsG:SetSize(30, 20)
+	lightColorsG:SetPoint("LEFT", lightColorsR, "RIGHT", 14, 0)
+	lightColorsG:SetAutoFocus(false)
+	lightColorsG:SetNumeric(true)
+	lightColorsG:SetMaxLetters(3)
+	lightColorsG:SetMultiLine(false)
+	lightColorsG:EnableMouse(true)
+	lightColorsG:EnableKeyboard(true)
+	lightColorsG:SetFontObject("GameFontHighlight")
+	lightColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	lightColorsG:SetText(tostring(lightG*255))
+	lightColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	lightColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	lightColorsG:SetScript("OnTextChanged", function()
+		local new = tonumber(lightColorsG:GetText())
+		if new == nil then
+			lightG = 0
+		elseif new > 254 then
+			lightG = 1
+		else
+			lightG = new/255
+		end
+		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
+		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
+		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+	
+	local lightColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	lightColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	lightColorsBBg:SetSize(34, 24)  -- Adjust size as needed
+	lightColorsBBg:SetPoint("LEFT", lightColorsGBg, "RIGHT", 10, 0)
+	
+	local lightColorsB = CreateFrame("EditBox", nil, ColorsFrame)
+	lightColorsB:SetSize(30, 20)
+	lightColorsB:SetPoint("LEFT", lightColorsG, "RIGHT", 14, 0)
+	lightColorsB:SetAutoFocus(false)
+	lightColorsB:SetNumeric(true)
+	lightColorsB:SetMaxLetters(3)
+	lightColorsB:SetMultiLine(false)
+	lightColorsB:EnableMouse(true)
+	lightColorsB:EnableKeyboard(true)
+	lightColorsB:SetFontObject("GameFontHighlight")
+	lightColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	lightColorsB:SetText(tostring(lightB*255))
+	lightColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	lightColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	lightColorsB:SetScript("OnTextChanged", function()
+		local new = tonumber(lightColorsB:GetText())
+		if new == nil then
+			lightB = 0
+		elseif new > 254 then
+			lightB = 1
+		else
+			lightB = new/255
+		end
+		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
+		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
+		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+		-- Color Settings start
+local darkColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+darkColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+darkColorsRBg:SetSize(34, 24)  -- Adjust size as needed
+darkColorsRBg:SetPoint("TOP", lightColorsR, "BOTTOM", -2, -15)
+
+local darkColorsR = CreateFrame("EditBox", nil, ColorsFrame)
+darkColorsR:SetSize(30, 20)
+darkColorsR:SetPoint("TOP", lightColorsR, "BOTTOM", 0, -20)
+darkColorsR:SetAutoFocus(false)
+darkColorsR:SetNumeric(true)
+darkColorsR:SetMaxLetters(3)
+darkColorsR:SetMultiLine(false)
+darkColorsR:EnableMouse(true)
+darkColorsR:EnableKeyboard(true)
+darkColorsR:SetFontObject("GameFontHighlight")
+darkColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+darkColorsR:SetText(tostring(darkR*255))
+darkColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+darkColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+darkColorsR:SetScript("OnTextChanged", function()
+	local new = tonumber(darkColorsR:GetText())
+	if new == nil then
+		darkR = 0
+	elseif new > 254 then
+		darkR = 1
+	else
+		darkR = new/255
+	end
+	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
+	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
+	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+local darkColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+darkColorsHeader:SetFontObject("GameFontHighlight")
+darkColorsHeader:SetPoint("RIGHT", darkColorsR, "LEFT", -15, 0)
+darkColorsHeader:SetText("Accent Colors")
+darkColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+local darkColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+darkColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+darkColorsGBg:SetSize(34, 24)  -- Adjust size as needed
+darkColorsGBg:SetPoint("LEFT", darkColorsRBg, "RIGHT", 10, 0)
+
+local darkColorsG = CreateFrame("EditBox", nil, ColorsFrame)
+darkColorsG:SetSize(30, 20)
+darkColorsG:SetPoint("LEFT", darkColorsR, "RIGHT", 14, 0)
+darkColorsG:SetAutoFocus(false)
+darkColorsG:SetNumeric(true)
+darkColorsG:SetMaxLetters(3)
+darkColorsG:SetMultiLine(false)
+darkColorsG:EnableMouse(true)
+darkColorsG:EnableKeyboard(true)
+darkColorsG:SetFontObject("GameFontHighlight")
+darkColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+darkColorsG:SetText(tostring(darkG*255))
+darkColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+darkColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+darkColorsG:SetScript("OnTextChanged", function()
+	local new = tonumber(darkColorsG:GetText())
+	if new == nil then
+		darkG = 0
+	elseif new > 254 then
+		darkG = 1
+	else
+		darkG = new/255
+	end
+	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
+	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
+	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+local darkColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+darkColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+darkColorsBBg:SetSize(34, 24)  -- Adjust size as needed
+darkColorsBBg:SetPoint("LEFT", darkColorsGBg, "RIGHT", 10, 0)
+
+local darkColorsB = CreateFrame("EditBox", nil, ColorsFrame)
+darkColorsB:SetSize(30, 20)
+darkColorsB:SetPoint("LEFT", darkColorsG, "RIGHT", 14, 0)
+darkColorsB:SetAutoFocus(false)
+darkColorsB:SetNumeric(true)
+darkColorsB:SetMaxLetters(3)
+darkColorsB:SetMultiLine(false)
+darkColorsB:EnableMouse(true)
+darkColorsB:EnableKeyboard(true)
+darkColorsB:SetFontObject("GameFontHighlight")
+darkColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+darkColorsB:SetText(tostring(darkB*255))
+darkColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+darkColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+darkColorsB:SetScript("OnTextChanged", function()
+	local new = tonumber(darkColorsB:GetText())
+	if new == nil then
+		darkB = 0
+	elseif new > 254 then
+		darkB = 1
+	else
+		darkB = new/255
+	end
+	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
+	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
+	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+-- Color Settings start
+local greyColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+greyColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+greyColorsRBg:SetSize(34, 24)  -- Adjust size as needed
+greyColorsRBg:SetPoint("TOP", darkColorsR, "BOTTOM", -2, -15)
+
+local greyColorsR = CreateFrame("EditBox", nil, ColorsFrame)
+greyColorsR:SetSize(30, 20)
+greyColorsR:SetPoint("TOP", darkColorsR, "BOTTOM", 0, -20)
+greyColorsR:SetAutoFocus(false)
+greyColorsR:SetNumeric(true)
+greyColorsR:SetMaxLetters(3)
+greyColorsR:SetMultiLine(false)
+greyColorsR:EnableMouse(true)
+greyColorsR:EnableKeyboard(true)
+greyColorsR:SetFontObject("GameFontHighlight")
+greyColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+greyColorsR:SetText(tostring(greyR*255))
+greyColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+greyColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+greyColorsR:SetScript("OnTextChanged", function()
+	local new = tonumber(greyColorsR:GetText())
+	if new == nil then
+		greyR = 0
+	elseif new > 254 then
+		greyR = 1
+	else
+		greyR = new/255
+	end
+	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
+	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
+	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+local greyColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+greyColorsHeader:SetFontObject("GameFontHighlight")
+greyColorsHeader:SetPoint("RIGHT", greyColorsR, "LEFT", -15, 0)
+greyColorsHeader:SetText("Disabled Buttons Color")
+greyColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+local greyColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+greyColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+greyColorsGBg:SetSize(34, 24)  -- Adjust size as needed
+greyColorsGBg:SetPoint("LEFT", greyColorsRBg, "RIGHT", 10, 0)
+
+local greyColorsG = CreateFrame("EditBox", nil, ColorsFrame)
+greyColorsG:SetSize(30, 20)
+greyColorsG:SetPoint("LEFT", greyColorsR, "RIGHT", 14, 0)
+greyColorsG:SetAutoFocus(false)
+greyColorsG:SetNumeric(true)
+greyColorsG:SetMaxLetters(3)
+greyColorsG:SetMultiLine(false)
+greyColorsG:EnableMouse(true)
+greyColorsG:EnableKeyboard(true)
+greyColorsG:SetFontObject("GameFontHighlight")
+greyColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+greyColorsG:SetText(tostring(greyG*255))
+greyColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+greyColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+greyColorsG:SetScript("OnTextChanged", function()
+	local new = tonumber(greyColorsG:GetText())
+	if new == nil then
+		greyG = 0
+	elseif new > 254 then
+		greyG = 1
+	else
+		greyG = new/255
+	end
+	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
+	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
+	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+local greyColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+greyColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+greyColorsBBg:SetSize(34, 24)  -- Adjust size as needed
+greyColorsBBg:SetPoint("LEFT", greyColorsGBg, "RIGHT", 10, 0)
+
+local greyColorsB = CreateFrame("EditBox", nil, ColorsFrame)
+greyColorsB:SetSize(30, 20)
+greyColorsB:SetPoint("LEFT", greyColorsG, "RIGHT", 14, 0)
+greyColorsB:SetAutoFocus(false)
+greyColorsB:SetNumeric(true)
+greyColorsB:SetMaxLetters(3)
+greyColorsB:SetMultiLine(false)
+greyColorsB:EnableMouse(true)
+greyColorsB:EnableKeyboard(true)
+greyColorsB:SetFontObject("GameFontHighlight")
+greyColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+greyColorsB:SetText(tostring(greyB*255))
+greyColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+greyColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+greyColorsB:SetScript("OnTextChanged", function()
+	local new = tonumber(greyColorsB:GetText())
+	if new == nil then
+		greyB = 0
+	elseif new > 254 then
+		greyB = 1
+	else
+		greyB = new/255
+	end
+	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
+	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
+	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
+end)
+
+	-- Create a close button
+	local closeBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+	closeBg:SetSize(400, 25)  -- Adjust size as needed
+	closeBg:SetPoint("BOTTOM", ColorsFrame, "BOTTOM", 0, 0)
+
+	local closeButton = CreateFrame("Button", nil, ColorsFrame)
+	closeButton:SetSize(50, 25)  -- Adjust size as needed
+	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0)  -- Adjust position as needed
+	closeButton:SetText("Close")
+	local closeButtonText = closeButton:GetFontString()
+	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButton:SetNormalFontObject("GameFontHighlight")
+	closeButton:SetHighlightFontObject("GameFontNormal")
+	closeButton:SetScript("OnClick", function()
+		ColorsFrame:Hide()
+	end)
+
+	-- Create a reset button 
+	local resetButton = CreateFrame("Button", nil, ColorsFrame)
+	resetButton:SetSize(50, 25)  -- Adjust size as needed
+	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0)  -- Adjust position as needed
+	resetButton:SetText("Reset")
+	local resetButtonText = resetButton:GetFontString()
+	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButton:SetNormalFontObject("GameFontHighlight")
+	resetButton:SetHighlightFontObject("GameFontNormal")
+	resetButton:SetScript("OnClick", function()
+		mainColorsR:SetText(tostring(22))
+		mainColorsG:SetText(tostring(26))
+		mainColorsB:SetText(tostring(48))
+		lightColorsR:SetText(tostring(240))
+		lightColorsG:SetText(tostring(236))
+		lightColorsB:SetText(tostring(229))
+		darkColorsR:SetText(tostring(49))
+		darkColorsG:SetText(tostring(48))
+		darkColorsB:SetText(tostring(77))
+		greyColorsR:SetText(tostring(71))
+		greyColorsG:SetText(tostring(71))
+		greyColorsB:SetText(tostring(71))
+	end)
+
+	-- Help Reminder
+	local helpReminderHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 6)
+	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
+	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	return ColorsFrame
 end
 
 function SetSupportersEditBox()
@@ -4017,8 +4631,8 @@ function IsCurrentTradeSkillEnchanting()
 end
 -- Function to create a CusWorkOrder frame
 function CreateCusWorkOrder(customerName)
-	local customerName2 = string.lower(customerName)
-	customerName = string.upper(string.sub(customerName2, 1, 1)) .. string.sub(customerName2, 2)
+	local customerName = string.utf8lower2(customerName)
+	--customerName = string.utf8upper2(string.sub(customerName2, 1, 1)) .. string.sub(customerName2, 2)
 	if customerName == "" or customerName == nil then
 		print(RED .. "Invalid customer name" .. ColorClose)
 		return
@@ -4026,8 +4640,8 @@ function CreateCusWorkOrder(customerName)
 	local frameID = #WorkOrderFrames + 1
     local framename = "CusWorkOrder" .. frameID
 	for id, frameInfo in pairs(WorkOrderFrames) do
-		local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
-		local lowerCusName = string.lower(customerName)
+		local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
+		local lowerCusName = string.utf8lower2(customerName)
 		if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
 			print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
 			if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -4095,13 +4709,14 @@ function CreateCusWorkOrder(customerName)
 					end
 				end
 			elseif CheckIfPartyMember(customerName) == true then
+				local capPlayerName = CapFirstLetter(customerName)
 				for i, enchsString in ipairs(allEnchReq) do
 					if i == 1 then
 						local msgReq = "All Enchants Req: " .. enchsString
-						SendChatMessage(customerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+						SendChatMessage(capPlayerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 					elseif i > 1 then
 						local msgReq = "All Enchants Req: " .. enchsString
-						SendChatMessage(customerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+						SendChatMessage(capPlayerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 					end
 				end
 			elseif cusName and cusName ~= "" then
@@ -4134,7 +4749,7 @@ function CreateCusWorkOrder(customerName)
 				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 				local currentTradeTarget = UnitName("NPC")
 				if currentCusFocus == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 		--[[elseif IsAltKeyDown() then -- Whisper all requested enchants
@@ -4164,13 +4779,14 @@ function CreateCusWorkOrder(customerName)
 					end
 				end
 			elseif CheckIfPartyMember(customerName) == true then
+				local capPlayerName = CapFirstLetter(customerName)
 				for i, matsString in ipairs(allmatsReq) do
 					if i == 1 then
 						local msgReq = "All Mats Needed: " .. matsString
-						SendChatMessage(customerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+						SendChatMessage(capPlayerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 					elseif i > 1 then
 						local msgReq = "All Mats Needed: " .. matsString
-						SendChatMessage(customerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+						SendChatMessage(capPlayerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 					end
 				end
 			elseif cusName and cusName ~= "" then
@@ -4231,7 +4847,7 @@ tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link,
 			RemoveRequestedEnchant(customerName, enchKey)
 			local currentTradeTarget = UnitName("NPC")
 				if customerName == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons()
+					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 			elseif IsShiftKeyDown() then
@@ -4243,7 +4859,8 @@ tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link,
 				if ProEnchantersOptions["WhisperMats"] == true and cusName and cusName ~= "" then
 					SendChatMessage(msgReq, "WHISPER", nil, cusName)
 				elseif CheckIfPartyMember(customerName) == true then
-					SendChatMessage(customerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(customerName)
+					SendChatMessage(capPlayerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 				elseif cusName and cusName ~= "" then
 					SendChatMessage(msgReq, "WHISPER", nil, cusName)
 				else
@@ -4270,7 +4887,7 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 
 	local minButton = CreateFrame("Button", nil, frame)
     minButton:SetSize(80, 25)
-    minButton:SetPoint("TOP", frame, "TOP", -5, 2)
+    minButton:SetPoint("TOP", frame, "TOP", 70, 2)
 	minButton:SetText("Minimize")
 	local minButtonText = minButton:GetFontString()
 	minButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
@@ -4280,6 +4897,7 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 	frame.minimized = minimized
 	minButton:SetScript("OnClick", function()
         if minimized == false then
+			tradehistoryEditBox:SetText("")
             tradeHistoryScrollFrame:SetSize(400, 0)
             scrollChild:SetSize(400, 0)
             customerBg:SetSize(420, 20)
@@ -4296,7 +4914,6 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
             yOffset = yOffset + 200 -- Increase for the next frame
 		    UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
 			minButton:SetText("Maximize")
-			tradehistoryEditBox:SetText("")
 			minimized = true
 			frame.minimized = minimized
         elseif minimized == true then
@@ -4420,6 +5037,7 @@ end
 -- Function to handle "Create Workorder" button press
 function OnCreateWorkorderButtonClick()
     local customerName = ProEnchantersCustomerNameEditBox:GetText()
+	customerName = string.utf8lower2(customerName)
     CreateCusWorkOrder(customerName)
 end
 
@@ -4430,6 +5048,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	if PEtradeWho then
 		customerName = PEtradeWho
 	end
+	customerName = string.utf8lower2(customerName)
 	local tradeFrame = TradeFrame
 	-- local tradewindowHeight = tradeFrame:GetHeight()
 	local tradewindowWidth, tradewindowHeight = tradeFrame:GetSize()
@@ -4472,7 +5091,7 @@ function ProEnchantersTradeWindowCreateFrame()
 		ProEnchantersOptions["UseAllMats"] = self:GetChecked()
 		useAllMats = ProEnchantersOptions["UseAllMats"]
 		ProEnchantersUpdateTradeWindowText(customerName)
-		ProEnchantersUpdateTradeWindowButtons()
+		ProEnchantersUpdateTradeWindowButtons(customerName)
 	end)
 
 	-- Use Mats from Inventory Text
@@ -4532,6 +5151,7 @@ end
 
 function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 
+	local PEtradeWho = string.utf8lower2(PEtradeWho)
 	local enchyOffset = -39
 	local enchxOffset = 15
 	local frame = _G["ProEnchantersTradeWindowFrame"]
@@ -4540,10 +5160,12 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	local customerName = PEtradeWho or ""
 	local line = ""
 
+
 	frame.customerTitleButton:SetText(PEtradeWho)
 	frame.customerTitleButton:SetScript("OnClick", function()
 		local customerName = PEtradeWho
-		ProEnchantersUpdateTradeWindowButtons()
+		customerName = string.utf8lower2(customerName)
+		ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
  end)
@@ -4551,7 +5173,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	ProEnchantersOptions["UseAllMats"] = self:GetChecked()
 	useAllMats = ProEnchantersOptions["UseAllMats"]
 	ProEnchantersUpdateTradeWindowText(customerName)
-	ProEnchantersUpdateTradeWindowButtons()
+	ProEnchantersUpdateTradeWindowButtons(customerName)
 end)
 
 	--[[ Set Req Enchant Window
@@ -4727,6 +5349,7 @@ function PESearchInventoryForItems()
 end
 
 function ProEnchantersGetMatsDiff(customerName)
+	local customerName = string.utf8lower2(customerName)
 	local matsNeeded = {}
     local matsNeededQuantity = 0
     local matsRemaining = {}
@@ -4845,6 +5468,7 @@ function ProEnchantersGetMatsDiff(customerName)
 end
 
 function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
+	local customerName = string.utf8lower2(customerName)
 	local matsNeeded = {}
     local matsRemaining = {}
     local matsDiff = {}
@@ -4906,6 +5530,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 end
 
 function LinkMissingMats(enchantID, customerName)
+	local customerName = string.utf8lower2(customerName)
 	local enchantID = enchantID
 	local enchantName = EnchantsName[enchantID]
 	local missingMats = {}
@@ -4952,13 +5577,14 @@ function LinkMissingMats(enchantID, customerName)
 				end
 			end
 		elseif CheckIfPartyMember(customerName) == true then
+			local capPlayerName = CapFirstLetter(customerName)
 			for i, matsString in ipairs(AllMatsMissing) do
 				if i == 1 then
 					local msgReq = "Mat's Missing for " .. enchantName ..  ": " .. matsString
-					SendChatMessage(customerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					SendChatMessage(capPlayerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 				elseif i > 1 then
 					local msgReq = "Mat's Missing: " .. matsString
-					SendChatMessage(customerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					SendChatMessage(capPlayerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 				end
 			end
 		elseif customerName and customerName ~= "" then
@@ -4988,7 +5614,8 @@ function LinkMissingMats(enchantID, customerName)
 	end
 end
 
-function ProEnchantersUpdateTradeWindowButtons()
+function ProEnchantersUpdateTradeWindowButtons(customerName)
+	local customerName = string.utf8lower2(customerName)
 	local SlotTypeInput = ""
 	C_Timer.After(.2, function()
 		local test = "test"
@@ -5023,7 +5650,6 @@ function ProEnchantersUpdateTradeWindowButtons()
 	local enchyOffset = -39
 	local enchxOffset = 15
 	local frame = _G["ProEnchantersTradeWindowFrame"]
-	local customerName = PEtradeWho or ""
 	local slotType = SlotTypeInput
 	local enchantType = ""
 	local enchantName = ""
@@ -5247,7 +5873,7 @@ function ProEnchantersUpdateTradeWindowButtons()
 end
 
 function ProEnchantersUpdateTradeWindowText(customerName)
-	local cusName = customerName
+	local customerName = string.utf8lower2(customerName)
 	local tradewindowline = ""
 	-- Get Trade Window Frame
 	local frame = _G["ProEnchantersTradeWindowFrame"]
@@ -5308,9 +5934,68 @@ end
 local function OnAddonLoaded()
 	-- Cache Items
 	PEItemCache()
+
 	-- Ensure the ProEnchantersOptions and its filters sub-table are properly initialized
     ProEnchantersOptions = ProEnchantersOptions or {}
     ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
+
+	if ProEnchantersOptions["Colors"] == nil or ProEnchantersOptions["Colors"] == {} then
+		ProEnchantersOptions["Colors"] = {
+			HeaderColor = {22/255, 26/255, 48/255},
+			TitleColor = {182/255, 187/255, 196/255},
+			LightBgColor = {240/255, 236/255, 229/255},
+			DarkBgColor = {49/255, 48/255, 77/255},
+			GreyedColor = {71/255, 71/255, 71/255}
+		}
+	else
+		ProEnchantersOptions["Colors"] = ProEnchantersOptions["Colors"]
+	end
+
+	if next(ProEnchantersOptions.Colors.HeaderColor) == nil then
+		ProEnchantersOptions.Colors.HeaderColor = {22/255, 26/255, 48/255}
+	end
+
+	if next(ProEnchantersOptions.Colors.TitleColor) == nil then
+		ProEnchantersOptions.Colors.TitleColor = {22/255, 26/255, 48/255}
+	end
+
+	if next(ProEnchantersOptions.Colors.LightBgColor) == nil then
+		ProEnchantersOptions.Colors.LightBgColor = {22/255, 26/255, 48/255}
+	end
+
+	if next(ProEnchantersOptions.Colors.DarkBgColor) == nil then
+		ProEnchantersOptions.Colors.DarkBgColor = {22/255, 26/255, 48/255}
+	end
+
+	if next(ProEnchantersOptions.Colors.GreyedColor) == nil then
+		ProEnchantersOptions.Colors.GreyedColor = {22/255, 26/255, 48/255}
+	end
+
+	--Color for Frames
+	HeaderColor = ProEnchantersOptions.Colors.HeaderColor or {22/255, 26/255, 48/255}
+	r1, g1, b1 = unpack(HeaderColor)
+	HeaderOpaque = {r1, g1, b1, 1}
+	HeaderTrans = {r1, g1, b1, 0.5}
+
+	TitleColor = ProEnchantersOptions.Colors.TitleColor or {182/255, 187/255, 196/255}
+	r2, g2, b2 = unpack(TitleColor)
+	TitleOpaque = {r2, g2, b2, 1}
+	TitleTrans = {r2, g2, b2, 0.5}
+
+	LightBgColor = ProEnchantersOptions.Colors.LightBgColor or {240/255, 236/255, 229/255}
+	r3, g3, b3 = unpack(LightBgColor)
+	LightBgOpaque = {r3, g3, b3, 1}
+	LightBgTrans = {r3, g3, b3, 0.5}
+
+	DarkBgColor = ProEnchantersOptions.Colors.DarkBgColor or {49/255, 48/255, 77/255}
+	r4, g4, b4 = unpack(DarkBgColor)
+	DarkBgOpaque = {r4, g4, b4, 1}
+	DarkBgTrans = {r4, g4, b4, 0.5}
+
+	GreyedColor = ProEnchantersOptions.Colors.GreyedColor or {71/255, 71/255, 71/255}
+	r5, g5, b5 = unpack(GreyedColor)
+	GreyedOpaque = {r5, g5, b5, 1}
+	GreyedTrans = {r5, g5, b5, 0.5}
     
     -- Now safe to register the events that use ProEnchantersWorkOrderFrame
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_SAY")
@@ -5493,6 +6178,7 @@ local function OnAddonLoaded()
 	ProEnchantersOptionsFrame = ProEnchantersCreateOptionsFrame()
 	ProEnchantersTriggersFrame = ProEnchantersCreateTriggersFrame()
 	ProEnchantersCreditsFrame = ProEnchantersCreateCreditsFrame()
+	ProEnchantersColorsFrame = ProEnchantersCreateColorsFrame()
     ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 
@@ -5553,7 +6239,7 @@ SlashCmdList["PROENCHANTERSFS"] = function(msg)
 end
 
 SlashCmdList["PROENCHANTERSHELP"] = function(msg)
-	local msg = string.lower(msg)
+	local msg = string.utf8lower2(msg)
     if msg == nil or msg == "" then
 		print(ORANGE .. "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~" .. ColorClose)
 		print(ORANGE .. "Use /pe or /proenchanters to open the main window" .. ColorClose)
@@ -5674,18 +6360,24 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
-					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", playerName)
+					local capPlayerName = CapFirstLetter(playerName)
+					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
-					SendChatMessage("Hello there " .. playerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(playerName)
+					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local playerName = string.utf8lower2(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+					local playerName = string.utf8lower2(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -5696,18 +6388,24 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
-					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", playerName)
+					local capPlayerName = CapFirstLetter(playerName)
+					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
-					SendChatMessage("Hello there " .. playerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(playerName)
+					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local playerName = string.utf8lower2(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+					local playerName = string.utf8lower2(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			end
@@ -5722,18 +6420,24 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
-					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", playerName)
+					local capPlayerName = CapFirstLetter(playerName)
+					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
-					SendChatMessage("Hello there " .. playerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(playerName)
+					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local playerName = string.utf8lower2(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+					local playerName = string.utf8lower2(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -5744,18 +6448,24 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
-					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", playerName)
+					local capPlayerName = CapFirstLetter(playerName)
+					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						local playerName = string.utf8lower2(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
-					SendChatMessage("Hello there " .. playerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(playerName)
+					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
+					local playerName = string.utf8lower2(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+					local playerName = string.utf8lower2(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			end
@@ -5787,9 +6497,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_YELL" then
         -- Check for matching Emote
 		local msg, author2, language, channelNameWithNumber, target, flags, unknown, channelNumber, channelName = ...
-		local msg2 = string.lower(msg)
+		local msg2 = string.utf8lower2(msg)
 		local city = GetZoneText()
 		local author = string.gsub(author2, "%-.*", "")
+		local author3 = string.utf8lower2(author)
 		local channelCheck = "General - " .. city
 		if ProEnchantersOptions["AllChannels"] == true then
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -5828,29 +6539,29 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-				local playerName = author
+				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
-						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 						end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
-					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 					end
 				end
 			end
@@ -5892,29 +6603,29 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-				local playerName = author
+				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
-						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 						end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
-					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 					end
 				end
 			end
@@ -5956,29 +6667,29 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-				local playerName = author
+				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
-						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 						end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 					if AutoInviteFlag == true then
 						AddonInvite = true
 						if AddonInvite == true then
-							InviteUnitPEAddon(playerName)
+							InviteUnitPEAddon(author2)
 							PEPlayerInvited[playerName] = msg2
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
-					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg}
+					StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 					end
 				end
 			end
@@ -5990,6 +6701,7 @@ end
 
 -- Add a new line to the trade history for a specific customer
 function AddTradeLine(customerName, tradeLine)
+	local customerName = string.utf8lower2(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
 		CreateCusWorkOrder(customerName)
@@ -6001,6 +6713,7 @@ function AddTradeLine(customerName, tradeLine)
 end
 
 function AddRequestedEnchant(customerName, reqEnchant)
+	local customerName = string.utf8lower2(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -6024,6 +6737,7 @@ function AddRequestedEnchant(customerName, reqEnchant)
 end
 
 function RemoveRequestedEnchant(customerName, reqEnchant)
+	local customerName = string.utf8lower2(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -6069,6 +6783,7 @@ end
 	UpdateTradeHistory(customerName)
 end
 function FinishedEnchant(customerName, reqEnchant)
+	local customerName = string.utf8lower2(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -6173,6 +6888,7 @@ function FinishedEnchant(customerName, reqEnchant)
 end
 
 function RemoveAllRequestedEnchant(customerName)
+	local customerName = string.utf8lower2(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -6240,6 +6956,7 @@ end
 
 -- Function to get the trade history edit box for a given customer
 function GetTradeHistoryEditBox(customerName)
+	local customerName = string.utf8lower2(customerName)
     for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed then
             local frameCustomerName = frameInfo.Frame.customerName -- Assuming each frame has a 'customerName' property
@@ -6254,6 +6971,7 @@ end
 
 -- Function to update trade history in EditBox
 function UpdateTradeHistory(customerName)
+	local customerName = string.utf8lower2(customerName)
     local tradeHistoryText = ""
     for _, frameInfo in pairs(WorkOrderFrames) do
         if frameInfo.Frame.customerName == customerName and not frameInfo.Completed then
@@ -6312,6 +7030,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		PEtradeWho = UnitName("NPC")
 		LastTradedPlayer = UnitName("NPC")
 		local customerName = PEtradeWho
+		customerName = string.utf8lower2(customerName)
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 			if not ProEnchantersTradeHistory[customerName] then
             CreateCusWorkOrder(customerName)
@@ -6320,8 +7039,8 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				end
 			elseif ProEnchantersTradeHistory[customerName] then
 				for id, frameInfo in pairs(WorkOrderFrames) do
-					local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
-					local lowerCusName = string.lower(customerName)
+					local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
+					local lowerCusName = string.utf8lower2(customerName)
 						if lowerFrameCheck == lowerCusName and frameInfo.Completed then
 							CreateCusWorkOrder(customerName)
 							if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -6335,21 +7054,23 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 					print("Now trading " .. customerName)
 				else
 				local tradeMsg = ProEnchantersOptions["TradeMsg"]
-				local newtradeMsg = string.gsub(tradeMsg, "CUSTOMER", customerName)
+				local capPlayerName = CapFirstLetter(customerName)
+				local newtradeMsg = string.gsub(tradeMsg, "CUSTOMER", capPlayerName)
 				SendChatMessage(newtradeMsg, IsInRaid() and "RAID" or "PARTY")
 				end
 			else
-				SendChatMessage("Now trading with " .. customerName, IsInRaid() and "RAID" or "PARTY")
+				local capPlayerName = CapFirstLetter(customerName)
+				SendChatMessage("Now trading with " .. capPlayerName, IsInRaid() and "RAID" or "PARTY")
 			end
 		end
-		ProEnchantersLoadTradeWindowFrame(PEtradeWho)
-		ProEnchantersUpdateTradeWindowText(PEtradeWho)
+		ProEnchantersLoadTradeWindowFrame(customerName)
+		ProEnchantersUpdateTradeWindowText(customerName)
 
 		C_Timer.After(.1, function()
 			local tItemLink = GetTradeTargetItemLink(7)
 			if tItemLink then
-				ProEnchantersUpdateTradeWindowButtons()
-				ProEnchantersUpdateTradeWindowText(PEtradeWho)
+				ProEnchantersUpdateTradeWindowButtons(customerName)
+				ProEnchantersUpdateTradeWindowText(customerName)
 			end
 		end)
 	elseif (event == "TRADE_MONEY_CHANGED") then
@@ -6358,7 +7079,9 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		--Items Traded Start
 	elseif (event == "TRADE_PLAYER_ITEM_CHANGED") or (event == "TRADE_TARGET_ITEM_CHANGED") then
 		local target = UnitName("NPC")
+		target = string.utf8lower2(target)
 		local player = UnitName("player")
+		player = string.utf8lower2(player)
 		local SlotTypeInput = ""
 
 		PEtradeWhoItems.player = {}
@@ -6377,6 +7100,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 
 		-- Self Items Traded
 		local customerName = PEtradeWho
+		customerName = string.utf8lower2(customerName)
 		if playerEnchant ~= nil then
 			PEtradeWhoItems.player[slot] = {link = playerItemLink, quantity = playerQuantity, enchant = playerEnchant}
 			ItemsTraded = true
@@ -6394,10 +7118,11 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			ItemsTraded = true
 		end
 	end
+			local customerName = PEtradeWho
+			customerName = string.utf8lower2(customerName)
 
-
-			ProEnchantersUpdateTradeWindowButtons()
-			ProEnchantersUpdateTradeWindowText(PEtradeWho)
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+			ProEnchantersUpdateTradeWindowText(customerName)
 
 		-- ItemsTraded = true
 		-- Items Traded End
@@ -6407,7 +7132,9 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()
 		local target = UnitName("NPC")
+		target = string.utf8lower2(target)
 		local player = UnitName("player")
+		player = string.utf8lower2(player)
 		local SlotTypeInput = ""
 
 		PEtradeWhoItems.player = {}
@@ -6442,10 +7169,11 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		ItemsTraded = true
 		end
 	end
+			local customerName = PEtradeWho
+			customerName = string.utf8lower2(customerName)
 
-
-			ProEnchantersUpdateTradeWindowButtons()
-			ProEnchantersUpdateTradeWindowText(PEtradeWho)
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+			ProEnchantersUpdateTradeWindowText(customerName)
 
 
 		-- ItemsTraded = true
@@ -6468,6 +7196,7 @@ end
 function PEdoTrade()
 	local traded = false
 	local customerName = PEtradeWho
+	customerName = string.utf8lower2(customerName)
 	local Time = date()
 
 	-- Checks for if Traded
@@ -6494,38 +7223,40 @@ function PEdoTrade()
 		end
 
 		if PlayerMoney > 0 then
-		AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. GetMoneyString(PlayerMoney))
+		AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. GetCoinText(PlayerMoney))
 		GoldTraded = GoldTraded - PlayerMoney
 		UpdateTradeHistory(customerName)
 		end
 
 		if TargetMoney > 0 then
-		AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. GetMoneyString(TargetMoney))
+		AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. GetCoinText(TargetMoney))
 		GoldTraded = GoldTraded + TargetMoney
 		UpdateTradeHistory(customerName)
 			if OnTheClock == true then
-			DoEmote("THANK", customerName)
+			DoEmote("THANK", PEtradeWho)
 				if ProEnchantersOptions["TipMsg"] then
 					local tip = tostring(GetCoinText(TargetMoney))
 					local tipMsg = ProEnchantersOptions["TipMsg"]
-					local newTipMsg1 = string.gsub(tipMsg, "CUSTOMER", customerName)
+					local capPlayerName = CapFirstLetter(PEtradeWho)
+					local newTipMsg1 = string.gsub(tipMsg, "CUSTOMER", capPlayerName)
 					local newTipMsg2 = string.gsub(newTipMsg1, "MONEY", tip)
 					--string.gsub(meResponseSender, "PLAYER", function(mePlayer2) table.insert(mePlayer, mePlayer2) return sender end)
 					if tipMsg == "" then
-						print(customerName .. " tipped " .. tip)
+						print(PEtradeWho .. " tipped " .. tip)
 					else
-						if CheckIfPartyMember(customerName) == true then
+						if CheckIfPartyMember(PEtradeWho) == true then
 							SendChatMessage(newTipMsg2, IsInRaid() and "RAID" or "PARTY")
 						else
-							SendChatMessage(newTipMsg2,"WHISPER", nil, customerName)
+							SendChatMessage(newTipMsg2,"WHISPER", nil, PEtradeWho)
 						end
 					end
 				else
 					local tip = tostring(GetCoinText(TargetMoney))
-					if CheckIfPartyMember(customerName) == true then
-						SendChatMessage("Thanks for the " .. tip ..  " tip " .. customerName .. " <3", IsInRaid() and "RAID" or "PARTY")
+					local capPlayerName = CapFirstLetter(PEtradeWho)
+					if CheckIfPartyMember(PEtradeWho) == true then
+						SendChatMessage("Thanks for the " .. tip ..  " tip " .. capPlayerName .. " <3", IsInRaid() and "RAID" or "PARTY")
 					else
-						SendChatMessage("Thanks for the " .. tip ..  " tip " .. customerName .. " <3", "WHISPER", nil, customerName)
+						SendChatMessage("Thanks for the " .. tip ..  " tip " .. capPlayerName .. " <3", "WHISPER", nil, PEtradeWho)
 					end
 				end
 			end
@@ -6584,8 +7315,8 @@ function PEdoTrade()
 				if item and item.link then
 					if item.enchant then
 						--[[for id, frameInfo in pairs(WorkOrderFrames) do
-							local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
-							local lowerCusName = string.lower(customerName)
+							local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
+							local lowerCusName = string.utf8lower2(customerName)
 								if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
 									for _, enchantID in ipairs(frameInfo.Enchants) do
 										local enchantName = EnchantsName[enchantID]
