@@ -53,7 +53,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --               %xF4 %x80-8F 2( UTF8-tail )
 -- UTF8-tail   = %x80-BF
 --
-
 local strbyte, strlen, strsub, type = string.byte, string.len, string.sub, type
 
 -- returns the number of bytes used by the UTF-8 character at byte i in s
@@ -269,7 +268,7 @@ end
 
 -- install in the string library
 if not string.utf8upper2 and utf8_lc_uc then
-	string.utf8upper2 = utf8upper
+	string.utf8upper2 = utf8upper	
 end
 
 -- identical to string.lower except it knows about unicode simple case conversions

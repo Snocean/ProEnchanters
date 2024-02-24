@@ -2,11 +2,11 @@
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 3.5
+## Version: 3.6
 ## SavedVariables: ProEnchantersOptions
 
-libs/utf8.lua
-libs/utf8data.lua
+libs\utf8data.lua
+libs\utf8.lua
 PELocalization.lua
 #ProEnchantersDE.lua
 #ProEnchantersFR.lua

@@ -5048,7 +5048,6 @@ function ProEnchantersTradeWindowCreateFrame()
 	if PEtradeWho then
 		customerName = PEtradeWho
 	end
-	customerName = string.utf8lower2(customerName)
 	local tradeFrame = TradeFrame
 	-- local tradewindowHeight = tradeFrame:GetHeight()
 	local tradewindowWidth, tradewindowHeight = tradeFrame:GetSize()
