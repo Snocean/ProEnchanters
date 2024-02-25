@@ -39,12 +39,56 @@ local LocalLanguage = PELocales[GetLocale()]
 local FontSize = 12
 PEPlayerInvited = {}
 local useAllMats = false
+local maxPartySizeReached = false
+
+
+function MaxPartySizeCheck()
+	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
+	local currentPartySize = 0
+	local isInGroup = IsInGroup()
+
+	if isInGroup == true then
+		currentPartySize = tonumber(GetNumGroupMembers())
+	end
+
+	if maxPartySize > currentPartySize then
+		return false
+	elseif maxPartySize <= currentPartySize then
+		return true
+	end
+end
 
 function InviteUnitPEAddon(name)
 	local nameCheck = string.utf8lower2(name)
 	local selfnameCheck = string.utf8lower2(selfPlayerName)
-	if selfnameCheck ~= nameCheck then
-		InviteUnit(name)
+	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
+	local currentPartySize = 0
+	local isInGroup = IsInGroup()
+	local raidConvert = false
+
+	if isInGroup == true then
+		currentPartySize = tonumber(GetNumGroupMembers())
+	end
+
+	if maxPartySize > currentPartySize then
+		if not IsInRaid() then
+			if currentPartySize >= 4 then
+				ConvertToRaid()
+				print("Converting party to raid")
+				raidConvert = true
+			end
+		end
+		if raidConvert == true then
+			if not string.find(selfnameCheck, nameCheck, 1, true) then
+				C_Timer.After(1, function() InviteUnit(name) end)
+			end
+		else
+			if not string.find(selfnameCheck, nameCheck, 1, true) then
+				InviteUnit(name)
+			end
+		end
+	elseif maxPartySize <= currentPartySize then
+		print("Party size limit reached, consider increasing the size of your maximum party within the options")
 	end
 end
 
@@ -3096,10 +3140,49 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		WorkWhileClosed = ProEnchantersOptions["WorkWhileClosed"]
 	end)
 
+	-- ProEnchantersOptions["MaxPartySize"]
+
+	local maxPartySizeHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	maxPartySizeHeader:SetFontObject("GameFontHighlight")
+	maxPartySizeHeader:SetPoint("TOPLEFT", WorkWhileClosedHeader, "TOPLEFT", 0, -30)
+	maxPartySizeHeader:SetText("Maximum party size before addon invites stop? (Including yourself)")
+	maxPartySizeHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local maxPartySizeEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+	maxPartySizeEditBoxBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	maxPartySizeEditBoxBg:SetSize(25, 25)  -- Adjust size as needed
+	maxPartySizeEditBoxBg:SetPoint("LEFT", maxPartySizeHeader, "RIGHT", 10, 0)
+
+	local maxPartySizeEditBox = CreateFrame("EditBox", nil, ScrollChild)
+	maxPartySizeEditBox:SetSize(30, 20)
+	maxPartySizeEditBox:SetPoint("LEFT", maxPartySizeHeader, "RIGHT", 14, 0)
+	maxPartySizeEditBox:SetAutoFocus(false)
+	maxPartySizeEditBox:SetNumeric(true)
+	maxPartySizeEditBox:SetMaxLetters(2)
+	maxPartySizeEditBox:SetMultiLine(false)
+	maxPartySizeEditBox:EnableMouse(true)
+    maxPartySizeEditBox:EnableKeyboard(true)
+	maxPartySizeEditBox:SetFontObject("GameFontHighlight")
+	maxPartySizeEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	maxPartySizeEditBox:SetText(tostring(ProEnchantersOptions["MaxPartySize"]))
+	maxPartySizeEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	maxPartySizeEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	maxPartySizeEditBox:SetScript("OnTextChanged", function()
+		local newMaxSize = tonumber(maxPartySizeEditBox:GetText())
+		if newMaxSize == nil then
+			newMaxSize = 1
+		elseif newMaxSize > 40 then
+			newMaxSize = 40
+		elseif newMaxSize < 0 then
+			newMaxSize = 1
+		end
+		ProEnchantersOptions["MaxPartySize"] = newMaxSize
+	end)
+
 	-- Create a header for AutoInviteAllChannels
 	local DelayWorkOrderHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	DelayWorkOrderHeader:SetFontObject("GameFontHighlight")
-	DelayWorkOrderHeader:SetPoint("TOPLEFT", WorkWhileClosedHeader, "TOPLEFT", 0, -30)
+	DelayWorkOrderHeader:SetPoint("TOPLEFT", maxPartySizeHeader, "TOPLEFT", 0, -30)
 	DelayWorkOrderHeader:SetText("Delay work order creation on non-addon invited players?")
 	DelayWorkOrderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
@@ -3148,6 +3231,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersTriggersFrame:Show()
 		OptionsFrame:Hide()
 	end)
+
 
 	-- Create a header for AutoInviteAllChannels
 	local AutoInviteAllChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
@@ -6071,6 +6155,11 @@ local function OnAddonLoaded()
 	else
 		ProEnchantersOptions["FontSize"] = ProEnchantersOptions["FontSize"]
 		FontSize = ProEnchantersOptions["FontSize"]
+	end
+
+	-- Setting max party size
+	if ProEnchantersOptions["MaxPartySize"] == nil or ProEnchantersOptions["MaxPartySize"] == "" then
+		ProEnchantersOptions["MaxPartySize"] = 40
 	end
 
 	-- Setting AutoInviteOptions
