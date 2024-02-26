@@ -40,6 +40,7 @@ local FontSize = 12
 PEPlayerInvited = {}
 local useAllMats = false
 local maxPartySizeReached = false
+local debugLevel = 0
 
 
 function MaxPartySizeCheck()
@@ -596,6 +597,7 @@ ProEnchantersWorkOrderFrame = nil
 ProEnchantersWorkOrderEnchantsFrame = nil
 ProEnchantersOptionsFrame = nil
 ProEnchantersTriggersFrame = nil
+ProEnchantersWhisperTriggersFrame = nil
 ProEnchantersCreditsFrame = nil
 ProEnchantersGoldLogFrame = nil
 
@@ -654,6 +656,19 @@ PETriggerWordsOriginal = {
 -- Inv Words Table
 PEInvWordsOriginal = {
 	"inv"
+}
+
+-- Whisper Triggers Table
+PEWhisperTriggersOriginal = {
+	[1] = {
+		["!help"] = "Hello! Try using !info or !addon for more infomation. You can also request the mats for an enchant by whispering me the enchant name with a ! infront, example: !enchant boots - stamina"
+	},
+	[2] = {
+		["!info"] = "As I am using the Pro Enchanter's add-on (!addon for more info) I am able to create large Enchant lists with required mats quickly to share with you. If you have any questions or requests feel free to ask :) check out !help for some other commands"
+	},
+	[3] = {
+		["!addon"] = "I am using the Pro Enchanter's add-on on curseforge: https://www.curseforge.com/wow/addons/pro-enchanters :)"
+	}
 }
 
 -- Enchants Names
@@ -2556,6 +2571,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	WorkOrderFrame:SetScript("OnHide", function()
 		ProEnchantersOptionsFrame:Hide()
 		ProEnchantersTriggersFrame:Hide()
+		ProEnchantersWhisperTriggersFrame:Hide()
 		--ProEnchantersGoldLogFrame:Hide()
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
@@ -3210,24 +3226,24 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	WhisperMatsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Auto Invite Checkbox
-	local DelayWorkOrderCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-	DelayWorkOrderCb:SetPoint("LEFT", WhisperMatsHeader, "RIGHT", 10, 0)
-	DelayWorkOrderCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-	DelayWorkOrderCb:SetHitRectInsets(0, 0, 0, 0)
-	DelayWorkOrderCb:SetChecked(ProEnchantersOptions["WhisperMats"])
-	DelayWorkOrderCb:SetScript("OnClick", function(self)
+	local WhisperMatsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	WhisperMatsCb:SetPoint("LEFT", WhisperMatsHeader, "RIGHT", 10, 0)
+	WhisperMatsCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	WhisperMatsCb:SetHitRectInsets(0, 0, 0, 0)
+	WhisperMatsCb:SetChecked(ProEnchantersOptions["WhisperMats"])
+	WhisperMatsCb:SetScript("OnClick", function(self)
 		ProEnchantersOptions["WhisperMats"] = self:GetChecked()
 	end)
 
 	local filtersButtonBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
 	filtersButtonBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
-    filtersButtonBg:SetSize(260, 24)  -- Adjust size as needed
+    filtersButtonBg:SetSize(270, 24)  -- Adjust size as needed
 	filtersButtonBg:SetPoint("TOPLEFT", WhisperMatsHeader, "TOPLEFT", -4, -25)
 
 	-- Create a Trigger and Filters for invites button
 	local filtersButton2 = CreateFrame("Button", nil, ScrollChild)
-	filtersButton2:SetSize(261, 25)  -- Adjust size as needed
-	filtersButton2:SetPoint("TOPLEFT", WhisperMatsHeader, "TOPLEFT", -4, -25)  -- Adjust position as needed
+	filtersButton2:SetSize(270, 25)  -- Adjust size as needed
+	filtersButton2:SetPoint("CENTER", filtersButtonBg, "CENTER", 0, 0) -- Adjust position as needed
 	filtersButton2:SetText("Click here to set triggered words and filtered words")
 	local filtersButtonText2 = filtersButton2:GetFontString()
 	filtersButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
@@ -3238,11 +3254,30 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		OptionsFrame:Hide()
 	end)
 
+	local whisperTriggersBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
+	whisperTriggersBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    whisperTriggersBg:SetSize(250, 24)  -- Adjust size as needed
+	whisperTriggersBg:SetPoint("TOPLEFT", filtersButtonBg, "TOPRIGHT", 15, 0)
+
+	-- Create a Trigger and Filters for invites button
+	local whisperTriggersButton = CreateFrame("Button", nil, ScrollChild)
+	whisperTriggersButton:SetSize(250, 25)  -- Adjust size as needed
+	whisperTriggersButton:SetPoint("CENTER", whisperTriggersBg, "CENTER", 0, 0)  -- Adjust position as needed
+	whisperTriggersButton:SetText("Click here to set custom whisper !commands")
+	local whisperTriggersButtonText = whisperTriggersButton:GetFontString()
+	whisperTriggersButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	whisperTriggersButton:SetNormalFontObject("GameFontHighlight")
+	whisperTriggersButton:SetHighlightFontObject("GameFontNormal")
+	whisperTriggersButton:SetScript("OnClick", function()
+		ProEnchantersWhisperTriggersFrame:Show()
+		OptionsFrame:Hide()
+	end)
+
 
 	-- Create a header for AutoInviteAllChannels
 	local AutoInviteAllChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	AutoInviteAllChannelsHeader:SetFontObject("GameFontHighlight")
-	AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", filtersButton2, "TOPLEFT", 4, -35)
+	AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", filtersButtonBg, "BOTTOMLEFT", 0, -10)
 	AutoInviteAllChannelsHeader:SetText("Search all channels for potential Customers?")
 	AutoInviteAllChannelsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
@@ -3269,7 +3304,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		-- Create an EditBox for AutoInv Msg
 		local AutoInviteMsgEditBox = CreateFrame("EditBox", "ProEnchantersAutoInviteMsgEditBox", ScrollChild, "InputBoxTemplate")
 		AutoInviteMsgEditBox:SetSize(600, 20)
-		AutoInviteMsgEditBox:SetPoint("TOPLEFT", AutoInviteAllChannels, "TOPLEFT", -70, -30)
+		AutoInviteMsgEditBox:SetPoint("TOPLEFT", AutoInviteAllChannels, "TOPLEFT", -105, -30)
 		AutoInviteMsgEditBox:SetAutoFocus(false)
 		AutoInviteMsgEditBox:SetFontObject("GameFontHighlight")
 		AutoInviteMsgEditBox:SetText("")
@@ -3684,6 +3719,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	FailInvMsg = failMsg
 	FullInvMsg = fullMsg
 	ProEnchantersTriggersFrame:Hide()
+	ProEnchantersWhisperTriggersFrame:Hide()
 	end)
 
 	return OptionsFrame
@@ -3866,11 +3902,11 @@ function ProEnchantersCreateColorsFrame()
 	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Create Instructions text
-	local titleHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
-	titleHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
-	titleHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nChange the numbers and then do a /reload")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	local instructionsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	instructionsHeader:SetFontObject("GameFontHighlight")
+	instructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
+	instructionsHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nChange the numbers and then do a /reload")
+		instructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Extract Colors from Table
 	local headerR, headerG, headerB = unpack(ProEnchantersOptions.Colors.HeaderColor)
@@ -4508,7 +4544,7 @@ function ProEnchantersCreateTriggersFrame()
 	local titleHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	titleHeader:SetFontObject("GameFontHighlight")
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
-	titleHeader:SetText("Pro Enchanters Settings")
+	titleHeader:SetText("Pro Enchanters Triggers and Filters")
 	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local InstructionsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
@@ -4829,7 +4865,430 @@ function ProEnchantersCreateTriggersFrame()
 end
 
 
+function ProEnchantersCreateWhisperTriggersFrame()
+    local frame = CreateFrame("Frame", "ProEnchantersWhisperTriggersFrame", UIParent, "BackdropTemplate")
+    frame:SetFrameStrata("FULLSCREEN")
+    frame:SetSize(800, 350)  -- Adjust height as needed
+    frame:SetPoint("TOP", 0, -300)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+	frame:SetScript("OnDragStop", function()
+		frame:StopMovingOrSizing()
+	end)
 
+    frame:Hide()
+
+    -- Create a full background texture
+    local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(800, 325)
+    bgTexture:SetPoint("TOP", frame, "TOP", 0, -25)
+
+    -- Create a title background
+    local titleBg = frame:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetSize(800, 25)  -- Adjust size as needed
+    titleBg:SetPoint("TOP", frame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader:SetText("Pro Enchanters Whisper Trigger Commands")
+	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+
+	-- Scroll frame setup...
+    local WhisperTriggerScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersOptionsScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    WhisperTriggerScrollFrame:SetSize(775, 300)
+    WhisperTriggerScrollFrame:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 0, 0)
+
+	--Create a scroll background
+	local scrollBg = frame:CreateTexture(nil, "BACKGROUND")
+	scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetSize(17, 300)  -- Adjust size as needed
+	scrollBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -25)
+	
+	-- Access the Scroll Bar
+	local scrollBar = WhisperTriggerScrollFrame.ScrollBar
+
+	-- Customize Thumb Texture
+local thumbTexture = scrollBar:GetThumbTexture()
+thumbTexture:SetTexture(nil)  -- Clear existing texture
+thumbTexture:SetColorTexture(unpack(HeaderOpaque))
+thumbTexture:SetSize(15, 15)
+--thumbTexture:SetAllPoints(thumbTexture)
+
+-- Customize Scroll Up Button Textures
+local upButton = scrollBar.ScrollUpButton
+
+-- Clear existing textures
+upButton:GetNormalTexture():SetTexture(nil)
+upButton:GetPushedTexture():SetTexture(nil)
+upButton:GetDisabledTexture():SetTexture(nil)
+upButton:GetHighlightTexture():SetTexture(nil)
+
+-- Customize Scroll Up Button Textures with Solid Colors
+local upButton = scrollBar.ScrollUpButton
+
+-- Set colors
+upButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Replace RGBA values as needed
+upButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Replace RGBA values as needed
+upButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Replace RGBA values as needed
+upButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Replace RGBA values as needed
+
+-- Repeat for Scroll Down Button
+local downButton = scrollBar.ScrollDownButton
+
+-- Clear existing textures
+downButton:GetNormalTexture():SetTexture(nil)
+downButton:GetPushedTexture():SetTexture(nil)
+downButton:GetDisabledTexture():SetTexture(nil)
+downButton:GetHighlightTexture():SetTexture(nil)
+
+-- Set colors
+downButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Adjust colors as needed
+downButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Adjust colors as needed
+downButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Adjust colors as needed
+downButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Adjust colors as needed
+
+local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+upButtonText:SetText("-") -- Set the text for the up button
+upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+
+local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+downButtonText:SetText("-") -- Set the text for the down button
+downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+
+
+    -- Scroll child frame where elements are actually placed
+    local ScrollChild = CreateFrame("Frame")
+    ScrollChild:SetSize(800, 300)  -- Adjust height based on the number of elements
+    WhisperTriggerScrollFrame:SetScrollChild(ScrollChild)
+
+-- Scroll child items below
+
+-- Create a title for Options
+
+local InstructionsHeader = frame:CreateFontString(nil, "OVERLAY")
+InstructionsHeader:SetFontObject("GameFontHighlight")
+InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
+InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 250 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
+InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+
+local scrollHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+scrollHeader:SetFontObject("GameFontHighlight")
+scrollHeader:SetPoint("TOP", InstructionsHeader, "BOTTOM", -230, -10)
+scrollHeader:SetText("Enter new Command name and Command response")
+scrollHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+-- Initialize the buttons table if it doesn't exist
+if not frame.fieldscmd then
+	frame.fieldscmd = {}
+	frame.fieldsmsg = {}
+end
+
+local wtYvalue = wtYvalue or 0
+
+
+local function createWhisperTriggers()
+	RemoveWhisperTriggers()
+	wtYvalue = -25
+	--[[if frame.fieldscmd then
+		for _, button in ipairs(frame.fieldscmd) do
+			button:Hide()
+			button:SetParent(nil)
+			button:ClearAllPoints()
+		end
+		for _, buttonBg in ipairs(frame.fieldsmsg) do
+			buttonBg:Hide()
+			buttonBg:SetParent(nil)
+			buttonBg:ClearAllPoints()
+		end
+		wipe(frame.fieldscmd)  -- Clear the table
+		wipe(frame.fieldsmsg)
+	end]]
+	for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+		for cmd, msg in pairs(v) do
+
+			-- Create Cmd Box
+			local cmdBox = CreateFrame("EditBox", "cmdBox" .. i, ScrollChild, "InputBoxTemplate")
+			cmdBox:SetSize(100, 20)
+			cmdBox:SetPoint("TOPLEFT", cmdBoxMain, "BOTTOMLEFT", 0, wtYvalue - 15)
+			cmdBox:SetAutoFocus(false)
+			cmdBox:SetFontObject("GameFontHighlight")
+			cmdBox:SetText(tostring(cmd))
+			local defaultCmd = tostring(cmd)
+
+			-- Create Cmd Box
+			local msgBox = CreateFrame("EditBox", "msgBox" .. i, ScrollChild, "InputBoxTemplate")
+			msgBox:SetSize(550, 20)
+			msgBox:SetPoint("TOPLEFT", cmdBox, "TOPRIGHT", 20, 0)
+			msgBox:SetAutoFocus(false)
+			msgBox:SetFontObject("GameFontHighlight")
+			msgBox:SetText(tostring(msg))
+			msgBox:SetScript("OnTabPressed", function() cmdBox:SetFocus() end)
+			cmdBox:SetScript("OnTabPressed", function() msgBox:SetFocus() end)
+			local defaultMsg = tostring(msg)
+
+			local charLimit = CreateFrame("EditBox", "charLimitBox" .. i, ScrollChild)
+			charLimit:SetSize(40, 20)
+			charLimit:SetPoint("TOPLEFT", msgBox, "TOPRIGHT", 15, 0)
+			charLimit:SetAutoFocus(false)
+			charLimit:EnableMouse(false)
+			charLimit:EnableKeyboard(false)
+			charLimit:SetFontObject("GameFontHighlight")
+			local msgLength = string.len(tostring(msgBox:GetText()))
+			local msgLengthText = GRAY .. tostring(msgLength) .. ColorClose
+			if msgLength >= 251 then
+				msgLengthText = RED .. tostring(msgLength) .. ColorClose
+			end
+			charLimit:SetText(msgLengthText)
+
+			table.insert(frame.fieldscmd, cmdBox)
+			table.insert(frame.fieldsmsg, msgBox)
+			table.insert(frame.fieldsmsg, charLimit)
+
+			msgBox:SetScript("OnEnterPressed", function(Self)
+				local newcmdBox = cmdBox:GetText()
+				local newmsgBox = msgBox:GetText()
+				local startPos, endPos = string.find(newcmdBox, "!")
+				if newmsgBox == "" then
+					if newcmdBox == "" then
+						ProEnchantersOptions.whispertriggers[i] = nil
+				
+						-- Create a new table to hold the reordered elements
+						local reorderedTriggers = {}
+						for _, v in pairs(ProEnchantersOptions.whispertriggers) do
+							table.insert(reorderedTriggers, v)
+						end
+				
+						-- Replace the old table with the new, reordered table
+						ProEnchantersOptions.whispertriggers = reorderedTriggers
+				
+						createWhisperTriggers()
+						Self:ClearFocus()
+					else
+						createWhisperTriggers()
+						Self:ClearFocus()
+					end
+				elseif newmsgBox ~= "" then
+					if startPos then
+						if startPos == 1 then
+							ProEnchantersOptions.whispertriggers[i] = {[newcmdBox] = newmsgBox}
+							createWhisperTriggers()
+							Self:ClearFocus()
+						else
+						print("Command must start with !")
+						end
+					else
+						print("Command must start with !")
+					end
+				end
+			end)
+
+			cmdBox:SetScript("OnEnterPressed", function(Self)
+				local newcmdBox = cmdBox:GetText()
+				local newmsgBox = msgBox:GetText()
+				local startPos, endPos = string.find(newcmdBox, "!")
+				if newcmdBox == "" then
+					if newmsgBox == "" then
+						ProEnchantersOptions.whispertriggers[i] = nil
+				
+						-- Create a new table to hold the reordered elements
+						local reorderedTriggers = {}
+						for _, v in pairs(ProEnchantersOptions.whispertriggers) do
+							table.insert(reorderedTriggers, v)
+						end
+				
+						-- Replace the old table with the new, reordered table
+						ProEnchantersOptions.whispertriggers = reorderedTriggers
+				
+						createWhisperTriggers()
+						Self:ClearFocus()
+					else
+						createWhisperTriggers()
+						Self:ClearFocus()
+					end
+				elseif newcmdBox ~= "" then
+					if startPos then
+						if startPos == 1 then
+							ProEnchantersOptions.whispertriggers[i] = {[newcmdBox] = newmsgBox}
+							createWhisperTriggers()
+							Self:ClearFocus()
+						else
+							print("Command must start with !")
+							end
+					else
+						print("Command must start with !")
+					end
+				end
+			end)
+
+		end
+		wtYvalue = wtYvalue - 25
+	end
+end
+
+-- Create Cmd Box
+local cmdBoxMain = CreateFrame("EditBox", "cmdBoxMain", ScrollChild, "InputBoxTemplate")
+cmdBoxMain:SetSize(100, 20)
+cmdBoxMain:SetPoint("TOPLEFT", scrollHeader, "BOTTOMLEFT", 10, wtYvalue - 10)
+cmdBoxMain:SetAutoFocus(false)
+cmdBoxMain:SetFontObject("GameFontHighlight")
+cmdBoxMain:SetText("")
+cmdBoxMain:SetScript("OnTextChanged", function()
+	local newcmdBox = cmdBoxMain:GetText()
+	--stuff
+end)
+cmdBoxMain:SetScript("OnEnterPressed", function(Self)
+	local newcmdBox = cmdBoxMain:GetText()
+	local newmsgBox = msgBoxMain:GetText()
+	local startPos, endPos = string.find(newcmdBox, "!")
+	if newcmdBox == "" then
+		return
+	elseif newmsgBox == "" then
+		return
+	end
+	for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+		for cmd, msg in pairs(v) do
+			if tostring(newcmdBox) == tostring(cmd) then
+				print("Duplicate found")
+				Self:ClearFocus()
+				return
+			end
+		end
+	end
+	if startPos then
+        if startPos == 1 then
+			table.insert(ProEnchantersOptions.whispertriggers, {[newcmdBox] = newmsgBox})
+			createWhisperTriggers()
+			cmdBoxMain:SetText("")
+			msgBoxMain:SetText("")
+			Self:ClearFocus()
+		else
+			print("Command must start with !")
+		end
+	else
+		print("Command must start with !")
+	end
+end)
+
+-- Create Cmd Box
+local msgBoxMain = CreateFrame("EditBox", "msgBoxMain", ScrollChild, "InputBoxTemplate")
+msgBoxMain:SetSize(550, 20)
+msgBoxMain:SetPoint("TOPLEFT", cmdBoxMain, "TOPRIGHT", 20, 0)
+msgBoxMain:SetAutoFocus(false)
+msgBoxMain:SetFontObject("GameFontHighlight")
+msgBoxMain:SetText("")
+msgBoxMain:SetScript("OnEnterPressed", function(Self)
+	local newcmdBox = cmdBoxMain:GetText()
+	local newmsgBox = msgBoxMain:GetText()
+	local startPos, endPos = string.find(newcmdBox, "!")
+	if newcmdBox == "" then
+		return
+	elseif newmsgBox == "" then
+		return
+	end
+	for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+		for cmd, msg in pairs(v) do
+			if tostring(newcmdBox) == tostring(cmd) then
+				print("Duplicate found")
+				Self:ClearFocus()
+				return
+			end
+		end
+	end
+	if startPos then
+        if startPos == 1 then
+			table.insert(ProEnchantersOptions.whispertriggers, {[newcmdBox] = newmsgBox})
+			createWhisperTriggers()
+			cmdBoxMain:SetText("")
+			msgBoxMain:SetText("")
+			Self:ClearFocus()
+		else
+			print("Command must start with !")
+		end
+	else
+		print("Command must start with !")
+	end
+end)
+
+msgBoxMain:SetScript("OnTabPressed", function() cmdBoxMain:SetFocus() end)
+cmdBoxMain:SetScript("OnTabPressed", function() msgBoxMain:SetFocus() end)
+
+local existingHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+existingHeader:SetFontObject("GameFontHighlight")
+existingHeader:SetPoint("TOPLEFT", cmdBoxMain, "BOTTOMLEFT", -10, -15)
+existingHeader:SetText("Existing Commands")
+existingHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+createWhisperTriggers()
+
+	-- Create a close button background
+		local closeBg = frame:CreateTexture(nil, "OVERLAY")
+		closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+		closeBg:SetSize(800, 25)  -- Adjust size as needed
+		closeBg:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+
+
+	-- Create a reset button at the bottom
+	local clearAllButton = CreateFrame("Button", nil, frame)
+	clearAllButton:SetSize(100, 25)  -- Adjust size as needed
+	clearAllButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0)  -- Adjust position as needed
+	clearAllButton:SetText("Reset commands?")
+	local clearAllButtonText = clearAllButton:GetFontString()
+	clearAllButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	clearAllButton:SetNormalFontObject("GameFontHighlight")
+	clearAllButton:SetHighlightFontObject("GameFontNormal")
+	clearAllButton:SetScript("OnClick", function()
+		for k, v in ipairs(ProEnchantersOptions.whispertriggers) do
+			wipe(ProEnchantersOptions.whispertriggers)
+		end
+		for _, t in ipairs(PEWhisperTriggersOriginal) do
+ 	       table.insert(ProEnchantersOptions.whispertriggers, t)
+	    end
+		createWhisperTriggers()
+	end)
+
+
+	local closeButton = CreateFrame("Button", nil, frame)
+	closeButton:SetSize(50, 25)  -- Adjust size as needed
+	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0)  -- Adjust position as needed
+	closeButton:SetText("Close")
+	local closeButtonText = closeButton:GetFontString()
+	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButton:SetNormalFontObject("GameFontHighlight")
+	closeButton:SetHighlightFontObject("GameFontNormal")
+	closeButton:SetScript("OnClick", function()
+		frame:Hide()
+		ProEnchantersOptionsFrame:Show()
+	end)
+
+	-- Help Reminder
+	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
+	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
+	helpReminderHeader:SetText(STEELBLUE .. "Use /pehelp for more info" .. ColorClose)
+	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- frame On Show Script
+	frame:SetScript("OnShow", function()
+		-- Stuff
+	end)
+
+	frame:SetScript("OnHide", function()
+		-- Stuff
+	end)
+
+	return frame
+end
+-- Whisper Triggers Frame End
 
 function UpdateCheckboxesBasedOnFilters()
     for key, checkbox in pairs(enchantFilterCheckboxes) do
@@ -5206,9 +5665,11 @@ end)
 		minimized = false
 		frame.minimized = minimized
 		UpdateTradeHistory(customerName)
-    end
+    	end
+
         frame:Hide()
-		table.insert(ProEnchantersTradeHistory[customerName], tradeLine)
+		local customerNameLower = string.utf8lower2(customerName)
+		table.insert(ProEnchantersTradeHistory[customerNameLower], tradeLine)
         WorkOrderFrames[frameID].Completed = true
 		PEPlayerInvited[customerName] = nil
 
@@ -6135,7 +6596,25 @@ function ProEnchantersUpdateTradeWindowText(customerName)
 	end]]
 end
 
+function RemoveWhisperTriggers()
 
+	local frame = _G["ProEnchantersWhisperTriggersFrame"]
+
+	if frame.fieldscmd then
+		for _, f in ipairs(frame.fieldscmd) do
+			f:Hide()
+			f:SetParent(nil)
+			f:ClearAllPoints()
+		end
+		for _, f in ipairs(frame.fieldsmsg) do
+			f:Hide()
+			f:SetParent(nil)
+			f:ClearAllPoints()
+		end
+		wipe(frame.fieldscmd)  -- Clear the table
+		wipe(frame.fieldsmsg)
+	end
+end
 
 function RemoveTradeWindowInfo()
 
@@ -6166,6 +6645,7 @@ local function OnAddonLoaded()
 	-- Ensure the ProEnchantersOptions and its filters sub-table are properly initialized
     ProEnchantersOptions = ProEnchantersOptions or {}
     ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
+	ProEnchantersOptions.whispertriggers = ProEnchantersOptions.whispertriggers or {}
 
 	if ProEnchantersOptions["Colors"] == nil or ProEnchantersOptions["Colors"] == {} then
 		ProEnchantersOptions["Colors"] = {
@@ -6268,9 +6748,26 @@ local function OnAddonLoaded()
 	-- If the table is empty, fill it with words from PEFilteredWordsOriginal
 	if isEmpty then
  	   for _, word in ipairs(PEInvWordsOriginal) do
- 	       -- Adding word to ProEnchantersOptions.filteredwords with the word as both the key and the value
- 	       -- This is a common pattern for quick lookups to check if a word exists in the table
  	       table.insert(ProEnchantersOptions.invwords, word)
+	    end
+	end
+
+	-- Ensure ProEnchantersOptions.invwords is initialized as a table
+	if type(ProEnchantersOptions.whispertriggers) ~= "table" then
+   	 ProEnchantersOptions.whispertriggers = {}
+	end
+
+	-- Check if the table is empty by attempting to iterate over it
+	local isEmpty = true
+	for _ in pairs(ProEnchantersOptions.whispertriggers) do
+ 	   isEmpty = false
+	    break
+	end
+
+	-- If the table is empty, fill it with words from PEFilteredWordsOriginal
+	if isEmpty then
+ 	   for _, t in ipairs(PEWhisperTriggersOriginal) do
+ 	       table.insert(ProEnchantersOptions.whispertriggers, t)
 	    end
 	end
 
@@ -6442,6 +6939,7 @@ local function OnAddonLoaded()
 	ProEnchantersTradeWindowFrame = ProEnchantersTradeWindowCreateFrame()
 	ProEnchantersOptionsFrame = ProEnchantersCreateOptionsFrame()
 	ProEnchantersTriggersFrame = ProEnchantersCreateTriggersFrame()
+	ProEnchantersWhisperTriggersFrame = ProEnchantersCreateWhisperTriggersFrame()
 	ProEnchantersCreditsFrame = ProEnchantersCreateCreditsFrame()
 	ProEnchantersColorsFrame = ProEnchantersCreateColorsFrame()
     ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
@@ -6473,6 +6971,8 @@ SLASH_PROENCHANTERSHELP1 = "/pehelp"
 SLASH_PROENCHANTERSHELP2 = "/proenchantershelp"
 SLASH_PROENCHANTERSFS1 = "/pefontsize"
 SLASH_PROENCHANTERSFS2 = "/proenchantersfontsize"
+SLASH_PROENCHANTERSDBG1 = "/pedebug"
+SLASH_PROENCHANTERSDBG2 = "/proenchantersdebug"
 
 -- Ensure ProEnchantersWorkOrderFrame is not nil before accessing it in your functions
 SlashCmdList["PROENCHANTERS"] = function(msg)
@@ -6500,6 +7000,26 @@ SlashCmdList["PROENCHANTERSFS"] = function(msg)
 		print(RED .. "Please do a /reload to enable the new font size" .. ColorClose)
 	else
 		print("Please use a regular number when trying to set a font size, default is 12")
+	end
+end
+
+SlashCmdList["PROENCHANTERSDBG"] = function(msg)
+	local convertedNumber = tonumber(msg)
+	if type(convertedNumber) == "number" then
+		debugLevel = convertedNumber
+		if convertedNumber == 0 then
+			print(GREENYELLOW .. "Debugging turned onto 0, either /reload or do /pedebug 0 to disable." .. ColorClose)
+		elseif convertedNumber == 1 then
+			print(ORANGE .. "Debugging turned onto 1 (mainly for whisper debugging), either /reload or do /pedebug 0 to disable." .. ColorClose)
+		elseif convertedNumber == 2 then
+			print(ORANGERED .. "Debugging turned onto 2 (mainly for potential customer debugging), either /reload or do /pedebug 0 to disable." .. ColorClose)
+		elseif convertedNumber >= 3 then
+			print(RED .. "Debugging turned onto max, all debugging commands will flow, either /reload or do /pedebug 0 to disable." .. ColorClose)
+		end
+	elseif debugLevel >= 0 then
+		print(ORANGE .. "Current debugging set to " .. ColorClose .. debugLevel)
+	else
+		print("Please input a number")
 	end
 end
 
@@ -6591,7 +7111,6 @@ end
 function ProEnchanters_OnChatEvent(self, event, ...)
 	if event == "CHAT_MSG_SYSTEM" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
-
 			if string.find(text, "to join your group.", 1, true) then
 				if AddonInvite == false then
 					NonAddonInvite = true
@@ -6780,6 +7299,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
+					if debugLevel >= 2 then
+						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
+					end
 				end
 
 
@@ -6787,8 +7309,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
+						if debugLevel >= 2 then
+							print(tword .. " does not have any leading characters, returning check2 as true")
+						end
 					else
-					
+						if debugLevel >= 2 then
+							print(tword .. " is contained within a word, check2 returned as false")
+						end
 					end
 				end
 
@@ -6796,6 +7323,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
+						end
 						break
 					end
 				end
@@ -6803,11 +7333,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " name found in filter list, check 3 returning false")
+						end
 						break
 					end
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
+					if debugLevel >= 2 then
+						print("All checks passed, continuing with potential customer invite or pop-up")
+					end
 				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -6836,6 +7372,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			end
 		elseif channelName == channelCheck then
+			if debugLevel >= 2 then
+				print("Message found in local city channel: " .. channelName)
+			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
 				local check1 = false
 				local check2 = false
@@ -6844,6 +7383,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
+					if debugLevel >= 2 then
+						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
+					end
 				end
 
 
@@ -6851,8 +7393,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
+						if debugLevel >= 2 then
+							print(tword .. " does not have any leading characters, returning check2 as true")
+						end
 					else
-					
+						if debugLevel >= 2 then
+							print(tword .. " is contained within a word, check2 returned as false")
+						end
 					end
 				end
 
@@ -6860,6 +7407,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
+						end
 						break
 					end
 				end
@@ -6867,11 +7417,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " name found in filter list, check 3 returning false")
+						end
 						break
 					end
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
+					if debugLevel >= 2 then
+						print("All checks passed, continuing with potential customer invite or pop-up")
+					end
 				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -6908,6 +7464,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
+					if debugLevel >= 2 then
+						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
+					end
 				end
 
 
@@ -6915,8 +7474,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
+						if debugLevel >= 2 then
+							print(tword .. " does not have any leading characters, returning check2 as true")
+						end
 					else
-					
+						if debugLevel >= 2 then
+							print(tword .. " is contained within a word, check2 returned as false")
+						end
 					end
 				end
 
@@ -6924,6 +7488,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
+						end
 						break
 					end
 				end
@@ -6931,11 +7498,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
+						if debugLevel >= 2 then
+							print("Potential Customer " .. author2 .. " name found in filter list, check 3 returning false")
+						end
 						break
 					end
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
+					if debugLevel >= 2 then
+						print("All checks passed, continuing with potential customer invite or pop-up")
+					end
 				local playerName = author3
 				local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -6968,17 +7541,85 @@ function ProEnchanters_OnChatEvent(self, event, ...)
         -- Check for matching Emote
 		local msg, author2 = ...
 		local msg2 = "Whispered: " .. string.utf8lower2(msg)
-		local city = GetZoneText()
 		local author = string.gsub(author2, "%-.*", "")
 		local author3 = string.utf8lower2(author)
-		local channelCheck = "General - " .. city
+		local cmdFound = false
+		local startPos, endPos = string.find(msg, "!")
 		local isPartyFull = MaxPartySizeCheck()
-			for _, tword in pairs(ProEnchantersOptions.invwords) do
+		if debugLevel >= 1 then
+			print("Whisper received")
+		end
+			if string.find(msg, "!", 1, true) then
+				if debugLevel >= 1 then
+					print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
+				end
+
+				if startPos then
+					if debugLevel >= 3 then
+					print("startPos listed as: " .. tostring(startPos))
+					end
+					if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
+						if debugLevel >= 1 then
+							print("found at start of message, setting cmdFound to true")
+						end
+						cmdFound = true
+					else
+						if debugLevel >= 1 then
+							print("! is not at the start of the sentence, ignoring")
+						end	
+					end
+				end
+			end
+
+			if cmdFound == true then
+				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+					for cmd, rmsg in pairs(v) do
+						local wmsg = tostring(rmsg)
+						if debugLevel >= 1 then
+						print("comparing: " .. msg .. " to " .. cmd)
+						end
+							if tostring(msg) == tostring(cmd) then
+								if debugLevel >= 1 then
+									print("Found matching !command")
+								end	
+								SendChatMessage(wmsg, "WHISPER", nil, author2)
+								return
+							end
+					end
+				end
+				if debugLevel >= 1 then
+					print("No matching command found, continuing to possible enchant lookup")
+				end
+				for key, name in pairs(EnchantsName) do
+				local name2 = string.lower(name)
+				local enchantlookup = "!" .. name2
+				local enchantlookup2 = string.gsub(enchantlookup, " ", "")
+				local msglower = string.lower(msg)
+				local msglower2 = string.gsub(msglower, " ", "")
+					if enchantlookup2 == msglower2 then
+						local enchName, enchStats = GetEnchantName(key)
+						local matsReq = ProEnchants_GetReagentList(key)
+						local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+						SendChatMessage(msgReq, "WHISPER", nil, author2)
+						return
+					end
+				end
+				cmdFound = false
+			end
+
+				if debugLevel >= 1 then
+					print("cmdFound is false, continuing")
+				end	
+
+			if cmdFound == false then
+				for _, tword in pairs(ProEnchantersOptions.invwords) do
 				local check1 = false
 				local check2 = false
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
-					print(tword .. " found in msg: " .. msg2)
+					if debugLevel >= 1 then
+						print(tword .. " found in msg: " .. msg2)
+					end
 					check1 = true
 				end
 
@@ -7025,8 +7666,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					return
 				end
 			end
-		-- Section for ! commands in whispers
-		-- ToDo
+		end
 	end
 end
 
