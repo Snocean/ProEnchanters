@@ -6711,7 +6711,7 @@ local function OnAddonLoaded()
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_CHANNEL")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_SYSTEM")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_WHISPER")
-	ProEnchanters.frame:RegisterEvent("CHAT_MSG_BN_WHISPER")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
     ProEnchanters.frame:RegisterEvent("TRADE_SHOW")
     ProEnchanters.frame:RegisterEvent("TRADE_CLOSED")
     ProEnchanters.frame:RegisterEvent("TRADE_REQUEST")
@@ -6956,7 +6956,7 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and select(1, ...) == "ProEnchanters" then
 		print("ProEnchanters Addon Loaded Event Registered")
         OnAddonLoaded()
-	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" then
+	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
@@ -7597,10 +7597,69 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local msglower = string.lower(msg)
 				local msglower2 = string.gsub(msglower, " ", "")
 					if enchantlookup2 == msglower2 then
-						local enchName, enchStats = GetEnchantName(key)
-						local matsReq = ProEnchants_GetReagentList(key)
-						local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
-						SendChatMessage(msgReq, "WHISPER", nil, author2)
+						if ProEnchantersOptions.filters[key] == true then
+							local enchName, enchStats = GetEnchantName(key)
+							local matsReq = ProEnchants_GetReagentList(key)
+							local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+							SendChatMessage(msgReq, "WHISPER", nil, author2)
+							return
+						elseif ProEnchantersOptions.filters[key] == false then
+							local enchName, enchStats = GetEnchantName(key)
+							local enchType = string.match(enchName, "%-%s*(.+)")
+							local enchTypeSpecific = string.match(enchName, ".+%s(%w+)$")
+							local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
+							local recommendations = {} -- Use a table to store unique recommendations
+						
+							for k, v in pairs(EnchantsName) do
+								if string.find(v, enchSlot, 1, true) then
+									if string.find(v, enchTypeSpecific, 1, true) then
+									local eName, eStats = GetEnchantName(k)
+									local enchKey = k
+									local eType = string.match(eName, "%-%s*(.+)")
+									local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
+										if not recommendations[recommendation] and ProEnchantersOptions.filters[k] == true then
+										-- Only add if not already in the table and filter is true
+											recommendations[recommendation] = eStats
+										end
+									end
+								end
+							end
+							
+								local sortableRecommendations = {}
+								for rec, k in pairs(recommendations) do
+									local numPart = tonumber(k:match("(%d+)"))
+									if numPart then
+										table.insert(sortableRecommendations, {key = numPart, rec = rec})
+									end
+								end
+
+								-- Sort the table based on the numerical part of the enchKey
+								table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
+
+								-- Now, build your enchRecommends string in sorted order
+								local enchRecommends = ""
+								for _, v in ipairs(sortableRecommendations) do
+									if enchRecommends == "" then
+										enchRecommends = v.rec
+									else
+										enchRecommends = enchRecommends .. ", " .. v.rec
+									end
+								end
+							if enchRecommends ~= "" then
+								local msgReq = enchName .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
+								local msgRecs = enchRecommends
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+								SendChatMessage(msgRecs, "WHISPER", nil, author2)
+								--C_Timer.After(.2, function()  end)
+							else
+								local msgReq = enchName .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+							end
+						else
+							local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
+							SendChatMessage(msgReq, "WHISPER", nil, author2)
+						end
+						cmdFound = true
 						return
 					end
 				end
@@ -7667,6 +7726,138 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		end
+	elseif event == "CHAT_MSG_WHISPER_INFORM" then
+        -- Check for matching Emote
+		local msg, author2 = ...
+		local msg2 = "Whispered: " .. string.utf8lower2(msg)
+		local author = string.gsub(author2, "%-.*", "")
+		local author3 = string.utf8lower2(author)
+		local cmdFound = false
+		local startPos, endPos = string.find(msg, "!")
+		local isPartyFull = MaxPartySizeCheck()
+		if debugLevel >= 1 then
+			print("Whisper received")
+		end
+			if string.find(msg, "!", 1, true) then
+				if debugLevel >= 1 then
+					print("Possible whisper command found from self: ! found within " .. msg)
+				end
+
+				if startPos then
+					if debugLevel >= 3 then
+					print("startPos listed as: " .. tostring(startPos))
+					end
+					if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
+						if debugLevel >= 1 then
+							print("found at start of message, setting cmdFound to true")
+						end
+						cmdFound = true
+					else
+						if debugLevel >= 1 then
+							print("! is not at the start of the sentence, ignoring")
+						end	
+					end
+				end
+			end
+
+			if cmdFound == true then
+				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+					for cmd, rmsg in pairs(v) do
+						local wmsg = tostring(rmsg)
+						if debugLevel >= 1 then
+						print("comparing: " .. msg .. " to " .. cmd)
+						end
+							if tostring(msg) == tostring(cmd) then
+								if debugLevel >= 1 then
+									print("Found matching !command")
+								end	
+								SendChatMessage(wmsg, "WHISPER", nil, author2)
+								return
+							end
+					end
+				end
+				if debugLevel >= 1 then
+					print("No matching command found, continuing to possible enchant lookup")
+				end
+				for key, name in pairs(EnchantsName) do
+				local name2 = string.lower(name)
+				local enchantlookup = "!" .. name2
+				local enchantlookup2 = string.gsub(enchantlookup, " ", "")
+				local msglower = string.lower(msg)
+				local msglower2 = string.gsub(msglower, " ", "")
+					if enchantlookup2 == msglower2 then
+						if ProEnchantersOptions.filters[key] == true then
+							local enchName, enchStats = GetEnchantName(key)
+							local matsReq = ProEnchants_GetReagentList(key)
+							local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+							SendChatMessage(msgReq, "WHISPER", nil, author2)
+							return
+						elseif ProEnchantersOptions.filters[key] == false then
+							local enchName, enchStats = GetEnchantName(key)
+							local enchType = string.match(enchName, "%-%s*(.+)")
+							local enchTypeSpecific = string.match(enchName, ".+%s(%w+)$")
+							local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
+							local recommendations = {} -- Use a table to store unique recommendations
+						
+							for k, v in pairs(EnchantsName) do
+								if string.find(v, enchSlot, 1, true) then
+									if string.find(v, enchTypeSpecific, 1, true) then
+									local eName, eStats = GetEnchantName(k)
+									local enchKey = k
+									local eType = string.match(eName, "%-%s*(.+)")
+									local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
+										if not recommendations[recommendation] and ProEnchantersOptions.filters[k] == true then
+										-- Only add if not already in the table and filter is true
+											recommendations[recommendation] = eStats
+										end
+									end
+								end
+							end
+							
+								local sortableRecommendations = {}
+								for rec, k in pairs(recommendations) do
+									local numPart = tonumber(k:match("(%d+)"))
+									if numPart then
+										table.insert(sortableRecommendations, {key = numPart, rec = rec})
+									end
+								end
+
+								-- Sort the table based on the numerical part of the enchKey
+								table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
+
+								-- Now, build your enchRecommends string in sorted order
+								local enchRecommends = ""
+								for _, v in ipairs(sortableRecommendations) do
+									if enchRecommends == "" then
+										enchRecommends = v.rec
+									else
+										enchRecommends = enchRecommends .. ", " .. v.rec
+									end
+								end
+							if enchRecommends ~= "" then
+								local msgReq = enchName .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
+								local msgRecs = enchRecommends
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+								SendChatMessage(msgRecs, "WHISPER", nil, author2)
+								--C_Timer.After(.2, function()  end)
+							else
+								local msgReq = enchName .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+							end
+						else
+							local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
+							SendChatMessage(msgReq, "WHISPER", nil, author2)
+						end
+						cmdFound = true
+						return
+					end
+				end
+				cmdFound = false
+			end
+
+		if debugLevel >= 1 then
+			print("cmdFound is false, end of check for sent whisper")
+		end	
 	end
 end
 
