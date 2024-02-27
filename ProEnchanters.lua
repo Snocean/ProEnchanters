@@ -60,8 +60,8 @@ function MaxPartySizeCheck()
 end
 
 function InviteUnitPEAddon(name)
-	local nameCheck = string.utf8lower2(name)
-	local selfnameCheck = string.utf8lower2(selfPlayerName)
+	local nameCheck = string.lower(name)
+	local selfnameCheck = string.lower(selfPlayerName)
 	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
 	local currentPartySize = 0
 	local isInGroup = IsInGroup()
@@ -2011,7 +2011,7 @@ end
 
 function GetAllReqMats(customerName)
     -- Count the occurrences of each enchantment
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     local enchantCounts = {}
 	for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
@@ -2061,7 +2061,7 @@ function GetAllReqMats(customerName)
 end
 
 function GetAllReqMatsNoLink(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     local enchantCounts = {}
     for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
@@ -2163,7 +2163,7 @@ end
 
 
 function GetAllReqEnchNoLink(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     -- Count the occurrences of each enchantment
     local enchantCounts = {}
 	local AllEnchsReq = ""
@@ -2246,14 +2246,14 @@ end]]
 
 
 function CheckIfPartyMember(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     local inRaid = IsInRaid()
     local groupSize = GetNumGroupMembers()
     
     if inRaid then
         for i = 1, groupSize do
             local name, _, _, _, _, _, _, _ = GetRaidRosterInfo(i)
-			name = string.utf8lower2(name)
+			name = string.lower(name)
             if name and strsplit("-", name) == customerName then
                 return true
             end
@@ -2261,7 +2261,7 @@ function CheckIfPartyMember(customerName)
     else
         for i = 1, groupSize do
             local name = GetUnitName("party" .. i, true)
-			name = string.utf8lower2(name)
+			name = string.lower(name)
             if name and strsplit("-", name) == customerName then
                 return true
             end
@@ -2279,7 +2279,7 @@ ProEnchantersSettings = ProEnchantersSettings or {}
 
 
 local function ScrollToActiveWorkOrder(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local scrollFrame = ProEnchantersWorkOrderScrollFrame
 
 	local scrollPosition = 0
@@ -2288,15 +2288,15 @@ local function ScrollToActiveWorkOrder(customerName)
 	local cusName = "test"
 
 	if customerName ~= nil or customerName ~= "" then
-		cusName = string.utf8lower2(customerName)
+		cusName = string.lower(customerName)
 	else
-    	cusName = string.utf8lower2(ProEnchantersCustomerNameEditBox:GetText())
+    	cusName = string.lower(ProEnchantersCustomerNameEditBox:GetText())
 	end
 
     for id, frameInfo in pairs(WorkOrderFrames) do
 
 		local frameInfoString = tostring(frameInfo)
-		local cusFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
+		local cusFrameCheck = string.lower(frameInfo.Frame.customerName)
 
         if frameInfo.Completed == false then
             if cusName == cusFrameCheck then
@@ -2823,7 +2823,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 				local enchantStats1 = EnchantsStats[key]
 				local enchantStats2 = string.gsub(enchantStats1, "%(", "")
 				local enchantStats3 = string.gsub(enchantStats2, "%)", "")
-				local filterCheck = string.utf8lower2(enchantName .. enchantStats3)
+				local filterCheck = string.lower(enchantName .. enchantStats3)
 				if filterText == "" or filterCheck:find(filterText, 1, true) then
 					-- Show and position the button
 					enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
@@ -2875,7 +2875,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
         -- Set the script for the button's OnClick event
         enchantButton:SetScript("OnClick", function(self, button)
 			local customerName = ProEnchantersCustomerNameEditBox:GetText()
-			customerName = string.utf8lower2(customerName)
+			customerName = string.lower(customerName)
 			customerName = CapFirstLetter(customerName)
 			local reqEnchant = ench
 			local enchName, enchStats = GetEnchantName(reqEnchant)
@@ -4607,6 +4607,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	FilteredWordsEditBox:SetScript("OnEnterPressed", function()
 		local newFiltered = FilteredWordsEditBox:GetText()
+		if newFiltered == "" then
+			newFiltered = "potential customer filters disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.filteredwords = {}
 		for word in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4617,6 +4620,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	FilteredWordsEditBox:SetScript("OnEscapePressed", function()
 		local newFiltered = FilteredWordsEditBox:GetText()
+		if newFiltered == "" then
+			newFiltered = "potential customer filters disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.filteredwords = {}
 		for word in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4680,6 +4686,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	TriggerWordsEditBox:SetScript("OnEnterPressed", function()
 		local newTriggers = TriggerWordsEditBox:GetText()
+		if newTriggers == "" then
+			newTriggers = "potential customer triggers disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.triggerwords = {}
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4690,6 +4699,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	TriggerWordsEditBox:SetScript("OnEscapePressed", function()
 		local newTriggers = TriggerWordsEditBox:GetText()
+		if newTriggers == "" then
+			newTriggers = "potential customer triggers disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.triggerwords = {}
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4752,6 +4764,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	InvWordsEditBox:SetScript("OnEnterPressed", function()
 		local newInvs = InvWordsEditBox:GetText()
+		if newInvs == "" then
+			newInvs = "whisper invites disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.invwords = {}
 		for word in newInvs:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4762,6 +4777,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 	InvWordsEditBox:SetScript("OnEscapePressed", function()
 		local newInvs = InvWordsEditBox:GetText()
+		if newInvs == "" then
+			newInvs = "whisper invites disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.invwords = {}
 		for word in newInvs:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4807,6 +4825,9 @@ function ProEnchantersCreateTriggersFrame()
 	closeButton2:SetHighlightFontObject("GameFontNormal")
 	closeButton2:SetScript("OnClick", function()
 		local newTriggers = TriggerWordsEditBox:GetText()
+		if newTriggers == "" then
+			newTriggers = "potential customer triggers disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.triggerwords = {}
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4814,15 +4835,21 @@ function ProEnchantersCreateTriggersFrame()
 			table.insert(ProEnchantersOptions.triggerwords, word)
 		end
 		local newFiltered = FilteredWordsEditBox:GetText()
+		if newFiltered == "" then
+			newFiltered = "potential customer filters disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.filteredwords = {}
 		for word in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
 			table.insert(ProEnchantersOptions.filteredwords, word)
 		end
-		local newInv = InvWordsEditBox:GetText()
+		local newInvs = InvWordsEditBox:GetText()
+		if newInvs == "" then
+			newInvs = "whisper invites disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.invwords = {}
-		for word in newInv:gmatch("[^,]+") do
+		for word in newInvs:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
 			table.insert(ProEnchantersOptions.invwords, word)
@@ -4846,6 +4873,9 @@ function ProEnchantersCreateTriggersFrame()
 
 	TriggersFrame:SetScript("OnHide", function()
 		local newTriggers = TriggerWordsEditBox:GetText()
+		if newTriggers == "" then
+			newTriggers = "potential customer triggers disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.triggerwords = {}
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
@@ -4853,12 +4883,26 @@ function ProEnchantersCreateTriggersFrame()
 			table.insert(ProEnchantersOptions.triggerwords, word)
 		end
 		local newFiltered = FilteredWordsEditBox:GetText()
+		if newFiltered == "" then
+			newFiltered = "potential customer filters disabled - remove this sentence and add a word to re-enable"
+		end
 		ProEnchantersOptions.filteredwords = {}
 		for word2 in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word2 = word2:match("^%s*(.-)%s*$")
 			table.insert(ProEnchantersOptions.filteredwords, word2)
 		end
+		local newInvs = InvWordsEditBox:GetText()
+		if newInvs == "" then
+			newInvs = "whisper invites disabled - remove this sentence and add a word to re-enable"
+		end
+		ProEnchantersOptions.invwords = {}
+		for word in newInvs:gmatch("[^,]+") do
+			-- Trim spaces from the beginning and end of the item
+			word = word:match("^%s*(.-)%s*$")
+			table.insert(ProEnchantersOptions.invwords, word)
+		end
+	    InvWordsEditBox:ClearFocus()
 	end)
 
 	return TriggersFrame
@@ -4977,13 +5021,35 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 local InstructionsHeader = frame:CreateFontString(nil, "OVERLAY")
 InstructionsHeader:SetFontObject("GameFontHighlight")
 InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
-InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 250 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
+InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 250 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nYou can include item links in your message by adding the items ID encased in [], example: [11083] will return as Soul Dust (max 5 item links in a message)\nLook up item ID's on wowhead, soul dust as an example: https://www.wowhead.com/classic/item=" .. ColorClose .. YELLOWGREEN .. 11083 .. ColorClose .. DARKORANGE .. "/soul-dust\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
 InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+-- Create a reset button at the bottom
+local hideButton = CreateFrame("Button", nil, frame)
+hideButton:SetSize(100, 25)  -- Adjust size as needed
+hideButton:SetPoint("TOP", InstructionsHeader, "BOTTOM", 0, -2)  -- Adjust position as needed
+hideButton:SetText(GRAY .. "Hide Instructions" .. ColorClose)
+local hideButtonText = hideButton:GetFontString()
+hideButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+hideButton:SetNormalFontObject("GameFontHighlight")
+hideButton:SetHighlightFontObject("GameFontNormal")
+local hideButtonStatus = false
+hideButton:SetScript("OnClick", function()
+	if hideButtonStatus == true then
+		hideButtonStatus = false
+		hideButton:SetText(GRAY .. "Hide Instructions" .. ColorClose)
+		InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 250 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nYou can include item links in your message by adding the items ID encased in [], example: [11083] will return as Soul Dust (max 5 item links in a message)\nLook up item ID's on wowhead, soul dust as an example: https://www.wowhead.com/classic/item=" .. ColorClose .. YELLOWGREEN .. 11083 .. ColorClose .. DARKORANGE .. "/soul-dust\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
+	elseif hideButtonStatus == false then
+		hideButtonStatus = true
+		hideButton:SetText(GRAY .. "Show Instructions" .. ColorClose)
+		InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line." .. ColorClose)
+	end
+end)
 
 
 local scrollHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 scrollHeader:SetFontObject("GameFontHighlight")
-scrollHeader:SetPoint("TOP", InstructionsHeader, "BOTTOM", -230, -10)
+scrollHeader:SetPoint("TOP", hideButton, "BOTTOM", -230, -5)
 scrollHeader:SetText("Enter new Command name and Command response")
 scrollHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
@@ -5307,7 +5373,7 @@ function IsCurrentTradeSkillEnchanting()
 end
 -- Function to create a CusWorkOrder frame
 function CreateCusWorkOrder(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	--customerName = string.utf8upper2(string.sub(customerName2, 1, 1)) .. string.sub(customerName2, 2)
 	if customerName == "" or customerName == nil then
 		print(RED .. "Invalid customer name" .. ColorClose)
@@ -5316,8 +5382,8 @@ function CreateCusWorkOrder(customerName)
 	local frameID = #WorkOrderFrames + 1
     local framename = "CusWorkOrder" .. frameID
 	for id, frameInfo in pairs(WorkOrderFrames) do
-		local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
-		local lowerCusName = string.utf8lower2(customerName)
+		local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
+		local lowerCusName = string.lower(customerName)
 		if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
 			print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
 			if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -5358,7 +5424,7 @@ function CreateCusWorkOrder(customerName)
 	-- Add some padding to the width for aesthetics
 	customerTitleButton:SetSize(textWidth + 10, 20) -- Adjust the height as needed and add some padding to width
 	customerTitleButton:SetScript("OnClick", function()
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
    		ProEnchantersCustomerNameEditBox:SetText(customerName)
 	end)
@@ -5511,7 +5577,7 @@ tradehistoryEditBox:SetFontObject("GameFontHighlight")
 tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0)  -- Anchor bottom right to scrollChild
 tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
-	customerName = string.utf8lower2(customerName)
+	customerName = string.lower(customerName)
 	customerName = CapFirstLetter(customerName)
 	ProEnchantersCustomerNameEditBox:SetText(customerName)
 end)
@@ -5539,7 +5605,7 @@ tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link,
 				if ProEnchantersOptions["WhisperMats"] == true and cusName and cusName ~= "" then
 					SendChatMessage(msgReq, "WHISPER", nil, cusName)
 				elseif CheckIfPartyMember(customerName) == true then
-					local cusName = string.utf8lower2(customerName)
+					local cusName = string.lower(customerName)
 					local capPlayerName = CapFirstLetter(cusName)
 					SendChatMessage(capPlayerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
 				elseif cusName and cusName ~= "" then
@@ -5614,7 +5680,7 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 
         yOffset = yOffset - 200  -- Increase for the next frame
 		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
@@ -5668,7 +5734,7 @@ end)
     	end
 
         frame:Hide()
-		local customerNameLower = string.utf8lower2(customerName)
+		local customerNameLower = string.lower(customerName)
 		table.insert(ProEnchantersTradeHistory[customerNameLower], tradeLine)
         WorkOrderFrames[frameID].Completed = true
 		PEPlayerInvited[customerName] = nil
@@ -5697,7 +5763,7 @@ end)
 	UpdateScrollChildHeight()
 	UpdateTradeHistory(customerName)
 	if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
 	end
@@ -5724,7 +5790,7 @@ end
 -- Function to handle "Create Workorder" button press
 function OnCreateWorkorderButtonClick()
     local customerName = ProEnchantersCustomerNameEditBox:GetText()
-	customerName = string.utf8lower2(customerName)
+	customerName = string.lower(customerName)
     CreateCusWorkOrder(customerName)
 end
 
@@ -5762,7 +5828,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	frame.customerTitleButton:SetHighlightFontObject("GameFontNormal")
 	frame.customerTitleButton:SetSize(100, 20) -- Adjust the height as needed and add some padding to width
 	frame.customerTitleButton:SetScript("OnClick", function()
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
 	end)
@@ -5839,7 +5905,7 @@ end
 
 function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 
-	local PEtradeWho = string.utf8lower2(PEtradeWho)
+	local PEtradeWho = string.lower(PEtradeWho)
 	local enchyOffset = -39
 	local enchxOffset = 15
 	local frame = _G["ProEnchantersTradeWindowFrame"]
@@ -5852,7 +5918,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	frame.customerTitleButton:SetText(PEtradeWho)
 	frame.customerTitleButton:SetScript("OnClick", function()
 		local customerName = PEtradeWho
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 		customerName = CapFirstLetter(customerName)
@@ -6038,7 +6104,7 @@ function PESearchInventoryForItems()
 end
 
 function ProEnchantersGetMatsDiff(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local matsNeeded = {}
     local matsNeededQuantity = 0
     local matsRemaining = {}
@@ -6157,7 +6223,7 @@ function ProEnchantersGetMatsDiff(customerName)
 end
 
 function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local matsNeeded = {}
     local matsRemaining = {}
     local matsDiff = {}
@@ -6219,7 +6285,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 end
 
 function LinkMissingMats(enchantID, customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local enchantID = enchantID
 	local enchantName = EnchantsName[enchantID]
 	local missingMats = {}
@@ -6304,11 +6370,8 @@ function LinkMissingMats(enchantID, customerName)
 end
 
 function ProEnchantersUpdateTradeWindowButtons(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local SlotTypeInput = ""
-	C_Timer.After(.2, function()
-		local test = "test"
-	end)
 	local tItemLink = GetTradeTargetItemLink(7)
 
 		if tItemLink then
@@ -6562,7 +6625,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 end
 
 function ProEnchantersUpdateTradeWindowText(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
 	local tradewindowline = ""
 	-- Get Trade Window Frame
 	local frame = _G["ProEnchantersTradeWindowFrame"]
@@ -6752,7 +6815,7 @@ local function OnAddonLoaded()
 	    end
 	end
 
-	-- Ensure ProEnchantersOptions.invwords is initialized as a table
+	-- Ensure ProEnchantersOptions.whispertriggers is initialized as a table
 	if type(ProEnchantersOptions.whispertriggers) ~= "table" then
    	 ProEnchantersOptions.whispertriggers = {}
 	end
@@ -7024,7 +7087,7 @@ SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 end
 
 SlashCmdList["PROENCHANTERSHELP"] = function(msg)
-	local msg = string.utf8lower2(msg)
+	local msg = string.lower(msg)
     if msg == nil or msg == "" then
 		print(ORANGE .. "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~" .. ColorClose)
 		print(ORANGE .. "Use /pe or /proenchanters to open the main window" .. ColorClose)
@@ -7147,21 +7210,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
 					local capPlayerName = CapFirstLetter(playerName)
 					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					playerName = CapFirstLetter(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
@@ -7176,21 +7239,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
 					local capPlayerName = CapFirstLetter(playerName)
 					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					playerName = CapFirstLetter(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
@@ -7209,21 +7272,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
 					local capPlayerName = CapFirstLetter(playerName)
 					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					playerName = CapFirstLetter(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
@@ -7238,21 +7301,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
-						local playerName = string.utf8lower2(playerName)
+						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
 				else
 					local capPlayerName = CapFirstLetter(playerName)
 					SendChatMessage("Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!", IsInRaid() and "RAID" or "PARTY")
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
-					local playerName = string.utf8lower2(playerName)
+					local playerName = string.lower(playerName)
 					playerName = CapFirstLetter(playerName)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
@@ -7285,10 +7348,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_YELL" then
         -- Check for matching Emote
 		local msg, author2, language, channelNameWithNumber, target, flags, unknown, channelNumber, channelName = ...
-		local msg2 = string.utf8lower2(msg)
+		local msg2 = string.lower(msg)
 		local city = GetZoneText()
 		local author = string.gsub(author2, "%-.*", "")
-		local author3 = string.utf8lower2(author)
+		local author3 = string.lower(author)
 		local channelCheck = "General - " .. city
 		if ProEnchantersOptions["AllChannels"] == true then
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -7540,9 +7603,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "CHAT_MSG_WHISPER" then
         -- Check for matching Emote
 		local msg, author2 = ...
-		local msg2 = "Whispered: " .. string.utf8lower2(msg)
+		local msg2 = "Whispered: " .. string.lower(msg)
 		local author = string.gsub(author2, "%-.*", "")
-		local author3 = string.utf8lower2(author)
+		local author3 = string.lower(author)
 		local cmdFound = false
 		local startPos, endPos = string.find(msg, "!")
 		local isPartyFull = MaxPartySizeCheck()
@@ -7582,6 +7645,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								if debugLevel >= 1 then
 									print("Found matching !command")
 								end	
+								for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
+									if debugLevel >= 1 then
+										print("itemID returned as " .. itemID)
+									end
+									local newitemLink = select(2, GetItemInfo(itemID))
+									if debugLevel >= 1 then
+										print(newitemLink)
+									end
+									-- Escape the square brackets in the replacement pattern
+									wmsg = string.gsub(wmsg, "%[" .. itemID .. "%]", newitemLink)
+								end
 								SendChatMessage(wmsg, "WHISPER", nil, author2)
 								return
 							end
@@ -7729,9 +7803,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "CHAT_MSG_WHISPER_INFORM" then
         -- Check for matching Emote
 		local msg, author2 = ...
-		local msg2 = "Whispered: " .. string.utf8lower2(msg)
+		local msg2 = "Whispered: " .. string.lower(msg)
 		local author = string.gsub(author2, "%-.*", "")
-		local author3 = string.utf8lower2(author)
+		local author3 = string.lower(author)
 		local cmdFound = false
 		local startPos, endPos = string.find(msg, "!")
 		local isPartyFull = MaxPartySizeCheck()
@@ -7771,6 +7845,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								if debugLevel >= 1 then
 									print("Found matching !command")
 								end	
+								for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
+									if debugLevel >= 1 then
+										print("itemID returned as " .. itemID)
+									end
+
+									local newitemLink = select(2, GetItemInfo(itemID))
+
+									if debugLevel >= 1 then
+										print(newitemLink)
+									end
+									-- Escape the square brackets in the replacement pattern
+									wmsg = string.gsub(wmsg, "%[" .. itemID .. "%]", newitemLink)
+								end
 								SendChatMessage(wmsg, "WHISPER", nil, author2)
 								return
 							end
@@ -7864,7 +7951,7 @@ end
 
 -- Add a new line to the trade history for a specific customer
 function AddTradeLine(customerName, tradeLine)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
 		CreateCusWorkOrder(customerName)
@@ -7876,7 +7963,7 @@ function AddTradeLine(customerName, tradeLine)
 end
 
 function AddRequestedEnchant(customerName, reqEnchant)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -7900,7 +7987,7 @@ function AddRequestedEnchant(customerName, reqEnchant)
 end
 
 function RemoveRequestedEnchant(customerName, reqEnchant)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -7946,7 +8033,7 @@ end
 	UpdateTradeHistory(customerName)
 end
 function FinishedEnchant(customerName, reqEnchant)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -8051,7 +8138,7 @@ function FinishedEnchant(customerName, reqEnchant)
 end
 
 function RemoveAllRequestedEnchant(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
         CreateCusWorkOrder(customerName)
@@ -8119,7 +8206,7 @@ end
 
 -- Function to get the trade history edit box for a given customer
 function GetTradeHistoryEditBox(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     for _, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed then
             local frameCustomerName = frameInfo.Frame.customerName -- Assuming each frame has a 'customerName' property
@@ -8134,7 +8221,7 @@ end
 
 -- Function to update trade history in EditBox
 function UpdateTradeHistory(customerName)
-	local customerName = string.utf8lower2(customerName)
+	local customerName = string.lower(customerName)
     local tradeHistoryText = ""
     for _, frameInfo in pairs(WorkOrderFrames) do
         if frameInfo.Frame.customerName == customerName and not frameInfo.Completed then
@@ -8193,7 +8280,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		PEtradeWho = UnitName("NPC")
 		LastTradedPlayer = UnitName("NPC")
 		local customerName = PEtradeWho
-		customerName = string.utf8lower2(customerName)
+		customerName = string.lower(customerName)
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 			if not ProEnchantersTradeHistory[customerName] then
             CreateCusWorkOrder(customerName)
@@ -8203,8 +8290,8 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				end
 			elseif ProEnchantersTradeHistory[customerName] then
 				for id, frameInfo in pairs(WorkOrderFrames) do
-					local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
-					local lowerCusName = string.utf8lower2(customerName)
+					local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
+					local lowerCusName = string.lower(customerName)
 						if lowerFrameCheck == lowerCusName and frameInfo.Completed then
 							CreateCusWorkOrder(customerName)
 							if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -8230,23 +8317,16 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		end
 		ProEnchantersLoadTradeWindowFrame(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
-
-		C_Timer.After(.1, function()
-			local tItemLink = GetTradeTargetItemLink(7)
-			if tItemLink then
-				ProEnchantersUpdateTradeWindowButtons(customerName)
-				ProEnchantersUpdateTradeWindowText(customerName)
-			end
-		end)
 	elseif (event == "TRADE_MONEY_CHANGED") then
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()
 		--Items Traded Start
 	elseif (event == "TRADE_PLAYER_ITEM_CHANGED") or (event == "TRADE_TARGET_ITEM_CHANGED") then
-		local target = UnitName("NPC")
-		target = string.utf8lower2(target)
+		local customerName = PEtradeWho
+		customerName = string.lower(customerName)
+		local target = customerName
 		local player = UnitName("player")
-		player = string.utf8lower2(player)
+		player = string.lower(player)
 		local SlotTypeInput = ""
 
 		PEtradeWhoItems.player = {}
@@ -8264,8 +8344,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			local _, _, _, _, playerEnchant = GetTradePlayerItemInfo(7);
 
 		-- Self Items Traded
-		local customerName = PEtradeWho
-		customerName = string.utf8lower2(customerName)
+		
 		if playerEnchant ~= nil then
 			PEtradeWhoItems.player[slot] = {link = playerItemLink, quantity = playerQuantity, enchant = playerEnchant}
 			ItemsTraded = true
@@ -8283,8 +8362,6 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			ItemsTraded = true
 		end
 	end
-			local customerName = PEtradeWho
-			customerName = string.utf8lower2(customerName)
 
 			ProEnchantersUpdateTradeWindowButtons(customerName)
 			ProEnchantersUpdateTradeWindowText(customerName)
@@ -8293,13 +8370,13 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		-- Items Traded End
 
 	elseif (event == "TRADE_ACCEPT_UPDATE") then
-
+		local customerName = PEtradeWho
+		customerName = string.lower(customerName)
+		local target = customerName
+		local player = UnitName("player")
+		player = string.lower(player)
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()
-		local target = UnitName("NPC")
-		target = string.utf8lower2(target)
-		local player = UnitName("player")
-		player = string.utf8lower2(player)
 		local SlotTypeInput = ""
 
 		PEtradeWhoItems.player = {}
@@ -8334,9 +8411,6 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		ItemsTraded = true
 		end
 	end
-			local customerName = PEtradeWho
-			customerName = string.utf8lower2(customerName)
-
 			ProEnchantersUpdateTradeWindowButtons(customerName)
 			ProEnchantersUpdateTradeWindowText(customerName)
 
@@ -8361,7 +8435,7 @@ end
 function PEdoTrade()
 	local traded = false
 	local customerName = PEtradeWho
-	customerName = string.utf8lower2(customerName)
+	customerName = string.lower(customerName)
 	local Time = date()
 
 	-- Checks for if Traded
@@ -8480,8 +8554,8 @@ function PEdoTrade()
 				if item and item.link then
 					if item.enchant then
 						--[[for id, frameInfo in pairs(WorkOrderFrames) do
-							local lowerFrameCheck = string.utf8lower2(frameInfo.Frame.customerName)
-							local lowerCusName = string.utf8lower2(customerName)
+							local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
+							local lowerCusName = string.lower(customerName)
 								if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
 									for _, enchantID in ipairs(frameInfo.Enchants) do
 										local enchantName = EnchantsName[enchantID]
