@@ -190,6 +190,7 @@ local function RepositionEnchantsFrame(WorkOrderEnchantsFrame)
     if WorkOrderEnchantsFrame then
         WorkOrderEnchantsFrame:ClearAllPoints()
         WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", 0, 0)
+		WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", 0, 0)
     end
 end
 
@@ -202,6 +203,7 @@ end
 local function FullResetFrames()
     ProEnchantersWorkOrderFrame:ClearAllPoints()
     ProEnchantersWorkOrderFrame:SetPoint("TOP", UIParent, "TOP", 0, -200)
+	ProEnchantersWorkOrderFrame:SetSize(450, 630)
     RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 end
 
@@ -2316,8 +2318,10 @@ end
 function ProEnchantersCreateWorkOrderFrame()
     local WorkOrderFrame = CreateFrame("Frame", "ProEnchantersWorkOrderFrame", UIParent, "BackdropTemplate")
     WorkOrderFrame:SetFrameStrata("DIALOG")
-    WorkOrderFrame:SetSize(440, 630)  -- Adjust height as needed
+    WorkOrderFrame:SetSize(450, 630)  -- Adjust height as needed
     WorkOrderFrame:SetPoint("TOP", 0, -200)
+	WorkOrderFrame:SetResizable(true)
+	WorkOrderFrame:SetResizeBounds(450, 250, 450, 2000)
     WorkOrderFrame:SetMovable(true)
     WorkOrderFrame:EnableMouse(true)
     WorkOrderFrame:RegisterForDrag("LeftButton")
@@ -2332,13 +2336,15 @@ function ProEnchantersCreateWorkOrderFrame()
     local bgTexture = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
     bgTexture:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(440, 545)
-    bgTexture:SetPoint("TOP", WorkOrderFrame, "TOP", 0, -60)
+    bgTexture:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, -60)
+	bgTexture:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 25)
 
     -- Create a title background
     local titleBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
     titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(440, 25)  -- Adjust size as needed
-    titleBg:SetPoint("TOP", WorkOrderFrame, "TOP", 0, 0)
+    titleBg:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, 0)
+	titleBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, 0)
 	
 	-- Auto Invite Checkbox
 	local autoInviteCb = CreateFrame("CheckButton", nil, WorkOrderFrame, "ChatConfigCheckButtonTemplate")
@@ -2362,12 +2368,14 @@ function ProEnchantersCreateWorkOrderFrame()
 	local newcustomerBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
     newcustomerBg:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
     newcustomerBg:SetSize(440, 35)  -- Adjust size as needed
-    newcustomerBg:SetPoint("TOP", WorkOrderFrame, "TOP", 0, -25)
+    newcustomerBg:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, -25)
+	newcustomerBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, -25)
 
 	local newcustomerBorder = WorkOrderFrame:CreateTexture(nil, "OVERLAY")
     newcustomerBorder:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
     newcustomerBorder:SetSize(440, 1)  -- Adjust size as needed
-    newcustomerBorder:SetPoint("BOTTOM", newcustomerBg, "BOTTOM", 0, 0)
+    newcustomerBorder:SetPoint("BOTTOMLEFT", newcustomerBg, "BOTTOMLEFT", 0, 0)
+	newcustomerBorder:SetPoint("BOTTOMRIGHT", newcustomerBg, "BOTTOMRIGHT", 0, 0)
 
 	--[[local customerNameEditBoxBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
     customerNameEditBoxBg:SetColorTexture(unpack(LightBgOpaque))  -- Set RGBA values for your preferred color and alpha
@@ -2420,13 +2428,15 @@ function ProEnchantersCreateWorkOrderFrame()
     -- Scroll frame setup...
     local WorkOrderScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersWorkOrderScrollFrame", WorkOrderFrame, "UIPanelScrollFrameTemplate")
     WorkOrderScrollFrame:SetSize(415, 545)
-    WorkOrderScrollFrame:SetPoint("TOP", newcustomerBg, "BOTTOM", -10, 0)
+    WorkOrderScrollFrame:SetPoint("TOPLEFT", newcustomerBg, "BOTTOMLEFT", 5, -1)
+	WorkOrderScrollFrame:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", -23, 25)
 
 		-- Create a scroll background
 		local scrollBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
 		scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
 		scrollBg:SetSize(18, 545)  -- Adjust size as needed
 		scrollBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, -60)
+		scrollBg:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 25)
 	
 	-- Access the Scroll Bar
 	local scrollBar = WorkOrderScrollFrame.ScrollBar
@@ -2507,6 +2517,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
     closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
     closeBg:SetSize(440, 25)  -- Adjust size as needed
     closeBg:SetPoint("BOTTOMLEFT", WorkOrderFrame, "BOTTOMLEFT", 0, 0)
+	closeBg:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 0)
 
 	-- Create a close button at the bottom
 	local closeButton = CreateFrame("Button", nil, WorkOrderFrame)
@@ -2577,7 +2588,20 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersColorsFrame:Hide()
 	end)
 
-	--WorkOrderFrame:SetScript("OnShow", function() end)
+	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
+	resizeButton:SetSize(16, 16)
+	resizeButton:SetPoint("BOTTOMRIGHT")
+	resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+	resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+	resizeButton:SetScript("OnMouseDown", function(self, button)
+		WorkOrderFrame:StartSizing("BOTTOMRIGHT")
+		WorkOrderFrame:SetUserPlaced(true)
+	end)
+	
+	resizeButton:SetScript("OnMouseUp", function(self, button)
+		WorkOrderFrame:StopMovingOrSizing()
+	end)
 
 	-- Top Title Minimizes Frame
 	local titleButton = CreateFrame("Button", nil, WorkOrderFrame)
@@ -2589,12 +2613,14 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
+	local _, normHeight = WorkOrderFrame:GetSize()
 	titleButton:SetScript("OnClick", function()
         local isVisible = ScrollChild:IsVisible()
 		bgTexture:SetShown(not isVisible)
         ScrollChild:SetShown(not isVisible)
         closeBg:SetShown(not isVisible)
 		ClearAllButton:SetShown(not isVisible)
+		resizeButton:SetShown(not isVisible)
         closeButton:SetShown(not isVisible)
 		settingsButton:SetShown(not isVisible)
 		GoldTradedDisplay:SetShown(not isVisible)
@@ -2606,16 +2632,22 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		local x, y = GetCursorPosition()
     	local scale = UIParent:GetEffectiveScale()
 		x, y = x / scale, y / scale
-		if currentHeight == 630 then
-        WorkOrderFrame:ClearAllPoints()
+	if currentHeight <= 65 then
+		WorkOrderFrame:ClearAllPoints()
         WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(440, 60)
+        WorkOrderFrame:SetSize(450, normHeight)
+		ProEnchantersWorkOrderEnchantsFrame:Show()
     else
+		_, normHeight = WorkOrderFrame:GetSize()
         WorkOrderFrame:ClearAllPoints()
         WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(440, 630)
+        WorkOrderFrame:SetSize(450, 60)
+		ProEnchantersWorkOrderEnchantsFrame:Hide()
     end
     end)
+
+	
+
 	return WorkOrderFrame
 end
 
@@ -2626,23 +2658,21 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
     WorkOrderEnchantsFrame:SetSize(180, 630)  -- Adjust height as needed
     WorkOrderEnchantsFrame:SetFrameStrata("DIALOG")
     WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", 0, 0)
+	WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMLEFT", 0, 0)
+	WorkOrderEnchantsFrame:SetResizable(true)
+	WorkOrderEnchantsFrame:SetResizeBounds(180, 250, 180, 1000)
 	WorkOrderEnchantsFrame:SetMovable(true)
     WorkOrderEnchantsFrame:EnableMouse(true)
     WorkOrderEnchantsFrame:RegisterForDrag("LeftButton")
     WorkOrderEnchantsFrame:SetScript("OnDragStart", WorkOrderEnchantsFrame.StartMoving)
     WorkOrderEnchantsFrame:Hide()
 
-	local EnchantsFrameConnectingBoarder = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    EnchantsFrameConnectingBoarder:SetColorTexture(0,0,0,0)  -- Set RGBA values for your preferred color and alpha
-    EnchantsFrameConnectingBoarder:SetSize(2, 630)  -- Adjust size as needed
-    EnchantsFrameConnectingBoarder:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPLEFT", 0, 0)
-	EnchantsFrameConnectingBoarder:Show()
-
     -- Create a full background texture
     local bgTexture = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
     bgTexture:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(180, 570)
     bgTexture:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, -60)
+	bgTexture:SetPoint("BOTTOM", WorkOrderEnchantsFrame, "BOTTOM", 0, 25)
 
     -- Create a title background
     local titleBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
@@ -2711,13 +2741,15 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
     -- Setup for the scroll frame
     local WorkOrderEnchantsScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersWorkOrderEnchantsScrollFrame", WorkOrderEnchantsFrame, "UIPanelScrollFrameTemplate")
     WorkOrderEnchantsScrollFrame:SetSize(150, 570)
-    WorkOrderEnchantsScrollFrame:SetPoint("TOP", filterBg, "BOTTOM", -8, 0)
+    WorkOrderEnchantsScrollFrame:SetPoint("TOP", filterBg, "BOTTOM", -8, -1)
+	WorkOrderEnchantsScrollFrame:SetPoint("BOTTOM", WorkOrderEnchantsFrame, "BOTTOM", -8, 25)
 
 	-- Create a scroll background
 	local scrollBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
 	scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
 	scrollBg:SetSize(18, 570)  -- Adjust size as needed
 	scrollBg:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPRIGHT", 0, -60)
+	scrollBg:SetPoint("BOTTOMRIGHT", WorkOrderEnchantsFrame, "BOTTOMRIGHT", 0, 25)
 
 	-- Access the Scroll Bar
 	local scrollBar = WorkOrderEnchantsScrollFrame.ScrollBar
@@ -2998,6 +3030,30 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 	end)
 
+	local resizeButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
+	resizeButton:SetSize(16, 16)
+	resizeButton:SetPoint("BOTTOMRIGHT")
+	resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+	resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+ 
+	resizeButton:SetScript("OnMouseDown", function(self, button)
+		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT")
+		WorkOrderEnchantsFrame:SetUserPlaced(true)
+	end)
+	
+	resizeButton:SetScript("OnMouseUp", function(self, button)
+		WorkOrderEnchantsFrame:StopMovingOrSizing()
+		--RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+	end)
+
+	-- Create a close button background
+    local closeBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
+    closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    closeBg:SetSize(440, 25)  -- Adjust size as needed
+    closeBg:SetPoint("BOTTOMLEFT", WorkOrderEnchantsFrame, "BOTTOMLEFT", 0, 0)
+	closeBg:SetPoint("BOTTOMRIGHT", WorkOrderEnchantsFrame, "BOTTOMRIGHT", 0, 0)
+
 	local titleButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
 	titleButton:SetSize(60, 25)  -- Adjust size as needed
 	titleButton:SetPoint("BOTTOM", titleBg, "BOTTOM", 1, 0)  -- Adjust position as needed
@@ -3006,37 +3062,33 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
+	local _, normHeight = WorkOrderEnchantsFrame:GetSize()
 	titleButton:SetScript("OnClick", function()
         local isVisible = ScrollChild:IsVisible()
 		bgTexture:SetShown(not isVisible)
         ScrollChild:SetShown(not isVisible)
+		closeBg:SetShown(not isVisible)
         snapBg:SetShown(not isVisible)
         snapButton:SetShown(not isVisible)
-
+		resizeButton:SetShown(not isVisible)
 		-- Rest of logic
         scrollBg:SetShown(not isVisible)
 		local isVisible2 = WorkOrderEnchantsScrollFrame:IsVisible()
 		WorkOrderEnchantsScrollFrame:SetShown(not isVisible2)
-		local currentWidthBoarder, currentHeightBoarder = EnchantsFrameConnectingBoarder:GetSize()
-    	if currentHeightBoarder == 630 then
-        	EnchantsFrameConnectingBoarder:SetSize(2, 60)
-    	else
-        	EnchantsFrameConnectingBoarder:SetSize(2, 630)
-   		end
 		   local currentWidth, currentHeight = WorkOrderEnchantsFrame:GetSize()
-		if currentHeight == 630 then
-			WorkOrderEnchantsFrame:SetSize(180, 60)
-			RepositionEnchantsFrame(WorkOrderEnchantsFrame)
-	   else
-			WorkOrderEnchantsFrame:SetSize(180, 630)
+		if currentHeight <= 65 then
+		WorkOrderEnchantsFrame:SetSize(180, normHeight)
 			--RepositionEnchantsFrame(WorkOrderEnchantsFrame)
-	   end
-	end)
+	   	else
+			_, normHeight = WorkOrderEnchantsFrame:GetSize()
+			WorkOrderEnchantsFrame:SetSize(180, 60)
+			RepositionEnchantsFrame(WorkOrderEnchantsFrame)	
+	   	end
+	end)	
 
 	RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 	return WorkOrderEnchantsFrame
 end
-
 
 function ProEnchantersCreateOptionsFrame()
     local OptionsFrame = CreateFrame("Frame", "ProEnchantersOptionsFrame", UIParent, "BackdropTemplate")
@@ -5397,13 +5449,13 @@ function CreateCusWorkOrder(customerName)
 	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild())
 	frame.customerName = customerName
 	frame.frameID = frameID
-    frame:SetSize(420, 220)
+    frame:SetSize(420, 160)
     frame.yOffset = yOffset
     frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, frame.yOffset)
 
 	local customerBg = frame:CreateTexture(nil, "BACKGROUND")
     customerBg:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
-    customerBg:SetSize(420, 220)
+    customerBg:SetSize(420, 160)
     customerBg:SetPoint("TOP", frame, "TOP", 0, 0)
 
 	local customerTextBg = frame:CreateTexture(nil, "OVERLAY")
@@ -5559,15 +5611,42 @@ end)
 
 -- Create Scroll Frame for trade history
 local tradeHistoryScrollFrame = CreateFrame("ScrollFrame", framename .. "ScrollFrame", frame, "UIPanelScrollFrameTemplate")
-tradeHistoryScrollFrame:SetSize(400, 180)
+tradeHistoryScrollFrame:SetSize(400, 130)
 tradeHistoryScrollFrame:SetPoint("TOPLEFT", customerTextBg, "BOTTOMLEFT", 10, -5)
 
+-- Access the Scroll Bar
+local scrollBar = tradeHistoryScrollFrame.ScrollBar
+scrollBar:SetFrameLevel(9000)
+
+-- Customize Thumb Texture
+local thumbTexture = scrollBar:GetThumbTexture()
+thumbTexture:SetTexture(nil)  -- Clear existing texture
+
+-- Customize Scroll Up Button Textures
+local upButton = scrollBar.ScrollUpButton
+
+-- Clear existing textures
+upButton:GetNormalTexture():SetTexture(nil)
+upButton:GetPushedTexture():SetTexture(nil)
+upButton:GetDisabledTexture():SetTexture(nil)
+upButton:GetHighlightTexture():SetTexture(nil)
+
+-- Repeat for Scroll Down Button
+local downButton = scrollBar.ScrollDownButton
+
+-- Clear existing textures
+downButton:GetNormalTexture():SetTexture(nil)
+downButton:GetPushedTexture():SetTexture(nil)
+downButton:GetDisabledTexture():SetTexture(nil)
+downButton:GetHighlightTexture():SetTexture(nil)
+
+
 local scrollChild = CreateFrame("Frame", nil, tradeHistoryScrollFrame)
-scrollChild:SetSize(400, 180)  -- Adjust height dynamically based on content
+scrollChild:SetSize(400, 130)  -- Adjust height dynamically based on content
 tradeHistoryScrollFrame:SetScrollChild(scrollChild)
 
 local tradehistoryEditBox = CreateFrame("EditBox", frameID .. "TradeHistory", scrollChild)
-tradehistoryEditBox:SetSize(380, 160)  -- Adjust size as needed
+tradehistoryEditBox:SetSize(380, 110)  -- Adjust size as needed
 tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 tradehistoryEditBox:SetMultiLine(true)
 tradehistoryEditBox:SetAutoFocus(false)
@@ -5652,33 +5731,33 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
             -- Move all existing frames up if they are lower than the frame being deleted
             for id, frameInfo in pairs(WorkOrderFrames) do
                 if id > frameID and not frameInfo.Completed then
-                    local newYOffset = frameInfo.Frame.yOffset + 200
+                    local newYOffset = frameInfo.Frame.yOffset + 140
                     frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
                     frameInfo.Frame.yOffset = newYOffset
                 end
             end
 
-            yOffset = yOffset + 200 -- Increase for the next frame
+            yOffset = yOffset + 140 -- Increase for the next frame
 		    UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
 			minButton:SetText("Maximize")
 			minimized = true
 			frame.minimized = minimized
         elseif minimized == true then
-            tradeHistoryScrollFrame:SetSize(400, 180)
-            scrollChild:SetSize(400, 180)
-            customerBg:SetSize(420, 220)
-            frame:SetSize(420, 220)
+            tradeHistoryScrollFrame:SetSize(400, 130)
+            scrollChild:SetSize(400, 130)
+            customerBg:SetSize(420, 160)
+            frame:SetSize(420, 160)
 
         -- Move all existing frames up if they are lower than the frame being deleted
         for id, frameInfo in pairs(WorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
-                local newYOffset = frameInfo.Frame.yOffset - 200
+                local newYOffset = frameInfo.Frame.yOffset - 140
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
                 frameInfo.Frame.yOffset = newYOffset
             end
         end
 
-        yOffset = yOffset - 200  -- Increase for the next frame
+        yOffset = yOffset - 140  -- Increase for the next frame
 		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
@@ -5706,21 +5785,21 @@ end)
 	local tradeLine = LIGHTGREEN .. "---- End of Workorder# " .. frameID .. " ----" .. ColorClose
     closeButton:SetScript("OnClick", function()
 		if minimized == true then
-            tradeHistoryScrollFrame:SetSize(400, 180)
-            scrollChild:SetSize(400, 180)
-            customerBg:SetSize(420, 220)
-            frame:SetSize(420, 220)
+            tradeHistoryScrollFrame:SetSize(400, 130)
+            scrollChild:SetSize(400, 130)
+            customerBg:SetSize(420, 160)
+            frame:SetSize(420, 160)
 
         -- Move all existing frames up if they are lower than the frame being deleted
         for id, frameInfo in pairs(WorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
-                local newYOffset = frameInfo.Frame.yOffset - 200
+                local newYOffset = frameInfo.Frame.yOffset - 140
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
                 frameInfo.Frame.yOffset = newYOffset
             end
         end
 
-        yOffset = yOffset - 200  -- Increase for the next frame
+        yOffset = yOffset - 140  -- Increase for the next frame
 		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
 		local CurrentCustomer = ProEnchantersCustomerNameEditBox:GetText()
 		if CurrentCustomer == customerName then
@@ -5742,13 +5821,13 @@ end)
         -- Move all existing frames up if they are lower than the frame being deleted
         for id, frameInfo in pairs(WorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
-                local newYOffset = frameInfo.Frame.yOffset + 222
+                local newYOffset = frameInfo.Frame.yOffset + 162
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
                 frameInfo.Frame.yOffset = newYOffset
             end
         end
 
-        yOffset = yOffset + 222  -- Increase for the next frame
+        yOffset = yOffset + 162  -- Increase for the next frame
 		UpdateScrollChildHeight() -- Call a function to update the height of ScrollChild
 		local CurrentCustomer = ProEnchantersCustomerNameEditBox:GetText()
 		if CurrentCustomer == customerName then
@@ -5758,7 +5837,7 @@ end)
 
     end)
 
-    yOffset = yOffset - 222  -- Decrease for a new frame
+    yOffset = yOffset - 162  -- Decrease for a new frame
     WorkOrderFrames[frameID] = { Frame = frame, Completed = false, Enchants = {}}
 	UpdateScrollChildHeight()
 	UpdateTradeHistory(customerName)
@@ -5778,7 +5857,7 @@ function UpdateScrollChildHeight()
     for id, frameInfo in pairs(WorkOrderFrames) do
         if not frameInfo.Completed then
 			if frameInfo.Frame.minimized == false then
-            totalHeight = totalHeight + 222 -- Add height of each frame
+            totalHeight = totalHeight + 162 -- Add height of each frame
 			elseif frameInfo.Frame.minimized == true then
 			totalHeight = totalHeight + 20
 			end
