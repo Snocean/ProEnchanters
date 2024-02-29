@@ -1,25 +1,6 @@
 -- ProEnchanters.lua localization
 --local _, L = ...;
  --print(L["Hello World!"]);
-function test8utf()
-	local line = ""
-	for k, v in pairs(utf8_lc_uc) do
-		line = line .. ", " .. k .. " = " .. v
-	end
-	print(line)
-end
-
-function CapFirstLetter(word)
-    if word == nil or word == "" then return word end  -- Check for empty or nil word
-    local firstLetter = string.sub(word, 1, 1)
-    local mappedLetter = utf8_lc_uc[firstLetter]  -- Direct lookup
-    if mappedLetter then
-        firstLetter = mappedLetter
-    end
-    local restOfWord = string.sub(word, 2)
-    return firstLetter .. restOfWord
-end
-
 
 -- First Initilizations
 ProEnchantersOptions = ProEnchantersOptions or {}
@@ -42,6 +23,60 @@ local useAllMats = false
 local maxPartySizeReached = false
 local debugLevel = 0
 
+function Test8utf()
+	local line = ""
+	for k, v in pairs(utf8_lc_uc) do
+		line = line .. ", " .. k .. " = " .. v
+	end
+	print(line)
+end
+
+function CapFirstLetter(word)
+    if word == nil or word == "" then return word end  -- Check for empty or nil word
+    local firstLetter = string.sub(word, 1, 1)
+    local mappedLetter = utf8_lc_uc[firstLetter]  -- Direct lookup
+    if mappedLetter then
+        firstLetter = mappedLetter
+    end
+    local restOfWord = string.sub(word, 2)
+    return firstLetter .. restOfWord
+end
+
+local function findEnchantByKeyAndLanguage(msg)
+    local msglower = string.lower(msg)
+	if debugLevel >= 3 then
+    	print("msglower set to " .. msglower)
+	end
+    local msgNoExclamation = msglower:sub(2) -- Remove '!' from the start
+	if debugLevel >= 3 then
+    	print("msgNoExclamation set to " .. msgNoExclamation)
+	end
+    local msgProcessed = string.gsub(msgNoExclamation, " ", "") -- Remove spaces
+	if debugLevel >= 3 then
+    	print("msgProcessed set to " .. msgProcessed)
+	end
+
+    for enchID, langs in pairs(PEenchantingLocales["Enchants"]) do
+        -- Improved print statement to avoid attempting to concatenate the 'langs' table
+		if debugLevel >= 3 then
+       		print("checking enchant ID: " .. enchID)
+		end
+        for langID, name in pairs(langs) do
+			if debugLevel >= 3 then
+				print("checking language " .. langID .. " for enchID " .. enchID)
+			end
+            local nameProcessed = string.gsub(string.lower(name), " ", "")
+			if debugLevel >= 3 then
+            	print("Comparing enchant names: " .. nameProcessed .. " with " .. msgProcessed)
+			end
+            if nameProcessed == msgProcessed then
+                return enchID, langID
+            end
+        end
+    end
+
+    return nil, nil -- Return nil if no match is found
+end
 
 function MaxPartySizeCheck()
 	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
@@ -2358,6 +2393,25 @@ function ProEnchantersCreateWorkOrderFrame()
 		AutoInvite = ProEnchantersOptions["AutoInvite"]
 	end)
 
+	-- Expand enchants button
+	local enchantsShowButton = CreateFrame("Button", nil, WorkOrderFrame)--, "GameMenuButtonTemplate")
+	enchantsShowButton:SetSize(25, 25)
+	enchantsShowButton:SetFrameLevel(9001)
+	enchantsShowButton:SetPoint("TOPRIGHT", titleBg, "BOTTOMRIGHT", 0, -5)
+	enchantsShowButton:SetText(">")
+	local enchantsShowButtonText = enchantsShowButton:GetFontString()
+	enchantsShowButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 4, "")
+	enchantsShowButton:SetNormalFontObject("GameFontHighlight")
+	enchantsShowButton:SetHighlightFontObject("GameFontNormal")
+	enchantsShowButton:SetScript("OnClick", function()
+		enchantsShowButton:Hide()
+		ProEnchantersWorkOrderEnchantsFrame:Show()
+		RepositionEnchantsFrame(ProEnchantersWorkOrderEnchantsFrame)
+	end)
+	enchantsShowButton:Hide()
+
+	ProEnchantersWorkOrderFrame.enchantsShowButton = enchantsShowButton
+
 	-- Auto Invite text
 	local autoinviteHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
 	autoinviteHeader:SetFontObject("GameFontHighlight")
@@ -2642,6 +2696,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
         WorkOrderFrame:ClearAllPoints()
         WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
         WorkOrderFrame:SetSize(450, 60)
+		enchantsShowButton:Hide()
 		ProEnchantersWorkOrderEnchantsFrame:Hide()
     end
     end)
@@ -3012,7 +3067,6 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
         RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 		snapBg:Hide()
 		snapButton:Hide()
-		EnchantsFrameConnectingBoarder:Show()
     end)
 
 	WorkOrderEnchantsFrame:SetScript("OnDragStop", function(self)
@@ -3064,7 +3118,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	titleButton:SetHighlightFontObject("GameFontNormal")
 	local _, normHeight = WorkOrderEnchantsFrame:GetSize()
 	titleButton:SetScript("OnClick", function()
-        local isVisible = ScrollChild:IsVisible()
+		WorkOrderEnchantsFrame:Hide()
+		ProEnchantersWorkOrderFrame.enchantsShowButton:Show()
+        --[[local isVisible = ScrollChild:IsVisible()
 		bgTexture:SetShown(not isVisible)
         ScrollChild:SetShown(not isVisible)
 		closeBg:SetShown(not isVisible)
@@ -3078,12 +3134,11 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		   local currentWidth, currentHeight = WorkOrderEnchantsFrame:GetSize()
 		if currentHeight <= 65 then
 		WorkOrderEnchantsFrame:SetSize(180, normHeight)
-			--RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+			RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 	   	else
 			_, normHeight = WorkOrderEnchantsFrame:GetSize()
 			WorkOrderEnchantsFrame:SetSize(180, 60)
-			RepositionEnchantsFrame(WorkOrderEnchantsFrame)	
-	   	end
+	   	end]]
 	end)	
 
 	RepositionEnchantsFrame(WorkOrderEnchantsFrame)
@@ -5708,7 +5763,9 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 	if PEPlayerInvited[customerName] then
 		local firstline = PEPlayerInvited[customerName]
 		firstline = ORANGE .. "Invited from message: " .. ColorClose .. firstline
-		table.insert(ProEnchantersTradeHistory[customerName], firstline)
+		local formattedLine = string.gsub(firstline, "%[", "") -- Remove '['
+		formattedLine = string.gsub(formattedLine, "%]", "")
+		table.insert(ProEnchantersTradeHistory[customerName], formattedLine)
 	end
 
 	local minButton = CreateFrame("Button", nil, frame)
@@ -7251,6 +7308,7 @@ end
 
 -- Event handler function for chat and TRADES
 function ProEnchanters_OnChatEvent(self, event, ...)
+	local cmdFound = false
 	if event == "CHAT_MSG_SYSTEM" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
 			if string.find(text, "to join your group.", 1, true) then
@@ -7493,7 +7551,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
@@ -7504,7 +7562,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
@@ -7577,7 +7635,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
@@ -7588,7 +7646,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
@@ -7658,7 +7716,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
@@ -7669,7 +7727,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						AddonInvite = true
 						if AddonInvite == true then
 							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg2
+							PEPlayerInvited[playerName] = msg
 						end
 					PlaySound(SOUNDKIT.MAP_PING)
 					elseif AutoInviteFlag == false then
@@ -7680,14 +7738,15 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		end
 		end
 	elseif event == "CHAT_MSG_WHISPER" then
-        -- Check for matching Emote
-		local msg, author2 = ...
+        local msg, author2 = ...
 		local msg2 = "Whispered: " .. string.lower(msg)
 		local author = string.gsub(author2, "%-.*", "")
 		local author3 = string.lower(author)
-		local cmdFound = false
+		cmdFound = false
 		local startPos, endPos = string.find(msg, "!")
 		local isPartyFull = MaxPartySizeCheck()
+		local enchantKey = ""
+		local languageId = ""
 		if debugLevel >= 1 then
 			print("Whisper received")
 		end
@@ -7712,8 +7771,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 			end
-
+			local customcmdFound = 0
 			if cmdFound == true then
+				customcmdFound = 1
 				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
 					for cmd, rmsg in pairs(v) do
 						local wmsg = tostring(rmsg)
@@ -7736,92 +7796,115 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									wmsg = string.gsub(wmsg, "%[" .. itemID .. "%]", newitemLink)
 								end
 								SendChatMessage(wmsg, "WHISPER", nil, author2)
+								customcmdFound = 2
 								return
 							end
 					end
 				end
-				if debugLevel >= 1 then
-					print("No matching command found, continuing to possible enchant lookup")
-				end
-				for key, name in pairs(EnchantsName) do
-				local name2 = string.lower(name)
-				local enchantlookup = "!" .. name2
-				local enchantlookup2 = string.gsub(enchantlookup, " ", "")
-				local msglower = string.lower(msg)
-				local msglower2 = string.gsub(msglower, " ", "")
-					if enchantlookup2 == msglower2 then
-						if ProEnchantersOptions.filters[key] == true then
-							local enchName, enchStats = GetEnchantName(key)
-							local matsReq = ProEnchants_GetReagentList(key)
-							local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
-							SendChatMessage(msgReq, "WHISPER", nil, author2)
-							return
-						elseif ProEnchantersOptions.filters[key] == false then
-							local enchName, enchStats = GetEnchantName(key)
-							local enchType = string.match(enchName, "%-%s*(.+)")
-							local enchTypeSpecific = string.match(enchName, ".+%s(%w+)$")
-							local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
-							local recommendations = {} -- Use a table to store unique recommendations
-						
-							for k, v in pairs(EnchantsName) do
-								if string.find(v, enchSlot, 1, true) then
-									if string.find(v, enchTypeSpecific, 1, true) then
-									local eName, eStats = GetEnchantName(k)
-									local enchKey = k
-									local eType = string.match(eName, "%-%s*(.+)")
-									local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
-										if not recommendations[recommendation] and ProEnchantersOptions.filters[k] == true then
-										-- Only add if not already in the table and filter is true
-											recommendations[recommendation] = eStats
-										end
-									end
-								end
-							end
-							
-								local sortableRecommendations = {}
-								for rec, k in pairs(recommendations) do
-									local numPart = tonumber(k:match("(%d+)"))
-									if numPart then
-										table.insert(sortableRecommendations, {key = numPart, rec = rec})
-									end
-								end
-
-								-- Sort the table based on the numerical part of the enchKey
-								table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
-
-								-- Now, build your enchRecommends string in sorted order
-								local enchRecommends = ""
-								for _, v in ipairs(sortableRecommendations) do
-									if enchRecommends == "" then
-										enchRecommends = v.rec
-									else
-										enchRecommends = enchRecommends .. ", " .. v.rec
-									end
-								end
-							if enchRecommends ~= "" then
-								local msgReq = enchName .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
-								local msgRecs = enchRecommends
-								SendChatMessage(msgReq, "WHISPER", nil, author2)
-								SendChatMessage(msgRecs, "WHISPER", nil, author2)
-								--C_Timer.After(.2, function()  end)
-							else
-								local msgReq = enchName .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
-								SendChatMessage(msgReq, "WHISPER", nil, author2)
-							end
-						else
-							local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
-							SendChatMessage(msgReq, "WHISPER", nil, author2)
-						end
-						cmdFound = true
-						return
-					end
-				end
-				cmdFound = false
 			end
 
+			if debugLevel >= 1 then
+				print("No matching command found, continuing to possible enchant lookup")
+			end
+
+			if customcmdFound == 1 then
+				enchantKey, languageId = findEnchantByKeyAndLanguage(msg)
+			end
+		
+		if cmdFound == true and customcmdFound == 1 then
+			if enchantKey then
+						--enchantKey, languageId
+							if ProEnchantersOptions.filters[enchantKey] == true then
+								local enchName, enchStats = GetEnchantName(enchantKey, languageId)
+								local matsReq = ProEnchants_GetReagentList(enchantKey)
+								local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+								return
+							elseif ProEnchantersOptions.filters[enchantKey] == false then
+								local enchName, enchStats = GetEnchantName(enchantKey)
+								local enchNameLocalized, _ = GetEnchantName(enchantKey)
+								local enchType = string.match(enchName, "%-%s*(.+)")
+								local enchTypeSpecific = string.match(enchType, ".+%s(%w+)$")
+								local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
+								local recommendations = {} -- Use a table to store unique recommendations
+								
+									for k, v in pairs(EnchantsName) do
+										if string.find(v, enchSlot, 1, true) then
+											if string.find(v, enchTypeSpecific, 1, true) then
+											local eName, eStats = GetEnchantName(k)
+											local enchKey = k
+											local eType = string.match(eName, "%-%s*(.+)")
+											local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
+												if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+												-- Only add if not already in the table and filter is true
+													recommendations[k] = eStats
+												end
+											end
+										end
+									end
+									
+									local sortableRecommendations = {}
+									for rec, k in pairs(recommendations) do
+										local numPart = tonumber(k:match("(%d+)"))
+										if numPart then
+											table.insert(sortableRecommendations, {key = numPart, rec = rec})
+										end
+									end
+
+									-- Sort the table based on the numerical part of the enchKey
+									table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
+
+									-- Now, build your enchRecommends string in sorted order
+									local enchRecommends = ""
+									for _, t in ipairs(sortableRecommendations) do
+										local enchKey = t.rec  -- This should be t.rec based on your table structure
+										local numPart = t.key  -- This is not directly used below but corrected for clarity
+										local enchName, enchStats = GetEnchantName(enchKey, languageId)  -- Assuming GetEnchantName function uses enchKey correctly
+										if enchRecommends == "" then
+											enchRecommends = enchName .. enchStats
+										else
+											enchRecommends = enchRecommends .. ", " .. enchName .. enchStats
+										end
+									end
+
+									if enchRecommends ~= "" then
+										local msgReq = enchNameLocalized .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
+										local msgRecs = enchRecommends
+										if string.len(msgRecs) <= 255 then
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs, "WHISPER", nil, author2)
+										elseif string.len(msgRecs) >= 256 and string.len(msgRecs) <= 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs1, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs2, "WHISPER", nil, author2)
+										elseif string.len(msgRecs) > 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											local msgRecs3 = string.sub(msgRecs, 511, 765)
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs1, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs2, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs3, "WHISPER", nil, author2)
+										end
+									else
+										local msgReq = enchNameLocalized .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
+										SendChatMessage(msgReq, "WHISPER", nil, author2)
+									end
+								else
+									local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
+									SendChatMessage(msgReq, "WHISPER", nil, author2)
+								end
+					cmdFound = true
+					return
+				end
+				cmdFound = false
+
 				if debugLevel >= 1 then
-					print("cmdFound is false, continuing")
-				end	
+					print("cmdFound is false, end of check")
+				end
+			end
 
 			if cmdFound == false then
 				for _, tword in pairs(ProEnchantersOptions.invwords) do
@@ -7842,7 +7925,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						if ProEnchantersOptions["WorkWhileClosed"] == true then
 							--if AutoInviteFlag == true then
 								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg2
+								PEPlayerInvited[playerName] = msg
 								PlaySound(SOUNDKIT.MAP_PING)
 							--elseif AutoInviteFlag == false then
 							--	StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
@@ -7851,7 +7934,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							--if AutoInviteFlag == true then
 								InviteUnitPEAddon(author2)
 								PlaySound(SOUNDKIT.MAP_PING)
-								PEPlayerInvited[playerName] = msg2
+								PEPlayerInvited[playerName] = msg
 							--elseif AutoInviteFlag == false then
 							--	StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 							--end
@@ -7859,7 +7942,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					elseif isPartyFull == true then
 						PlaySound(SOUNDKIT.MAP_PING)
 						local playerName = author3
-						PEPlayerInvited[playerName] = msg2
+						PEPlayerInvited[playerName] = msg
 						local partyFullMsg = string.gsub(FullInvMsg, "CUSTOMER", playerName)
 						if ProEnchantersOptions["WorkWhileClosed"] == true then
 							if partyFullMsg == "" then
@@ -7878,22 +7961,23 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					return
 				end
 			end
-		end
+			end
 	elseif event == "CHAT_MSG_WHISPER_INFORM" then
-        -- Check for matching Emote
 		local msg, author2 = ...
 		local msg2 = "Whispered: " .. string.lower(msg)
 		local author = string.gsub(author2, "%-.*", "")
 		local author3 = string.lower(author)
-		local cmdFound = false
+		cmdFound = false
 		local startPos, endPos = string.find(msg, "!")
 		local isPartyFull = MaxPartySizeCheck()
+		local enchantKey = ""
+		local languageId = ""
 		if debugLevel >= 1 then
 			print("Whisper received")
 		end
 			if string.find(msg, "!", 1, true) then
 				if debugLevel >= 1 then
-					print("Possible whisper command found from self: ! found within " .. msg)
+					print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
 				end
 
 				if startPos then
@@ -7912,8 +7996,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 			end
-
+			local customcmdFound = 0
 			if cmdFound == true then
+				customcmdFound = 1
 				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
 					for cmd, rmsg in pairs(v) do
 						local wmsg = tostring(rmsg)
@@ -7928,9 +8013,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									if debugLevel >= 1 then
 										print("itemID returned as " .. itemID)
 									end
-
 									local newitemLink = select(2, GetItemInfo(itemID))
-
 									if debugLevel >= 1 then
 										print(newitemLink)
 									end
@@ -7938,93 +8021,118 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									wmsg = string.gsub(wmsg, "%[" .. itemID .. "%]", newitemLink)
 								end
 								SendChatMessage(wmsg, "WHISPER", nil, author2)
+								customcmdFound = 2
 								return
 							end
 					end
 				end
-				if debugLevel >= 1 then
-					print("No matching command found, continuing to possible enchant lookup")
-				end
-				for key, name in pairs(EnchantsName) do
-				local name2 = string.lower(name)
-				local enchantlookup = "!" .. name2
-				local enchantlookup2 = string.gsub(enchantlookup, " ", "")
-				local msglower = string.lower(msg)
-				local msglower2 = string.gsub(msglower, " ", "")
-					if enchantlookup2 == msglower2 then
-						if ProEnchantersOptions.filters[key] == true then
-							local enchName, enchStats = GetEnchantName(key)
-							local matsReq = ProEnchants_GetReagentList(key)
-							local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
-							SendChatMessage(msgReq, "WHISPER", nil, author2)
-							return
-						elseif ProEnchantersOptions.filters[key] == false then
-							local enchName, enchStats = GetEnchantName(key)
-							local enchType = string.match(enchName, "%-%s*(.+)")
-							local enchTypeSpecific = string.match(enchName, ".+%s(%w+)$")
-							local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
-							local recommendations = {} -- Use a table to store unique recommendations
-						
-							for k, v in pairs(EnchantsName) do
-								if string.find(v, enchSlot, 1, true) then
-									if string.find(v, enchTypeSpecific, 1, true) then
-									local eName, eStats = GetEnchantName(k)
-									local enchKey = k
-									local eType = string.match(eName, "%-%s*(.+)")
-									local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
-										if not recommendations[recommendation] and ProEnchantersOptions.filters[k] == true then
-										-- Only add if not already in the table and filter is true
-											recommendations[recommendation] = eStats
-										end
-									end
-								end
-							end
-							
-								local sortableRecommendations = {}
-								for rec, k in pairs(recommendations) do
-									local numPart = tonumber(k:match("(%d+)"))
-									if numPart then
-										table.insert(sortableRecommendations, {key = numPart, rec = rec})
-									end
-								end
-
-								-- Sort the table based on the numerical part of the enchKey
-								table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
-
-								-- Now, build your enchRecommends string in sorted order
-								local enchRecommends = ""
-								for _, v in ipairs(sortableRecommendations) do
-									if enchRecommends == "" then
-										enchRecommends = v.rec
-									else
-										enchRecommends = enchRecommends .. ", " .. v.rec
-									end
-								end
-							if enchRecommends ~= "" then
-								local msgReq = enchName .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
-								local msgRecs = enchRecommends
-								SendChatMessage(msgReq, "WHISPER", nil, author2)
-								SendChatMessage(msgRecs, "WHISPER", nil, author2)
-								--C_Timer.After(.2, function()  end)
-							else
-								local msgReq = enchName .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
-								SendChatMessage(msgReq, "WHISPER", nil, author2)
-							end
-						else
-							local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
-							SendChatMessage(msgReq, "WHISPER", nil, author2)
-						end
-						cmdFound = true
-						return
-					end
-				end
-				cmdFound = false
 			end
 
-		if debugLevel >= 1 then
-			print("cmdFound is false, end of check for sent whisper")
-		end	
+			if debugLevel >= 1 then
+				print("No matching command found, continuing to possible enchant lookup")
+			end
+
+			if customcmdFound == 1 then
+				enchantKey, languageId = findEnchantByKeyAndLanguage(msg)
+			end
+		
+		if cmdFound == true and customcmdFound == 1 then
+			if enchantKey then
+						--enchantKey, languageId
+							if ProEnchantersOptions.filters[enchantKey] == true then
+								local enchName, enchStats = GetEnchantName(enchantKey, languageId)
+								local matsReq = ProEnchants_GetReagentList(enchantKey)
+								local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+								SendChatMessage(msgReq, "WHISPER", nil, author2)
+								return
+							elseif ProEnchantersOptions.filters[enchantKey] == false then
+								local enchName, enchStats = GetEnchantName(enchantKey)
+								local enchNameLocalized, _ = GetEnchantName(enchantKey)
+								local enchType = string.match(enchName, "%-%s*(.+)")
+								local enchTypeSpecific = string.match(enchType, ".+%s(%w+)$")
+								local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
+								local recommendations = {} -- Use a table to store unique recommendations
+								
+									for k, v in pairs(EnchantsName) do
+										if string.find(v, enchSlot, 1, true) then
+											if string.find(v, enchTypeSpecific, 1, true) then
+											local eName, eStats = GetEnchantName(k)
+											local enchKey = k
+											local eType = string.match(eName, "%-%s*(.+)")
+											local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
+												if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+												-- Only add if not already in the table and filter is true
+													recommendations[k] = eStats
+												end
+											end
+										end
+									end
+									
+									local sortableRecommendations = {}
+									for rec, k in pairs(recommendations) do
+										local numPart = tonumber(k:match("(%d+)"))
+										if numPart then
+											table.insert(sortableRecommendations, {key = numPart, rec = rec})
+										end
+									end
+
+									-- Sort the table based on the numerical part of the enchKey
+									table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
+
+									-- Now, build your enchRecommends string in sorted order
+									local enchRecommends = ""
+									for _, t in ipairs(sortableRecommendations) do
+										local enchKey = t.rec  -- This should be t.rec based on your table structure
+										local numPart = t.key  -- This is not directly used below but corrected for clarity
+										local enchName, enchStats = GetEnchantName(enchKey, languageId)  -- Assuming GetEnchantName function uses enchKey correctly
+										if enchRecommends == "" then
+											enchRecommends = enchName .. enchStats
+										else
+											enchRecommends = enchRecommends .. ", " .. enchName .. enchStats
+										end
+									end
+
+									if enchRecommends ~= "" then
+										local msgReq = enchNameLocalized .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
+										local msgRecs = enchRecommends
+										if string.len(msgRecs) <= 255 then
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs, "WHISPER", nil, author2)
+										elseif string.len(msgRecs) >= 256 and string.len(msgRecs) <= 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs1, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs2, "WHISPER", nil, author2)
+										elseif string.len(msgRecs) > 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											local msgRecs3 = string.sub(msgRecs, 511, 765)
+											SendChatMessage(msgReq, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs1, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs2, "WHISPER", nil, author2)
+											SendChatMessage(msgRecs3, "WHISPER", nil, author2)
+										end
+									else
+										local msgReq = enchNameLocalized .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
+										SendChatMessage(msgReq, "WHISPER", nil, author2)
+									end
+								else
+									local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
+									SendChatMessage(msgReq, "WHISPER", nil, author2)
+								end
+					cmdFound = true
+					return
+				end
+				cmdFound = false
+
+				if debugLevel >= 1 then
+					print("cmdFound is false, end of check")
+				end	
+			end
+
 	end
+	cmdFound = false
 end
 
 
@@ -8276,8 +8384,16 @@ end
 end]]
 
 -- Get name of Ench
-function GetEnchantName(reqEnchant)
-	local enchName = EnchantsName[reqEnchant]
+function GetEnchantName(reqEnchant, languageId)
+	local language = ""
+	if languageId == nil then
+		language = "English"
+	elseif languageId == "" then
+		language = "English"
+	else
+		language = languageId
+	end
+	local enchName = PEenchantingLocales["Enchants"][reqEnchant][language]
 	local enchStats = EnchantsStats[reqEnchant]
 	return enchName, enchStats
 end
