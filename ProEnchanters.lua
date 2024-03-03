@@ -22,6 +22,7 @@ PEPlayerInvited = {}
 local useAllMats = false
 local maxPartySizeReached = false
 local debugLevel = 0
+local normHeight = 630
 
 function Test8utf()
 	local line = ""
@@ -224,8 +225,13 @@ StaticPopupDialogs["CREATE_WORKORDER_POPUP"] = {
 local function RepositionEnchantsFrame(WorkOrderEnchantsFrame)
     if WorkOrderEnchantsFrame then
         WorkOrderEnchantsFrame:ClearAllPoints()
-        WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", 0, 0)
-		WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", 0, 0)
+		local _, wofSize = ProEnchantersWorkOrderFrame:GetSize()
+		if wofSize < 250 then
+        	WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+		else
+			WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+			WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1, 0)
+		end
     end
 end
 
@@ -238,7 +244,26 @@ end
 local function FullResetFrames()
     ProEnchantersWorkOrderFrame:ClearAllPoints()
     ProEnchantersWorkOrderFrame:SetPoint("TOP", UIParent, "TOP", 0, -200)
-	ProEnchantersWorkOrderFrame:SetSize(450, 630)
+	local ScrollChild = ProEnchantersWorkOrderFrame.ScrollFrame:GetScrollChild()
+		ScrollChild.bgTexture:Show()
+        ScrollChild:Show()
+        ScrollChild.closeBg:Show()
+		ScrollChild.ClearAllButton:Show()
+		ScrollChild.resizeButton:Show()
+        ScrollChild.closeButton:Show()
+		ScrollChild.settingsButton:Show()
+		ScrollChild.GoldTradedDisplay:Show()
+        ScrollChild.scrollBg:Show()
+		ProEnchantersWorkOrderFrame.ScrollFrame:Show()
+		local currentWidth, currentHeight = ProEnchantersWorkOrderFrame:GetSize()
+		local point, relativeTo, relativePoint, xOfs, yOfs = ProEnchantersWorkOrderFrame:GetPoint()
+		local x, y = GetCursorPosition()
+    	local scale = UIParent:GetEffectiveScale()
+		x, y = x / scale, y / scale
+	if currentHeight < 250 then
+        ProEnchantersWorkOrderFrame:SetSize(455, 630)
+		--ProEnchantersWorkOrderEnchantsFrame:Show()
+    end
     RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 end
 
@@ -292,30 +317,62 @@ local enchyOffsetoriginal = -40
 
 
 --Color for Frames
-local HeaderColor = {22/255, 26/255, 48/255}
-local r1, g1, b1 = unpack(HeaderColor)
-local HeaderOpaque = {r1, g1, b1, 1}
-local HeaderTrans = {r1, g1, b1, 0.5}
+local OpacityAmount = 0.5
 
-local TitleColor = {182/255, 187/255, 196/255}
-local r2, g2, b2 = unpack(TitleColor)
-local TitleOpaque = {r2, g2, b2, 1}
-local TitleTrans = {r2, g2, b2, 0.5}
+local TopBarColor = {22/255, 26/255, 48/255}
+local r1, g1, b1 = unpack(TopBarColor)
+local TopBarColorOpaque = {r1, g1, b1, 1}
+local TopBarColorTrans = {r1, g1, b1, OpacityAmount}
 
-local LightBgColor = {240/255, 236/255, 229/255}
-local r3, g3, b3 = unpack(LightBgColor)
-local LightBgOpaque = {r3, g3, b3, 1}
-local LightBgTrans = {r3, g3, b3, 0.5}
+local SecondaryBarColor = {49/255, 48/255, 77/255}
+local r2, g2, b2 = unpack(SecondaryBarColor)
+local SecondaryBarColorOpaque = {r2, g2, b2, 1}
+local SecondaryBarColorTrans = {r2, g2, b2, OpacityAmount}
 
-local DarkBgColor = {49/255, 48/255, 77/255}
-local r4, g4, b4 = unpack(DarkBgColor)
-local DarkBgOpaque = {r4, g4, b4, 1}
-local DarkBgTrans = {r4, g4, b4, 0.5}
+local MainWindowBackground = {22/255, 26/255, 48/255}
+local r3, g3, b3 = unpack(MainWindowBackground)
+local MainWindowBackgroundOpaque = {r3, g3, b3, 1}
+local MainWindowBackgroundTrans = {r3, g3, b3, OpacityAmount}
 
-local GreyedColor = {71/255, 71/255, 71/255}
-local r5, g5, b5 = unpack(GreyedColor)
-local GreyedOpaque = {r5, g5, b5, 1}
-local GreyedTrans = {r5, g5, b5, 0.5}
+local BottomBarColor = {22/255, 26/255, 48/255}
+local r4, g4, b4 = unpack(BottomBarColor)
+local BottomBarColorOpaque = {r4, g4, b4, 1}
+local BottomBarColorTrans = {r4, g4, b4, OpacityAmount}
+
+local EnchantsButtonColor = {22/255, 26/255, 48/255}
+local r5, g5, b5 = unpack(EnchantsButtonColor)
+local EnchantsButtonColorOpaque = {r5, g5, b5, 1}
+local EnchantsButtonColorTrans = {r5, g5, b5, OpacityAmount}
+
+local EnchantsButtonColorInactive = {71/255, 71/255, 71/255}
+local r6, g6, b6 = unpack(EnchantsButtonColorInactive)
+local EnchantsButtonColorInactiveOpaque = {r6, g6, b6, 1}
+local EnchantsButtonColorInactiveTrans = {r6, g6, b6, OpacityAmount}
+
+local BorderColor = {2/255, 2/255, 2/255}
+local r7, g7, b7 = unpack(BorderColor)
+local BorderColorOpaque = {r7, g7, b7, 1}
+local BorderColorTrans = {r7, g7, b7, OpacityAmount}
+
+local MainButtonColor = {22/255, 26/255, 48/255}
+local r8, g8, b8 = unpack(MainButtonColor)
+local MainButtonColorOpaque = {r8, g8, b8, 1}
+local MainButtonColorTrans = {r8, g8, b8, OpacityAmount}
+
+local SettingsWindowBackground = {49/255, 48/255, 77/255}
+local r9, g9, b9 = unpack(SettingsWindowBackground)
+local SettingsWindowBackgroundOpaque = {r9, g9, b9, 1}
+local SettingsWindowBackgroundTrans = {r9, g9, b9, OpacityAmount}
+
+local ScrollBarColors = {49/255, 48/255, 77/255}
+local r10, g10, b10 = unpack(ScrollBarColors)
+local ButtonStandardAndThumb = {r10, g10, b10, 1}
+local r10P, r10DH = ((r10*255)/4)/255, ((r10*255)/2)/255
+local g10P, g10DH = ((g10*255)/4)/255, ((g10*255)/2)/255
+local b10P, b10DH = ((b10*255)/4)/255, ((b10*255)/2)/255
+local ButtonPushed = {r10 + r10P, g10 + g10P, b10 + b10P, 1}
+local ButtonDisabled = {r10 - r10DH, g10 - g10DH, b10 - g10DH, 0.5}
+local ButtonHighlight = {r10 + r10DH, g10 + g10DH, b10 + b10DH, 1}
 
 -- Color Test
 local ColorsTable = {
@@ -2353,10 +2410,10 @@ end
 function ProEnchantersCreateWorkOrderFrame()
     local WorkOrderFrame = CreateFrame("Frame", "ProEnchantersWorkOrderFrame", UIParent, "BackdropTemplate")
     WorkOrderFrame:SetFrameStrata("DIALOG")
-    WorkOrderFrame:SetSize(450, 630)  -- Adjust height as needed
+    WorkOrderFrame:SetSize(455, 630)  -- Adjust height as needed
     WorkOrderFrame:SetPoint("TOP", 0, -200)
 	WorkOrderFrame:SetResizable(true)
-	WorkOrderFrame:SetResizeBounds(450, 250, 450, 2000)
+	WorkOrderFrame:SetResizeBounds(455, 250, 455, 2000)
     WorkOrderFrame:SetMovable(true)
     WorkOrderFrame:EnableMouse(true)
     WorkOrderFrame:RegisterForDrag("LeftButton")
@@ -2365,18 +2422,31 @@ function ProEnchantersCreateWorkOrderFrame()
 		WorkOrderFrame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    WorkOrderFrame:SetBackdrop(backdrop)
+    WorkOrderFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     WorkOrderFrame:Hide()
 
     -- Create a full background texture
     local bgTexture = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(440, 545)
     bgTexture:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, -60)
 	bgTexture:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 25)
+	local _, wofSize = WorkOrderFrame:GetSize()
+	if wofSize < 240 then
+		bgTexture:Hide()
+	end
 
     -- Create a title background
     local titleBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(440, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, 0)
 	titleBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, 0)
@@ -2420,19 +2490,19 @@ function ProEnchantersCreateWorkOrderFrame()
 	autoinviteHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local newcustomerBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    newcustomerBg:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    newcustomerBg:SetColorTexture(unpack(SecondaryBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     newcustomerBg:SetSize(440, 35)  -- Adjust size as needed
     newcustomerBg:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, -25)
 	newcustomerBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, -25)
 
 	local newcustomerBorder = WorkOrderFrame:CreateTexture(nil, "OVERLAY")
-    newcustomerBorder:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    newcustomerBorder:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     newcustomerBorder:SetSize(440, 1)  -- Adjust size as needed
     newcustomerBorder:SetPoint("BOTTOMLEFT", newcustomerBg, "BOTTOMLEFT", 0, 0)
 	newcustomerBorder:SetPoint("BOTTOMRIGHT", newcustomerBg, "BOTTOMRIGHT", 0, 0)
 
 	--[[local customerNameEditBoxBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    customerNameEditBoxBg:SetColorTexture(unpack(LightBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    customerNameEditBoxBg:SetColorTexture(unpack(ButtonPushed))  -- Set RGBA values for your preferred color and alpha
     customerNameEditBoxBg:SetSize(160, 22)  -- Adjust size as needed
     customerNameEditBoxBg:SetPoint("TOP", newcustomerBg, "TOP", -5, -9)]]
 
@@ -2458,7 +2528,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	customerHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local createBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
-    createBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    createBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
     createBg:SetSize(60, 20)  -- Adjust size as needed
     createBg:SetPoint("LEFT", customerNameEditBox, "RIGHT", 10, 0)
 
@@ -2484,14 +2554,20 @@ function ProEnchantersCreateWorkOrderFrame()
     WorkOrderScrollFrame:SetSize(415, 545)
     WorkOrderScrollFrame:SetPoint("TOPLEFT", newcustomerBg, "BOTTOMLEFT", 5, -1)
 	WorkOrderScrollFrame:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", -23, 25)
+	WorkOrderFrame.ScrollFrame = WorkOrderScrollFrame
+	if wofSize < 240 then
+		WorkOrderScrollFrame:Hide()
+	end
 
 		-- Create a scroll background
 		local scrollBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
-		scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
+		scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
 		scrollBg:SetSize(18, 545)  -- Adjust size as needed
 		scrollBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, -60)
 		scrollBg:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 25)
-	
+		if wofSize < 240 then
+			scrollBg:Hide()
+		end
 	-- Access the Scroll Bar
 	local scrollBar = WorkOrderScrollFrame.ScrollBar
 	scrollBar:SetFrameLevel(9000)
@@ -2499,7 +2575,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	-- Customize Thumb Texture
 local thumbTexture = scrollBar:GetThumbTexture()
 thumbTexture:SetTexture(nil)  -- Clear existing texture
-thumbTexture:SetColorTexture(unpack(DarkBgOpaque))
+thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
 --thumbTexture:SetAllPoints(thumbTexture)
 
 -- Customize Scroll Up Button Textures
@@ -2515,16 +2591,16 @@ upButton:GetHighlightTexture():SetTexture(nil)
 local upButton = scrollBar.ScrollUpButton
 
 -- Set solid color for normal state
-upButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Replace RGBA values as needed
+upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
 
 -- Set solid color for pushed state
-upButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Replace RGBA values as needed
+upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
 
 -- Set solid color for disabled state
-upButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Replace RGBA values as needed
+upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
 
 -- Set solid color for highlight state
-upButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Replace RGBA values as needed
+upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
 
 -- Repeat for Scroll Down Button
 local downButton = scrollBar.ScrollDownButton
@@ -2536,16 +2612,16 @@ downButton:GetDisabledTexture():SetTexture(nil)
 downButton:GetHighlightTexture():SetTexture(nil)
 
 -- Set solid color for normal state
-downButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Adjust colors as needed
+downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
 
 -- Set solid color for pushed state
-downButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Adjust colors as needed
+downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
 
 -- Set solid color for disabled state
-downButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Adjust colors as needed
+downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
 
 -- Set solid color for highlight state
-downButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Adjust colors as needed
+downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
 
 local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 upButtonText:SetText("-") -- Set the text for the up button
@@ -2563,15 +2639,21 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	ScrollChild:SetFrameLevel(8890)
     ScrollChild:SetSize(425, 545)  -- Adjust height based on the number of elements
     WorkOrderScrollFrame:SetScrollChild(ScrollChild)
+	if wofSize < 240 then
+		ScrollChild:Hide()
+	end
 	
 	-- local yOffset = -15
 
 	-- Create a close button background
     local closeBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     closeBg:SetSize(440, 25)  -- Adjust size as needed
     closeBg:SetPoint("BOTTOMLEFT", WorkOrderFrame, "BOTTOMLEFT", 0, 0)
 	closeBg:SetPoint("BOTTOMRIGHT", WorkOrderFrame, "BOTTOMRIGHT", 0, 0)
+	if wofSize < 240 then
+		closeBg:Hide()
+	end
 
 	-- Create a close button at the bottom
 	local closeButton = CreateFrame("Button", nil, WorkOrderFrame)
@@ -2586,6 +2668,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	closeButton:SetScript("OnClick", function()
 		WorkOrderFrame:Hide()
 	end)
+	if wofSize < 240 then
+		closeButton:Hide()
+	end
 
 	local settingsButton = CreateFrame("Button", nil, WorkOrderFrame)
 	settingsButton:SetSize(46, 25)  -- Adjust size as needed
@@ -2599,6 +2684,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	settingsButton:SetScript("OnClick", function()
 		ProEnchantersOptionsFrame:Show()
 	end)
+	if wofSize < 240 then
+		settingsButton:Hide()
+	end
 
 	local ClearAllButton = CreateFrame("Button", nil, WorkOrderFrame)
 	ClearAllButton:SetSize(110, 20)  -- Adjust size as needed
@@ -2609,6 +2697,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	ClearAllButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	ClearAllButton:SetNormalFontObject("GameFontHighlight")
 	ClearAllButton:SetHighlightFontObject("GameFontNormal")
+	if wofSize < 240 then
+		ClearAllButton:Hide()
+	end
 	ClearAllButton:SetScript("OnClick", function()
 		for id, frameInfo in pairs(WorkOrderFrames) do
 			if frameInfo.Completed == false then
@@ -2630,6 +2721,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	GoldTradedDisplay:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 7)
 	GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
 	GoldTradedDisplay:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	if wofSize < 240 then
+		GoldTradedDisplay:Hide()
+	end
 
 	WorkOrderFrame.GoldTradedDisplay = GoldTradedDisplay
 	
@@ -2648,6 +2742,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
 	resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
 	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+	if wofSize < 240 then
+		resizeButton:Hide()
+	end
 	resizeButton:SetScript("OnMouseDown", function(self, button)
 		WorkOrderFrame:StartSizing("BOTTOMRIGHT")
 		WorkOrderFrame:SetUserPlaced(true)
@@ -2667,9 +2764,8 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
-	local _, normHeight = WorkOrderFrame:GetSize()
 	titleButton:SetScript("OnClick", function()
-        local isVisible = ScrollChild:IsVisible()
+        --[[local isVisible = ScrollChild:IsVisible()
 		bgTexture:SetShown(not isVisible)
         ScrollChild:SetShown(not isVisible)
         closeBg:SetShown(not isVisible)
@@ -2680,28 +2776,66 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		GoldTradedDisplay:SetShown(not isVisible)
         scrollBg:SetShown(not isVisible)
 		local isVisible2 = WorkOrderScrollFrame:IsVisible()
-		WorkOrderScrollFrame:SetShown(not isVisible2)
+		WorkOrderScrollFrame:SetShown(not isVisible2)]]
 		local currentWidth, currentHeight = WorkOrderFrame:GetSize()
 		local point, relativeTo, relativePoint, xOfs, yOfs = WorkOrderFrame:GetPoint()
 		local x, y = GetCursorPosition()
     	local scale = UIParent:GetEffectiveScale()
 		x, y = x / scale, y / scale
-	if currentHeight <= 65 then
+	if currentHeight < 240 then
+		ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+        ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+		ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1, 0)
 		WorkOrderFrame:ClearAllPoints()
         WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(450, normHeight)
-		ProEnchantersWorkOrderEnchantsFrame:Show()
+        WorkOrderFrame:SetSize(455, normHeight)
+		local isVisible = ScrollChild:IsVisible()
+		bgTexture:Show()
+        ScrollChild:Show()
+        closeBg:Show()
+		ClearAllButton:Show()
+		resizeButton:Show()
+        closeButton:Show()
+		settingsButton:Show()
+		GoldTradedDisplay:Show()
+        scrollBg:Show()
+		local isVisible2 = WorkOrderScrollFrame:IsVisible()
+		WorkOrderScrollFrame:Show()
+		--ProEnchantersWorkOrderEnchantsFrame:Show()
     else
+		ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+        ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
 		_, normHeight = WorkOrderFrame:GetSize()
         WorkOrderFrame:ClearAllPoints()
         WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(450, 60)
-		enchantsShowButton:Hide()
-		ProEnchantersWorkOrderEnchantsFrame:Hide()
+        WorkOrderFrame:SetSize(455, 60)
+		local isVisible = ScrollChild:IsVisible()
+		bgTexture:Hide()
+        ScrollChild:Hide()
+        closeBg:Hide()
+		ClearAllButton:Hide()
+		resizeButton:Hide()
+        closeButton:Hide()
+		settingsButton:Hide()
+		GoldTradedDisplay:Hide()
+        scrollBg:Hide()
+		local isVisible2 = WorkOrderScrollFrame:IsVisible()
+		WorkOrderScrollFrame:Hide()
+		--WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", 0, 0)
+		--enchantsShowButton:Hide()
+		--ProEnchantersWorkOrderEnchantsFrame:Hide()
     end
     end)
 
-	
+	ScrollChild.bgTexture = bgTexture
+	ScrollChild.closeBg = closeBg
+	ScrollChild.ClearAllButton = ClearAllButton
+	ScrollChild.resizeButton = resizeButton
+	ScrollChild.closeButton = closeButton
+	ScrollChild.settingsButton = settingsButton
+	ScrollChild.GoldTradedDisplay = GoldTradedDisplay
+	ScrollChild.scrollBg = scrollBg
+
 
 	return WorkOrderFrame
 end
@@ -2709,11 +2843,11 @@ end
 
 
 function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
-    local WorkOrderEnchantsFrame = CreateFrame("Frame", "ProEnchantersWorkOrderEnchantsFrame", ProEnchantersWorkOrderFrame)
+    local WorkOrderEnchantsFrame = CreateFrame("Frame", "ProEnchantersWorkOrderEnchantsFrame", ProEnchantersWorkOrderFrame, "BackdropTemplate")
     WorkOrderEnchantsFrame:SetSize(180, 630)  -- Adjust height as needed
     WorkOrderEnchantsFrame:SetFrameStrata("DIALOG")
-    WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", 0, 0)
-	WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMLEFT", 0, 0)
+    WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+	WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMLEFT", -1, 0)
 	WorkOrderEnchantsFrame:SetResizable(true)
 	WorkOrderEnchantsFrame:SetResizeBounds(180, 250, 180, 1000)
 	WorkOrderEnchantsFrame:SetMovable(true)
@@ -2722,27 +2856,36 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
     WorkOrderEnchantsFrame:SetScript("OnDragStart", WorkOrderEnchantsFrame.StartMoving)
     WorkOrderEnchantsFrame:Hide()
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    WorkOrderEnchantsFrame:SetBackdrop(backdrop)
+    WorkOrderEnchantsFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     -- Create a full background texture
     local bgTexture = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(180, 570)
     bgTexture:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, -60)
 	bgTexture:SetPoint("BOTTOM", WorkOrderEnchantsFrame, "BOTTOM", 0, 25)
 
     -- Create a title background
     local titleBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(180, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, 0)
 
 
 	local filterBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    filterBg:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    filterBg:SetColorTexture(unpack(SecondaryBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     filterBg:SetSize(180, 35)  -- Adjust size as needed
     filterBg:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, -25)
 
 	local filterBgBorder = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
-    filterBgBorder:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    filterBgBorder:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     filterBgBorder:SetSize(180, 1)  -- Adjust size as needed
     filterBgBorder:SetPoint("BOTTOM", filterBg, "BOTTOM", 0, 0)
 
@@ -2774,7 +2917,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	filterHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local clearBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
-    clearBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    clearBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
     clearBg:SetSize(40, 20)  -- Adjust size as needed
     clearBg:SetPoint("LEFT", filterEditBox, "RIGHT", 10, 0)
 
@@ -2801,7 +2944,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 	-- Create a scroll background
 	local scrollBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-	scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
 	scrollBg:SetSize(18, 570)  -- Adjust size as needed
 	scrollBg:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPRIGHT", 0, -60)
 	scrollBg:SetPoint("BOTTOMRIGHT", WorkOrderEnchantsFrame, "BOTTOMRIGHT", 0, 25)
@@ -2812,7 +2955,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	-- Customize Thumb Texture
 local thumbTexture = scrollBar:GetThumbTexture()
 thumbTexture:SetTexture(nil)  -- Clear existing texture
-thumbTexture:SetColorTexture(unpack(DarkBgOpaque))
+thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
 --thumbTexture:SetAllPoints(thumbTexture)
 
 -- Customize Scroll Up Button Textures
@@ -2828,16 +2971,16 @@ upButton:GetHighlightTexture():SetTexture(nil)
 local upButton = scrollBar.ScrollUpButton
 
 -- Set solid color for normal state
-upButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Replace RGBA values as needed
+upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
 
 -- Set solid color for pushed state
-upButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Replace RGBA values as needed
+upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
 
 -- Set solid color for disabled state
-upButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Replace RGBA values as needed
+upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
 
 -- Set solid color for highlight state
-upButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Replace RGBA values as needed
+upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
 
 -- Repeat for Scroll Down Button
 local downButton = scrollBar.ScrollDownButton
@@ -2849,16 +2992,16 @@ downButton:GetDisabledTexture():SetTexture(nil)
 downButton:GetHighlightTexture():SetTexture(nil)
 
 -- Set solid color for normal state
-downButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Adjust colors as needed
+downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
 
 -- Set solid color for pushed state
-downButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Adjust colors as needed
+downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
 
 -- Set solid color for disabled state
-downButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Adjust colors as needed
+downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
 
 -- Set solid color for highlight state
-downButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Adjust colors as needed
+downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
 
 local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 upButtonText:SetText("-") -- Set the text for the up button
@@ -2945,7 +3088,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
         -- Create button Bg
         local enchantButtonBg = ScrollChild:CreateTexture(nil, "OVERLAY")
-        enchantButtonBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+        enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
         enchantButtonBg:SetSize(145, 45)  -- Adjust size as needed
         enchantButtonBg:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 
@@ -3084,6 +3227,20 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 	end)
 
+local isConnected = false -- Variable to store connection status
+
+-- Function to check if the frames are connected
+local function CheckIfConnected()
+    -- Example condition to check if frames are connected
+    -- This is a simplistic check; you might need a more sophisticated method
+    local point, relativeTo = WorkOrderEnchantsFrame:GetPoint()
+    if relativeTo == ProEnchantersWorkOrderFrame then
+        isConnected = true
+    else
+        isConnected = false
+    end
+end
+
 	local resizeButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
 	resizeButton:SetSize(16, 16)
 	resizeButton:SetPoint("BOTTOMRIGHT")
@@ -3092,18 +3249,21 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
  
 	resizeButton:SetScript("OnMouseDown", function(self, button)
-		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT")
-		WorkOrderEnchantsFrame:SetUserPlaced(true)
-	end)
+		CheckIfConnected() -- Check and store the connection status
+   		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT")
+    	WorkOrderEnchantsFrame:SetUserPlaced(true)
+end)
 	
 	resizeButton:SetScript("OnMouseUp", function(self, button)
 		WorkOrderEnchantsFrame:StopMovingOrSizing()
-		--RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+		if isConnected then
+		RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+		end
 	end)
 
 	-- Create a close button background
     local closeBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     closeBg:SetSize(440, 25)  -- Adjust size as needed
     closeBg:SetPoint("BOTTOMLEFT", WorkOrderEnchantsFrame, "BOTTOMLEFT", 0, 0)
 	closeBg:SetPoint("BOTTOMRIGHT", WorkOrderEnchantsFrame, "BOTTOMRIGHT", 0, 0)
@@ -3158,17 +3318,26 @@ function ProEnchantersCreateOptionsFrame()
 		OptionsFrame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    OptionsFrame:SetBackdrop(backdrop)
+    OptionsFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     OptionsFrame:Hide()
 
     -- Create a full background texture
     local bgTexture = OptionsFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(800, 325)
     bgTexture:SetPoint("TOP", OptionsFrame, "TOP", 0, -25)
 
     -- Create a title background
     local titleBg = OptionsFrame:CreateTexture(nil, "BACKGROUND")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(800, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", OptionsFrame, "TOP", 0, 0)
 
@@ -3187,7 +3356,7 @@ function ProEnchantersCreateOptionsFrame()
 
 		-- Create a scroll background
 		local scrollBg = OptionsFrame:CreateTexture(nil, "BACKGROUND")
-		scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
+		scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
 		scrollBg:SetSize(17, 300)  -- Adjust size as needed
 		scrollBg:SetPoint("TOPRIGHT", OptionsFrame, "TOPRIGHT", 0, -25)
 	
@@ -3197,7 +3366,7 @@ function ProEnchantersCreateOptionsFrame()
 	-- Customize Thumb Texture
 local thumbTexture = scrollBar:GetThumbTexture()
 thumbTexture:SetTexture(nil)  -- Clear existing texture
-thumbTexture:SetColorTexture(unpack(HeaderOpaque))
+thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
 --thumbTexture:SetAllPoints(thumbTexture)
 
 -- Customize Scroll Up Button Textures
@@ -3213,10 +3382,10 @@ upButton:GetHighlightTexture():SetTexture(nil)
 local upButton = scrollBar.ScrollUpButton
 
 -- Set colors
-upButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Replace RGBA values as needed
-upButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Replace RGBA values as needed
-upButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Replace RGBA values as needed
-upButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Replace RGBA values as needed
+upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
 
 -- Repeat for Scroll Down Button
 local downButton = scrollBar.ScrollDownButton
@@ -3228,10 +3397,10 @@ downButton:GetDisabledTexture():SetTexture(nil)
 downButton:GetHighlightTexture():SetTexture(nil)
 
 -- Set colors
-downButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Adjust colors as needed
-downButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Adjust colors as needed
-downButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Adjust colors as needed
-downButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Adjust colors as needed
+downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
 
 local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 upButtonText:SetText("-") -- Set the text for the up button
@@ -3278,7 +3447,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	maxPartySizeHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local maxPartySizeEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
-	maxPartySizeEditBoxBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	maxPartySizeEditBoxBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	maxPartySizeEditBoxBg:SetSize(25, 25)  -- Adjust size as needed
 	maxPartySizeEditBoxBg:SetPoint("LEFT", maxPartySizeHeader, "RIGHT", 10, 0)
 
@@ -3343,7 +3512,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	end)
 
 	local filtersButtonBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
-	filtersButtonBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+	filtersButtonBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
     filtersButtonBg:SetSize(270, 24)  -- Adjust size as needed
 	filtersButtonBg:SetPoint("TOPLEFT", WhisperMatsHeader, "TOPLEFT", -4, -25)
 
@@ -3362,7 +3531,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	end)
 
 	local whisperTriggersBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
-	whisperTriggersBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+	whisperTriggersBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
     whisperTriggersBg:SetSize(250, 24)  -- Adjust size as needed
 	whisperTriggersBg:SetPoint("TOPLEFT", filtersButtonBg, "TOPRIGHT", 15, 0)
 
@@ -3380,11 +3549,28 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		OptionsFrame:Hide()
 	end)
 
+	-- Create a header for Disable !commands
+	local DisableWhisperCommandsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	DisableWhisperCommandsHeader:SetFontObject("GameFontHighlight")
+	DisableWhisperCommandsHeader:SetPoint("TOPLEFT", filtersButtonBg, "BOTTOMLEFT", 2, -10)
+	DisableWhisperCommandsHeader:SetText("Disable whisper !commands? (Stops any commands that start with a !)")
+	DisableWhisperCommandsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Auto Invite Checkbox
+	local DisableWhisperCommandsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	DisableWhisperCommandsCb:SetPoint("LEFT", DisableWhisperCommandsHeader, "RIGHT", 10, 0)
+	DisableWhisperCommandsCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	DisableWhisperCommandsCb:SetHitRectInsets(0, 0, 0, 0)
+	DisableWhisperCommandsCb:SetChecked(ProEnchantersOptions["DisableWhisperCommands"])
+	DisableWhisperCommandsCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["DisableWhisperCommands"] = self:GetChecked()
+	end)
+
 
 	-- Create a header for AutoInviteAllChannels
 	local AutoInviteAllChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	AutoInviteAllChannelsHeader:SetFontObject("GameFontHighlight")
-	AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", filtersButtonBg, "BOTTOMLEFT", 0, -10)
+	AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", DisableWhisperCommandsHeader, "BOTTOMLEFT", 0, -10)
 	AutoInviteAllChannelsHeader:SetText("Search all channels for potential Customers?")
 	AutoInviteAllChannelsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
@@ -3667,7 +3853,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a close button background
 		local closeBg = OptionsFrame:CreateTexture(nil, "OVERLAY")
-		closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+		closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 		closeBg:SetSize(800, 25)  -- Adjust size as needed
 		closeBg:SetPoint("BOTTOMLEFT", OptionsFrame, "BOTTOMLEFT", 0, 0)
 
@@ -3845,22 +4031,31 @@ function ProEnchantersCreateCreditsFrame()
 		CreditsFrame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    CreditsFrame:SetBackdrop(backdrop)
+    CreditsFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     CreditsFrame:Hide()
 
     -- Create a full background texture
     local bgTexture = CreditsFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(400, 375)
     bgTexture:SetPoint("TOP", CreditsFrame, "TOP", 0, -25)
 
     -- Create a title background
     local titleBg = CreditsFrame:CreateTexture(nil, "OVERLAY")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(400, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", CreditsFrame, "TOP", 0, 0)
 
 	local PFP = CreditsFrame:CreateTexture(nil, "OVERLAY")
-    --PFP:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    --PFP:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 	PFP:SetTexture("Interface\\AddOns\\ProEnchanters\\Media\\PFP.tga")
     PFP:SetSize(128, 128)  -- Adjust size as needed
     PFP:SetPoint("TOP", titleBg, "BOTTOM", 0, -5)
@@ -3902,7 +4097,7 @@ function ProEnchantersCreateCreditsFrame()
 	-- Create a close button background
 	local CreditsScrollBg = CreditsFrame:CreateTexture(nil, "OVERLAY")
 	CreditsScrollBg:SetSize(380, 110)
-	CreditsScrollBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	CreditsScrollBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	CreditsScrollBg:SetPoint("TOP", SupportersHeader, "TOP", 0, -25)
 
 	local CreditsScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersCreditsScrollFrame", CreditsFrame, "UIPanelScrollFrameTemplate")
@@ -3948,7 +4143,7 @@ function ProEnchantersCreateCreditsFrame()
 
 	-- Create a close button background
 		local closeBg = CreditsFrame:CreateTexture(nil, "OVERLAY")
-		closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+		closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 		closeBg:SetSize(400, 25)  -- Adjust size as needed
 		closeBg:SetPoint("BOTTOM", CreditsFrame, "BOTTOM", 0, 0)
 
@@ -3977,7 +4172,7 @@ end
 function ProEnchantersCreateColorsFrame()
     local ColorsFrame = CreateFrame("Frame", "ProEnchantersColorsFrame", UIParent, "BackdropTemplate")
     ColorsFrame:SetFrameStrata("TOOLTIP")
-    ColorsFrame:SetSize(400, 400)  -- Adjust height as needed
+    ColorsFrame:SetSize(400, 550)  -- Adjust height as needed
     ColorsFrame:SetPoint("TOP", 0, -300)
     ColorsFrame:SetMovable(true)
     ColorsFrame:EnableMouse(true)
@@ -3987,17 +4182,26 @@ function ProEnchantersCreateColorsFrame()
 		ColorsFrame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    ColorsFrame:SetBackdrop(backdrop)
+    ColorsFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     ColorsFrame:Hide()
 
     -- Create a full background texture
     local bgTexture = ColorsFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
-	bgTexture:SetSize(400, 375)
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(400, 525)
     bgTexture:SetPoint("TOP", ColorsFrame, "TOP", 0, -25)
 
     -- Create a title background
     local titleBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(400, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", ColorsFrame, "TOP", 0, 0)
 
@@ -4012,15 +4216,21 @@ function ProEnchantersCreateColorsFrame()
 	local instructionsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	instructionsHeader:SetFontObject("GameFontHighlight")
 	instructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
-	instructionsHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nChange the numbers and then do a /reload")
-		instructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	instructionsHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nOpacity is a percentage (0-100 percent)\nChange the numbers and then do a /reload")
+	instructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Extract Colors from Table
-	local headerR, headerG, headerB = unpack(ProEnchantersOptions.Colors.HeaderColor)
-	local titleR, titleG, titleB = unpack(ProEnchantersOptions.Colors.TitleColor)
-	local lightR, lightG, lightB = unpack(ProEnchantersOptions.Colors.LightBgColor)
-	local darkR, darkG, darkB = unpack(ProEnchantersOptions.Colors.DarkBgColor)
-	local greyR, greyG, greyB = unpack(ProEnchantersOptions.Colors.GreyedColor)
+	local TopBarColorR1, TopBarColorG1, TopBarColorB1 = unpack(ProEnchantersOptions.Colors.TopBarColor)
+    local SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1 = unpack(ProEnchantersOptions.Colors.SecondaryBarColor)
+    local MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1 = unpack(ProEnchantersOptions.Colors.MainWindowBackground)
+    local BottomBarColorR1, BottomBarColorG1, BottomBarColorB1 = unpack(ProEnchantersOptions.Colors.BottomBarColor)
+    local EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1 = unpack(ProEnchantersOptions.Colors.EnchantsButtonColor)
+    local EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1 = unpack(ProEnchantersOptions.Colors.EnchantsButtonColorInactive)
+    local BorderColorR1, BorderColorG1, BorderColorB1 = unpack(ProEnchantersOptions.Colors.BorderColor)
+    local MainButtonColorR1, MainButtonColorG1, MainButtonColorB1 = unpack(ProEnchantersOptions.Colors.MainButtonColor)
+    local SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1 = unpack(ProEnchantersOptions.Colors.SettingsWindowBackground)
+    local ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1 = unpack(ProEnchantersOptions.Colors.ScrollBarColors)
+    local OpacityAmountR1 = ProEnchantersOptions.Colors.OpacityAmount
 
 	local function RGBToWoWColorCode(red, green, blue)
 		-- Ensure alpha is set to FF for fully opaque
@@ -4036,467 +4246,1174 @@ function ProEnchantersCreateColorsFrame()
 	end
 
 	local colorsExamples = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	colorsExamples:SetColorTexture(unpack(TitleOpaque))  -- Set RGBA values for your preferred color and alpha
-	colorsExamples:SetSize(70, 150)  -- Adjust size as needed
-	colorsExamples:SetPoint("TOPLEFT", titleHeader, "TOPLEFT", 240, -60)
+	colorsExamples:SetColorTexture(200, 200, 200, 1)  -- Set RGBA values for your preferred color and alpha
+	colorsExamples:SetSize(70, 400)  -- Adjust size as needed
+	colorsExamples:SetPoint("TOPLEFT", titleHeader, "TOPLEFT", 165, -90)
 
-	local mainColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	mainColorsExample:SetFontObject("GameFontHighlight")
-	mainColorsExample:SetPoint("TOPLEFT", colorsExamples, "TOPLEFT", 6, -8)
-	local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
-	mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
-	mainColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	-- Color Examples
 
-	local lightColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	lightColorsExample:SetFontObject("GameFontHighlight")
-	lightColorsExample:SetPoint("TOP", mainColorsExample, "BOTTOM", 0, -25)
-	local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
-	lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
-	lightColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+    local TopBarColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	TopBarColorExample:SetFontObject("GameFontHighlight")
+	TopBarColorExample:SetPoint("TOPLEFT", colorsExamples, "TOPLEFT", 6, -8)
+	local TopBarColorHex = RGBToWoWColorCode(TopBarColorR1, TopBarColorG1, TopBarColorB1)
+	TopBarColorExample:SetText(TopBarColorHex .. "EXAMPLE" .. ColorClose)
+	TopBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
 
-	local darkColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	darkColorsExample:SetFontObject("GameFontHighlight")
-	darkColorsExample:SetPoint("TOP", lightColorsExample, "BOTTOM", 0, -25)
-	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
-	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
-	darkColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+    local SecondaryBarColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	SecondaryBarColorExample:SetFontObject("GameFontHighlight")
+	SecondaryBarColorExample:SetPoint("TOPLEFT", TopBarColorExample, "BOTTOMLEFT", 0, -23)
+	local SecondaryBarColorHex = RGBToWoWColorCode(SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1)
+	SecondaryBarColorExample:SetText(SecondaryBarColorHex .. "EXAMPLE" .. ColorClose)
+	SecondaryBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
 
-	local greyColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	greyColorsExample:SetFontObject("GameFontHighlight")
-	greyColorsExample:SetPoint("TOP", darkColorsExample, "BOTTOM", 0, -25)
-	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, GetParryChance())
-	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
-	greyColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+    local MainWindowBackgroundExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	MainWindowBackgroundExample:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundExample:SetPoint("TOPLEFT", SecondaryBarColorExample, "BOTTOMLEFT", 0, -23)
+	local MainWindowBackgroundHex = RGBToWoWColorCode(MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1)
+	MainWindowBackgroundExample:SetText(MainWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	MainWindowBackgroundExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local BottomBarColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	BottomBarColorExample:SetFontObject("GameFontHighlight")
+	BottomBarColorExample:SetPoint("TOPLEFT", MainWindowBackgroundExample, "BOTTOMLEFT", 0, -23)
+	local BottomBarColorHex = RGBToWoWColorCode(BottomBarColorR1, BottomBarColorG1, BottomBarColorB1)
+	BottomBarColorExample:SetText(BottomBarColorHex .. "EXAMPLE" .. ColorClose)
+	BottomBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local EnchantsButtonColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	EnchantsButtonColorExample:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorExample:SetPoint("TOPLEFT", BottomBarColorExample, "BOTTOMLEFT", 0, -23)
+	local EnchantsButtonColorHex = RGBToWoWColorCode(EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1)
+	EnchantsButtonColorExample:SetText(EnchantsButtonColorHex .. "EXAMPLE" .. ColorClose)
+	EnchantsButtonColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local EnchantsButtonColorInactiveExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	EnchantsButtonColorInactiveExample:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveExample:SetPoint("TOPLEFT", EnchantsButtonColorExample, "BOTTOMLEFT", 0, -23)
+	local EnchantsButtonColorInactiveHex = RGBToWoWColorCode(EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1)
+	EnchantsButtonColorInactiveExample:SetText(EnchantsButtonColorInactiveHex .. "EXAMPLE" .. ColorClose)
+	EnchantsButtonColorInactiveExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local BorderColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	BorderColorExample:SetFontObject("GameFontHighlight")
+	BorderColorExample:SetPoint("TOPLEFT", EnchantsButtonColorInactiveExample, "BOTTOMLEFT", 0, -23)
+	local BorderColorHex = RGBToWoWColorCode(BorderColorR1, BorderColorG1, BorderColorB1)
+	BorderColorExample:SetText(BorderColorHex .. "EXAMPLE" .. ColorClose)
+	BorderColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+   
+    local MainButtonColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	MainButtonColorExample:SetFontObject("GameFontHighlight")
+	MainButtonColorExample:SetPoint("TOPLEFT", BorderColorExample, "BOTTOMLEFT", 0, -23)
+	local MainButtonColorHex = RGBToWoWColorCode(MainButtonColorR1, MainButtonColorG1, MainButtonColorB1)
+	MainButtonColorExample:SetText(MainButtonColorHex .. "EXAMPLE" .. ColorClose)
+	MainButtonColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local SettingsWindowBackgroundExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	SettingsWindowBackgroundExample:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundExample:SetPoint("TOPLEFT", MainButtonColorExample, "BOTTOMLEFT", 0, -23)
+	local SettingsWindowBackgroundHex = RGBToWoWColorCode(SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1)
+	SettingsWindowBackgroundExample:SetText(SettingsWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	SettingsWindowBackgroundExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+
+    local ScrollBarColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	ScrollBarColorsExample:SetFontObject("GameFontHighlight")
+	ScrollBarColorsExample:SetPoint("TOPLEFT", SettingsWindowBackgroundExample, "BOTTOMLEFT", 0, -23)
+	local ScrollBarColorsHex = RGBToWoWColorCode(ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1)
+	ScrollBarColorsExample:SetText(ScrollBarColorsHex .. "EXAMPLE" .. ColorClose)
+	ScrollBarColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
 
 
-	-- Color Settings start
-	local mainColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	mainColorsHeader:SetFontObject("GameFontHighlight")
-	mainColorsHeader:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 70, -80)
-	mainColorsHeader:SetText("Main Colors")
-	mainColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+    -- Color EditBoxes
+    local TopBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	TopBarColorHeader:SetFontObject("GameFontHighlight")
+	TopBarColorHeader:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 10, -80)
+	TopBarColorHeader:SetText("Top Bar")
+	TopBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
-	local mainColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	mainColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	mainColorsRBg:SetSize(34, 24)  -- Adjust size as needed
-	mainColorsRBg:SetPoint("LEFT", mainColorsHeader, "RIGHT", 10, 0)
+	local TopBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	TopBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	TopBarColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	TopBarColorRBg:SetPoint("LEFT", TopBarColorHeader, "RIGHT", 10, 0)
 
-	local mainColorsR = CreateFrame("EditBox", nil, ColorsFrame)
-	mainColorsR:SetSize(30, 20)
-	mainColorsR:SetPoint("LEFT", mainColorsHeader, "RIGHT", 14, 0)
-	mainColorsR:SetAutoFocus(false)
-	mainColorsR:SetNumeric(true)
-	mainColorsR:SetMaxLetters(3)
-	mainColorsR:SetMultiLine(false)
-	mainColorsR:EnableMouse(true)
-    mainColorsR:EnableKeyboard(true)
-	mainColorsR:SetFontObject("GameFontHighlight")
-	mainColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	mainColorsR:SetText(tostring(headerR*255))
-	mainColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	mainColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	mainColorsR:SetScript("OnTextChanged", function()
-		local new = tonumber(mainColorsR:GetText())
+	local TopBarColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	TopBarColorR:SetSize(30, 20)
+	TopBarColorR:SetPoint("LEFT", TopBarColorHeader, "RIGHT", 14, 0)
+	TopBarColorR:SetAutoFocus(false)
+	TopBarColorR:SetNumeric(true)
+	TopBarColorR:SetMaxLetters(3)
+	TopBarColorR:SetMultiLine(false)
+	TopBarColorR:EnableMouse(true)
+    TopBarColorR:EnableKeyboard(true)
+	TopBarColorR:SetFontObject("GameFontHighlight")
+	TopBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorR:SetText(tostring(TopBarColorR1*255))
+	TopBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	TopBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	TopBarColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(TopBarColorR:GetText())
 		if new == nil then
-			headerR = 0
+			TopBarColorR1 = 0
 		elseif new > 254 then
-			headerR = 1
+			TopBarColorR1 = 1
 		else
-			headerR = new/255
+			TopBarColorR1 = new/255
 		end
-		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
-		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
-		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+		ProEnchantersOptions.Colors.TopBarColor = {TopBarColorR1, TopBarColorG1, TopBarColorB1}
+		local TopBarColorHex = RGBToWoWColorCode(TopBarColorR1, TopBarColorG1, TopBarColorB1)
+		TopBarColorExample:SetText(TopBarColorHex .. "EXAMPLE" .. ColorClose)
 	end)
 
-	local mainColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	mainColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	mainColorsGBg:SetSize(34, 24)  -- Adjust size as needed
-	mainColorsGBg:SetPoint("LEFT", mainColorsR, "RIGHT", 10, 0)
+	local TopBarColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	TopBarColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	TopBarColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	TopBarColorGBg:SetPoint("LEFT", TopBarColorR, "RIGHT", 10, 0)
 
-	local mainColorsG = CreateFrame("EditBox", nil, ColorsFrame)
-	mainColorsG:SetSize(30, 20)
-	mainColorsG:SetPoint("LEFT", mainColorsR, "RIGHT", 14, 0)
-	mainColorsG:SetAutoFocus(false)
-	mainColorsG:SetNumeric(true)
-	mainColorsG:SetMaxLetters(3)
-	mainColorsG:SetMultiLine(false)
-	mainColorsG:EnableMouse(true)
-    mainColorsG:EnableKeyboard(true)
-	mainColorsG:SetFontObject("GameFontHighlight")
-	mainColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	mainColorsG:SetText(tostring(headerG*255))
-	mainColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	mainColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	mainColorsG:SetScript("OnTextChanged", function()
-		local new = tonumber(mainColorsG:GetText())
+	local TopBarColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	TopBarColorG:SetSize(30, 20)
+	TopBarColorG:SetPoint("LEFT", TopBarColorR, "RIGHT", 14, 0)
+	TopBarColorG:SetAutoFocus(false)
+	TopBarColorG:SetNumeric(true)
+	TopBarColorG:SetMaxLetters(3)
+	TopBarColorG:SetMultiLine(false)
+	TopBarColorG:EnableMouse(true)
+    TopBarColorG:EnableKeyboard(true)
+	TopBarColorG:SetFontObject("GameFontHighlight")
+	TopBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorG:SetText(tostring(TopBarColorG1*255))
+	TopBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	TopBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	TopBarColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(TopBarColorG:GetText())
 		if new == nil then
-			headerG = 0
+			TopBarColorG1 = 0
 		elseif new > 254 then
-			headerG = 1
+			TopBarColorG1 = 1
 		else
-			headerG = new/255
+			TopBarColorG1 = new/255
 		end
-		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
-		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
-		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+		ProEnchantersOptions.Colors.TopBarColor = {TopBarColorR1, TopBarColorG1, TopBarColorB1}
+		local TopBarColorHex = RGBToWoWColorCode(TopBarColorR1, TopBarColorG1, TopBarColorB1)
+		TopBarColorExample:SetText(TopBarColorHex .. "EXAMPLE" .. ColorClose)
 	end)
 
-	local mainColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	mainColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	mainColorsBBg:SetSize(34, 24)  -- Adjust size as needed
-	mainColorsBBg:SetPoint("LEFT", mainColorsG, "RIGHT", 10, 0)
+	local TopBarColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	TopBarColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	TopBarColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	TopBarColorBBg:SetPoint("LEFT", TopBarColorG, "RIGHT", 10, 0)
 
-	local mainColorsB = CreateFrame("EditBox", nil, ColorsFrame)
-	mainColorsB:SetSize(30, 20)
-	mainColorsB:SetPoint("LEFT", mainColorsG, "RIGHT", 14, 0)
-	mainColorsB:SetAutoFocus(false)
-	mainColorsB:SetNumeric(true)
-	mainColorsB:SetMaxLetters(3)
-	mainColorsB:SetMultiLine(false)
-	mainColorsB:EnableMouse(true)
-    mainColorsB:EnableKeyboard(true)
-	mainColorsB:SetFontObject("GameFontHighlight")
-	mainColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	mainColorsB:SetText(tostring(headerB*255))
-	mainColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	mainColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	mainColorsB:SetScript("OnTextChanged", function()
-		local new = tonumber(mainColorsB:GetText())
+	local TopBarColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	TopBarColorB:SetSize(30, 20)
+	TopBarColorB:SetPoint("LEFT", TopBarColorG, "RIGHT", 14, 0)
+	TopBarColorB:SetAutoFocus(false)
+	TopBarColorB:SetNumeric(true)
+	TopBarColorB:SetMaxLetters(3)
+	TopBarColorB:SetMultiLine(false)
+	TopBarColorB:EnableMouse(true)
+    TopBarColorB:EnableKeyboard(true)
+	TopBarColorB:SetFontObject("GameFontHighlight")
+	TopBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorB:SetText(tostring(TopBarColorB1*255))
+	TopBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	TopBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	TopBarColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(TopBarColorB:GetText())
 		if new == nil then
-			headerB = 0
+			TopBarColorB1 = 0
 		elseif new > 254 then
-			headerB = 1
+			TopBarColorB1 = 1
 		else
-			headerB = new/255
+			TopBarColorB1 = new/255
 		end
-		ProEnchantersOptions.Colors.HeaderColor = {headerR, headerG, headerB}
-		local mainColorsHex = RGBToWoWColorCode(headerR, headerG, headerB)
-		mainColorsExample:SetText(mainColorsHex .. "EXAMPLE" .. ColorClose)
+		ProEnchantersOptions.Colors.TopBarColor = {TopBarColorR1, TopBarColorG1, TopBarColorB1}
+		local TopBarColorHex = RGBToWoWColorCode(TopBarColorR1, TopBarColorG1, TopBarColorB1)
+		TopBarColorExample:SetText(TopBarColorHex .. "EXAMPLE" .. ColorClose)
 	end)
 
-	-- Color Settings End
-	-- Color Settings start
-	local lightColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	lightColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	lightColorsRBg:SetSize(34, 24)  -- Adjust size as needed
-	lightColorsRBg:SetPoint("TOP", mainColorsR, "BOTTOM", -2, -15)
-	
-	local lightColorsR = CreateFrame("EditBox", nil, ColorsFrame)
-	lightColorsR:SetSize(30, 20)
-	lightColorsR:SetPoint("TOP", mainColorsR, "BOTTOM", 0, -20)
-	lightColorsR:SetAutoFocus(false)
-	lightColorsR:SetNumeric(true)
-	lightColorsR:SetMaxLetters(3)
-	lightColorsR:SetMultiLine(false)
-	lightColorsR:EnableMouse(true)
-	lightColorsR:EnableKeyboard(true)
-	lightColorsR:SetFontObject("GameFontHighlight")
-	lightColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	lightColorsR:SetText(tostring(lightR*255))
-	lightColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	lightColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	lightColorsR:SetScript("OnTextChanged", function()
-		local new = tonumber(lightColorsR:GetText())
+    local SecondaryBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	SecondaryBarColorHeader:SetFontObject("GameFontHighlight")
+	SecondaryBarColorHeader:SetPoint("TOPLEFT", TopBarColorHeader, "BOTTOMLEFT", 0, -25)
+	SecondaryBarColorHeader:SetText("Secondary Bars")
+	SecondaryBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local SecondaryBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SecondaryBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SecondaryBarColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	SecondaryBarColorRBg:SetPoint("LEFT", SecondaryBarColorHeader, "RIGHT", 10, 0)
+
+	local SecondaryBarColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	SecondaryBarColorR:SetSize(30, 20)
+	SecondaryBarColorR:SetPoint("LEFT", SecondaryBarColorHeader, "RIGHT", 14, 0)
+	SecondaryBarColorR:SetAutoFocus(false)
+	SecondaryBarColorR:SetNumeric(true)
+	SecondaryBarColorR:SetMaxLetters(3)
+	SecondaryBarColorR:SetMultiLine(false)
+	SecondaryBarColorR:EnableMouse(true)
+    SecondaryBarColorR:EnableKeyboard(true)
+	SecondaryBarColorR:SetFontObject("GameFontHighlight")
+	SecondaryBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorR:SetText(tostring(SecondaryBarColorR1*255))
+	SecondaryBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(SecondaryBarColorR:GetText())
 		if new == nil then
-			lightR = 0
+			SecondaryBarColorR1 = 0
 		elseif new > 254 then
-			lightR = 1
+			SecondaryBarColorR1 = 1
 		else
-			lightR = new/255
+			SecondaryBarColorR1 = new/255
 		end
-		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
-		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
-		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
-	end)
-	
-	local lightColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	lightColorsHeader:SetFontObject("GameFontHighlight")
-	lightColorsHeader:SetPoint("RIGHT", lightColorsR, "LEFT", -15, 0)
-	lightColorsHeader:SetText("Scroll Bar Backgrounds")
-	lightColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	
-	local lightColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	lightColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	lightColorsGBg:SetSize(34, 24)  -- Adjust size as needed
-	lightColorsGBg:SetPoint("LEFT", lightColorsRBg, "RIGHT", 10, 0)
-	
-	local lightColorsG = CreateFrame("EditBox", nil, ColorsFrame)
-	lightColorsG:SetSize(30, 20)
-	lightColorsG:SetPoint("LEFT", lightColorsR, "RIGHT", 14, 0)
-	lightColorsG:SetAutoFocus(false)
-	lightColorsG:SetNumeric(true)
-	lightColorsG:SetMaxLetters(3)
-	lightColorsG:SetMultiLine(false)
-	lightColorsG:EnableMouse(true)
-	lightColorsG:EnableKeyboard(true)
-	lightColorsG:SetFontObject("GameFontHighlight")
-	lightColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	lightColorsG:SetText(tostring(lightG*255))
-	lightColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	lightColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	lightColorsG:SetScript("OnTextChanged", function()
-		local new = tonumber(lightColorsG:GetText())
-		if new == nil then
-			lightG = 0
-		elseif new > 254 then
-			lightG = 1
-		else
-			lightG = new/255
-		end
-		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
-		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
-		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
-	end)
-	
-	local lightColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	lightColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-	lightColorsBBg:SetSize(34, 24)  -- Adjust size as needed
-	lightColorsBBg:SetPoint("LEFT", lightColorsGBg, "RIGHT", 10, 0)
-	
-	local lightColorsB = CreateFrame("EditBox", nil, ColorsFrame)
-	lightColorsB:SetSize(30, 20)
-	lightColorsB:SetPoint("LEFT", lightColorsG, "RIGHT", 14, 0)
-	lightColorsB:SetAutoFocus(false)
-	lightColorsB:SetNumeric(true)
-	lightColorsB:SetMaxLetters(3)
-	lightColorsB:SetMultiLine(false)
-	lightColorsB:EnableMouse(true)
-	lightColorsB:EnableKeyboard(true)
-	lightColorsB:SetFontObject("GameFontHighlight")
-	lightColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	lightColorsB:SetText(tostring(lightB*255))
-	lightColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-	lightColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-	lightColorsB:SetScript("OnTextChanged", function()
-		local new = tonumber(lightColorsB:GetText())
-		if new == nil then
-			lightB = 0
-		elseif new > 254 then
-			lightB = 1
-		else
-			lightB = new/255
-		end
-		ProEnchantersOptions.Colors.LightBgColor = {lightR, lightG, lightB}
-		local lightColorsHex = RGBToWoWColorCode(lightR, lightG, lightB)
-		lightColorsExample:SetText(lightColorsHex .. "EXAMPLE" .. ColorClose)
+		ProEnchantersOptions.Colors.SecondaryBarColor = {SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1}
+		local SecondaryBarColorHex = RGBToWoWColorCode(SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1)
+		SecondaryBarColorExample:SetText(SecondaryBarColorHex .. "EXAMPLE" .. ColorClose)
 	end)
 
-		-- Color Settings start
-local darkColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-darkColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-darkColorsRBg:SetSize(34, 24)  -- Adjust size as needed
-darkColorsRBg:SetPoint("TOP", lightColorsR, "BOTTOM", -2, -15)
+	local SecondaryBarColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SecondaryBarColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SecondaryBarColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	SecondaryBarColorGBg:SetPoint("LEFT", SecondaryBarColorR, "RIGHT", 10, 0)
 
-local darkColorsR = CreateFrame("EditBox", nil, ColorsFrame)
-darkColorsR:SetSize(30, 20)
-darkColorsR:SetPoint("TOP", lightColorsR, "BOTTOM", 0, -20)
-darkColorsR:SetAutoFocus(false)
-darkColorsR:SetNumeric(true)
-darkColorsR:SetMaxLetters(3)
-darkColorsR:SetMultiLine(false)
-darkColorsR:EnableMouse(true)
-darkColorsR:EnableKeyboard(true)
-darkColorsR:SetFontObject("GameFontHighlight")
-darkColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-darkColorsR:SetText(tostring(darkR*255))
-darkColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-darkColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-darkColorsR:SetScript("OnTextChanged", function()
-	local new = tonumber(darkColorsR:GetText())
-	if new == nil then
-		darkR = 0
-	elseif new > 254 then
-		darkR = 1
-	else
-		darkR = new/255
-	end
-	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
-	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
-	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+	local SecondaryBarColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	SecondaryBarColorG:SetSize(30, 20)
+	SecondaryBarColorG:SetPoint("LEFT", SecondaryBarColorR, "RIGHT", 14, 0)
+	SecondaryBarColorG:SetAutoFocus(false)
+	SecondaryBarColorG:SetNumeric(true)
+	SecondaryBarColorG:SetMaxLetters(3)
+	SecondaryBarColorG:SetMultiLine(false)
+	SecondaryBarColorG:EnableMouse(true)
+    SecondaryBarColorG:EnableKeyboard(true)
+	SecondaryBarColorG:SetFontObject("GameFontHighlight")
+	SecondaryBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorG:SetText(tostring(SecondaryBarColorG1*255))
+	SecondaryBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(SecondaryBarColorG:GetText())
+		if new == nil then
+			SecondaryBarColorG1 = 0
+		elseif new > 254 then
+			SecondaryBarColorG1 = 1
+		else
+			SecondaryBarColorG1 = new/255
+		end
+		ProEnchantersOptions.Colors.SecondaryBarColor = {SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1}
+		local SecondaryBarColorHex = RGBToWoWColorCode(SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1)
+		SecondaryBarColorExample:SetText(SecondaryBarColorHex .. "EXAMPLE" .. ColorClose)
+	end)
 
-local darkColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-darkColorsHeader:SetFontObject("GameFontHighlight")
-darkColorsHeader:SetPoint("RIGHT", darkColorsR, "LEFT", -15, 0)
-darkColorsHeader:SetText("Accent Colors")
-darkColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	local SecondaryBarColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SecondaryBarColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SecondaryBarColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	SecondaryBarColorBBg:SetPoint("LEFT", SecondaryBarColorG, "RIGHT", 10, 0)
 
-local darkColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-darkColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-darkColorsGBg:SetSize(34, 24)  -- Adjust size as needed
-darkColorsGBg:SetPoint("LEFT", darkColorsRBg, "RIGHT", 10, 0)
+	local SecondaryBarColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	SecondaryBarColorB:SetSize(30, 20)
+	SecondaryBarColorB:SetPoint("LEFT", SecondaryBarColorG, "RIGHT", 14, 0)
+	SecondaryBarColorB:SetAutoFocus(false)
+	SecondaryBarColorB:SetNumeric(true)
+	SecondaryBarColorB:SetMaxLetters(3)
+	SecondaryBarColorB:SetMultiLine(false)
+	SecondaryBarColorB:EnableMouse(true)
+    SecondaryBarColorB:EnableKeyboard(true)
+	SecondaryBarColorB:SetFontObject("GameFontHighlight")
+	SecondaryBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorB:SetText(tostring(SecondaryBarColorB1*255))
+	SecondaryBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SecondaryBarColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(SecondaryBarColorB:GetText())
+		if new == nil then
+			SecondaryBarColorB1 = 0
+		elseif new > 254 then
+			SecondaryBarColorB1 = 1
+		else
+			SecondaryBarColorB1 = new/255
+		end
+		ProEnchantersOptions.Colors.SecondaryBarColor = {SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1}
+		local SecondaryBarColorHex = RGBToWoWColorCode(SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1)
+		SecondaryBarColorExample:SetText(SecondaryBarColorHex .. "EXAMPLE" .. ColorClose)
+	end)
 
-local darkColorsG = CreateFrame("EditBox", nil, ColorsFrame)
-darkColorsG:SetSize(30, 20)
-darkColorsG:SetPoint("LEFT", darkColorsR, "RIGHT", 14, 0)
-darkColorsG:SetAutoFocus(false)
-darkColorsG:SetNumeric(true)
-darkColorsG:SetMaxLetters(3)
-darkColorsG:SetMultiLine(false)
-darkColorsG:EnableMouse(true)
-darkColorsG:EnableKeyboard(true)
-darkColorsG:SetFontObject("GameFontHighlight")
-darkColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-darkColorsG:SetText(tostring(darkG*255))
-darkColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-darkColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-darkColorsG:SetScript("OnTextChanged", function()
-	local new = tonumber(darkColorsG:GetText())
-	if new == nil then
-		darkG = 0
-	elseif new > 254 then
-		darkG = 1
-	else
-		darkG = new/255
-	end
-	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
-	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
-	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+    local MainWindowBackgroundHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	MainWindowBackgroundHeader:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundHeader:SetPoint("TOPLEFT", SecondaryBarColorHeader, "BOTTOMLEFT", 0, -25)
+	MainWindowBackgroundHeader:SetText("Main Windows Backgrounds")
+	MainWindowBackgroundHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
-local darkColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-darkColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-darkColorsBBg:SetSize(34, 24)  -- Adjust size as needed
-darkColorsBBg:SetPoint("LEFT", darkColorsGBg, "RIGHT", 10, 0)
+	local MainWindowBackgroundRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainWindowBackgroundRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainWindowBackgroundRBg:SetSize(34, 24)  -- Adjust size as needed
+	MainWindowBackgroundRBg:SetPoint("LEFT", MainWindowBackgroundHeader, "RIGHT", 10, 0)
 
-local darkColorsB = CreateFrame("EditBox", nil, ColorsFrame)
-darkColorsB:SetSize(30, 20)
-darkColorsB:SetPoint("LEFT", darkColorsG, "RIGHT", 14, 0)
-darkColorsB:SetAutoFocus(false)
-darkColorsB:SetNumeric(true)
-darkColorsB:SetMaxLetters(3)
-darkColorsB:SetMultiLine(false)
-darkColorsB:EnableMouse(true)
-darkColorsB:EnableKeyboard(true)
-darkColorsB:SetFontObject("GameFontHighlight")
-darkColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-darkColorsB:SetText(tostring(darkB*255))
-darkColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-darkColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-darkColorsB:SetScript("OnTextChanged", function()
-	local new = tonumber(darkColorsB:GetText())
-	if new == nil then
-		darkB = 0
-	elseif new > 254 then
-		darkB = 1
-	else
-		darkB = new/255
-	end
-	ProEnchantersOptions.Colors.DarkBgColor = {darkR, darkG, darkB}
-	local darkColorsHex = RGBToWoWColorCode(darkR, darkG, darkB)
-	darkColorsExample:SetText(darkColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+	local MainWindowBackgroundR = CreateFrame("EditBox", nil, ColorsFrame)
+	MainWindowBackgroundR:SetSize(30, 20)
+	MainWindowBackgroundR:SetPoint("LEFT", MainWindowBackgroundHeader, "RIGHT", 14, 0)
+	MainWindowBackgroundR:SetAutoFocus(false)
+	MainWindowBackgroundR:SetNumeric(true)
+	MainWindowBackgroundR:SetMaxLetters(3)
+	MainWindowBackgroundR:SetMultiLine(false)
+	MainWindowBackgroundR:EnableMouse(true)
+    MainWindowBackgroundR:EnableKeyboard(true)
+	MainWindowBackgroundR:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundR:SetText(tostring(MainWindowBackgroundR1*255))
+	MainWindowBackgroundR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundR:SetScript("OnTextChanged", function()
+		local new = tonumber(MainWindowBackgroundR:GetText())
+		if new == nil then
+			MainWindowBackgroundR1 = 0
+		elseif new > 254 then
+			MainWindowBackgroundR1 = 1
+		else
+			MainWindowBackgroundR1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainWindowBackground = {MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1}
+		local MainWindowBackgroundHex = RGBToWoWColorCode(MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1)
+		MainWindowBackgroundExample:SetText(MainWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
 
--- Color Settings start
-local greyColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-greyColorsRBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-greyColorsRBg:SetSize(34, 24)  -- Adjust size as needed
-greyColorsRBg:SetPoint("TOP", darkColorsR, "BOTTOM", -2, -15)
+	local MainWindowBackgroundGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainWindowBackgroundGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainWindowBackgroundGBg:SetSize(34, 24)  -- Adjust size as needed
+	MainWindowBackgroundGBg:SetPoint("LEFT", MainWindowBackgroundR, "RIGHT", 10, 0)
 
-local greyColorsR = CreateFrame("EditBox", nil, ColorsFrame)
-greyColorsR:SetSize(30, 20)
-greyColorsR:SetPoint("TOP", darkColorsR, "BOTTOM", 0, -20)
-greyColorsR:SetAutoFocus(false)
-greyColorsR:SetNumeric(true)
-greyColorsR:SetMaxLetters(3)
-greyColorsR:SetMultiLine(false)
-greyColorsR:EnableMouse(true)
-greyColorsR:EnableKeyboard(true)
-greyColorsR:SetFontObject("GameFontHighlight")
-greyColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-greyColorsR:SetText(tostring(greyR*255))
-greyColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-greyColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-greyColorsR:SetScript("OnTextChanged", function()
-	local new = tonumber(greyColorsR:GetText())
-	if new == nil then
-		greyR = 0
-	elseif new > 254 then
-		greyR = 1
-	else
-		greyR = new/255
-	end
-	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
-	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
-	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+	local MainWindowBackgroundG = CreateFrame("EditBox", nil, ColorsFrame)
+	MainWindowBackgroundG:SetSize(30, 20)
+	MainWindowBackgroundG:SetPoint("LEFT", MainWindowBackgroundR, "RIGHT", 14, 0)
+	MainWindowBackgroundG:SetAutoFocus(false)
+	MainWindowBackgroundG:SetNumeric(true)
+	MainWindowBackgroundG:SetMaxLetters(3)
+	MainWindowBackgroundG:SetMultiLine(false)
+	MainWindowBackgroundG:EnableMouse(true)
+    MainWindowBackgroundG:EnableKeyboard(true)
+	MainWindowBackgroundG:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundG:SetText(tostring(MainWindowBackgroundG1*255))
+	MainWindowBackgroundG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundG:SetScript("OnTextChanged", function()
+		local new = tonumber(MainWindowBackgroundG:GetText())
+		if new == nil then
+			MainWindowBackgroundG1 = 0
+		elseif new > 254 then
+			MainWindowBackgroundG1 = 1
+		else
+			MainWindowBackgroundG1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainWindowBackground = {MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1}
+		local MainWindowBackgroundHex = RGBToWoWColorCode(MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1)
+		MainWindowBackgroundExample:SetText(MainWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
 
-local greyColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-greyColorsHeader:SetFontObject("GameFontHighlight")
-greyColorsHeader:SetPoint("RIGHT", greyColorsR, "LEFT", -15, 0)
-greyColorsHeader:SetText("Disabled Buttons Color")
-greyColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	local MainWindowBackgroundBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainWindowBackgroundBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainWindowBackgroundBBg:SetSize(34, 24)  -- Adjust size as needed
+	MainWindowBackgroundBBg:SetPoint("LEFT", MainWindowBackgroundG, "RIGHT", 10, 0)
 
-local greyColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-greyColorsGBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-greyColorsGBg:SetSize(34, 24)  -- Adjust size as needed
-greyColorsGBg:SetPoint("LEFT", greyColorsRBg, "RIGHT", 10, 0)
+	local MainWindowBackgroundB = CreateFrame("EditBox", nil, ColorsFrame)
+	MainWindowBackgroundB:SetSize(30, 20)
+	MainWindowBackgroundB:SetPoint("LEFT", MainWindowBackgroundG, "RIGHT", 14, 0)
+	MainWindowBackgroundB:SetAutoFocus(false)
+	MainWindowBackgroundB:SetNumeric(true)
+	MainWindowBackgroundB:SetMaxLetters(3)
+	MainWindowBackgroundB:SetMultiLine(false)
+	MainWindowBackgroundB:EnableMouse(true)
+    MainWindowBackgroundB:EnableKeyboard(true)
+	MainWindowBackgroundB:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundB:SetText(tostring(MainWindowBackgroundB1*255))
+	MainWindowBackgroundB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainWindowBackgroundB:SetScript("OnTextChanged", function()
+		local new = tonumber(MainWindowBackgroundB:GetText())
+		if new == nil then
+			MainWindowBackgroundB1 = 0
+		elseif new > 254 then
+			MainWindowBackgroundB1 = 1
+		else
+			MainWindowBackgroundB1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainWindowBackground = {MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1}
+		local MainWindowBackgroundHex = RGBToWoWColorCode(MainWindowBackgroundR1, MainWindowBackgroundG1, MainWindowBackgroundB1)
+		MainWindowBackgroundExample:SetText(MainWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
 
-local greyColorsG = CreateFrame("EditBox", nil, ColorsFrame)
-greyColorsG:SetSize(30, 20)
-greyColorsG:SetPoint("LEFT", greyColorsR, "RIGHT", 14, 0)
-greyColorsG:SetAutoFocus(false)
-greyColorsG:SetNumeric(true)
-greyColorsG:SetMaxLetters(3)
-greyColorsG:SetMultiLine(false)
-greyColorsG:EnableMouse(true)
-greyColorsG:EnableKeyboard(true)
-greyColorsG:SetFontObject("GameFontHighlight")
-greyColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-greyColorsG:SetText(tostring(greyG*255))
-greyColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-greyColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-greyColorsG:SetScript("OnTextChanged", function()
-	local new = tonumber(greyColorsG:GetText())
-	if new == nil then
-		greyG = 0
-	elseif new > 254 then
-		greyG = 1
-	else
-		greyG = new/255
-	end
-	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
-	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
-	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+    local BottomBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	BottomBarColorHeader:SetFontObject("GameFontHighlight")
+	BottomBarColorHeader:SetPoint("TOPLEFT", MainWindowBackgroundHeader, "BOTTOMLEFT", 0, -25)
+	BottomBarColorHeader:SetText("Bottom Bar")
+	BottomBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
-local greyColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-greyColorsBBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
-greyColorsBBg:SetSize(34, 24)  -- Adjust size as needed
-greyColorsBBg:SetPoint("LEFT", greyColorsGBg, "RIGHT", 10, 0)
+	local BottomBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BottomBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BottomBarColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	BottomBarColorRBg:SetPoint("LEFT", BottomBarColorHeader, "RIGHT", 10, 0)
 
-local greyColorsB = CreateFrame("EditBox", nil, ColorsFrame)
-greyColorsB:SetSize(30, 20)
-greyColorsB:SetPoint("LEFT", greyColorsG, "RIGHT", 14, 0)
-greyColorsB:SetAutoFocus(false)
-greyColorsB:SetNumeric(true)
-greyColorsB:SetMaxLetters(3)
-greyColorsB:SetMultiLine(false)
-greyColorsB:EnableMouse(true)
-greyColorsB:EnableKeyboard(true)
-greyColorsB:SetFontObject("GameFontHighlight")
-greyColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-greyColorsB:SetText(tostring(greyB*255))
-greyColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-greyColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-greyColorsB:SetScript("OnTextChanged", function()
-	local new = tonumber(greyColorsB:GetText())
-	if new == nil then
-		greyB = 0
-	elseif new > 254 then
-		greyB = 1
-	else
-		greyB = new/255
-	end
-	ProEnchantersOptions.Colors.GreyBgColor = {greyR, greyG, greyB}
-	local greyColorsHex = RGBToWoWColorCode(greyR, greyG, greyB)
-	greyColorsExample:SetText(greyColorsHex .. "EXAMPLE" .. ColorClose)
-end)
+	local BottomBarColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	BottomBarColorR:SetSize(30, 20)
+	BottomBarColorR:SetPoint("LEFT", BottomBarColorHeader, "RIGHT", 14, 0)
+	BottomBarColorR:SetAutoFocus(false)
+	BottomBarColorR:SetNumeric(true)
+	BottomBarColorR:SetMaxLetters(3)
+	BottomBarColorR:SetMultiLine(false)
+	BottomBarColorR:EnableMouse(true)
+    BottomBarColorR:EnableKeyboard(true)
+	BottomBarColorR:SetFontObject("GameFontHighlight")
+	BottomBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorR:SetText(tostring(BottomBarColorR1*255))
+	BottomBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BottomBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BottomBarColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(BottomBarColorR:GetText())
+		if new == nil then
+			BottomBarColorR1 = 0
+		elseif new > 254 then
+			BottomBarColorR1 = 1
+		else
+			BottomBarColorR1 = new/255
+		end
+		ProEnchantersOptions.Colors.BottomBarColor = {BottomBarColorR1, BottomBarColorG1, BottomBarColorB1}
+		local BottomBarColorHex = RGBToWoWColorCode(BottomBarColorR1, BottomBarColorG1, BottomBarColorB1)
+		BottomBarColorExample:SetText(BottomBarColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local BottomBarColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BottomBarColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BottomBarColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	BottomBarColorGBg:SetPoint("LEFT", BottomBarColorR, "RIGHT", 10, 0)
+
+	local BottomBarColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	BottomBarColorG:SetSize(30, 20)
+	BottomBarColorG:SetPoint("LEFT", BottomBarColorR, "RIGHT", 14, 0)
+	BottomBarColorG:SetAutoFocus(false)
+	BottomBarColorG:SetNumeric(true)
+	BottomBarColorG:SetMaxLetters(3)
+	BottomBarColorG:SetMultiLine(false)
+	BottomBarColorG:EnableMouse(true)
+    BottomBarColorG:EnableKeyboard(true)
+	BottomBarColorG:SetFontObject("GameFontHighlight")
+	BottomBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorG:SetText(tostring(BottomBarColorG1*255))
+	BottomBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BottomBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BottomBarColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(BottomBarColorG:GetText())
+		if new == nil then
+			BottomBarColorG1 = 0
+		elseif new > 254 then
+			BottomBarColorG1 = 1
+		else
+			BottomBarColorG1 = new/255
+		end
+		ProEnchantersOptions.Colors.BottomBarColor = {BottomBarColorR1, BottomBarColorG1, BottomBarColorB1}
+		local BottomBarColorHex = RGBToWoWColorCode(BottomBarColorR1, BottomBarColorG1, BottomBarColorB1)
+		BottomBarColorExample:SetText(BottomBarColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local BottomBarColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BottomBarColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BottomBarColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	BottomBarColorBBg:SetPoint("LEFT", BottomBarColorG, "RIGHT", 10, 0)
+
+	local BottomBarColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	BottomBarColorB:SetSize(30, 20)
+	BottomBarColorB:SetPoint("LEFT", BottomBarColorG, "RIGHT", 14, 0)
+	BottomBarColorB:SetAutoFocus(false)
+	BottomBarColorB:SetNumeric(true)
+	BottomBarColorB:SetMaxLetters(3)
+	BottomBarColorB:SetMultiLine(false)
+	BottomBarColorB:EnableMouse(true)
+    BottomBarColorB:EnableKeyboard(true)
+	BottomBarColorB:SetFontObject("GameFontHighlight")
+	BottomBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorB:SetText(tostring(BottomBarColorB1*255))
+	BottomBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BottomBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BottomBarColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(BottomBarColorB:GetText())
+		if new == nil then
+			BottomBarColorB1 = 0
+		elseif new > 254 then
+			BottomBarColorB1 = 1
+		else
+			BottomBarColorB1 = new/255
+		end
+		ProEnchantersOptions.Colors.BottomBarColor = {BottomBarColorR1, BottomBarColorG1, BottomBarColorB1}
+		local BottomBarColorHex = RGBToWoWColorCode(BottomBarColorR1, BottomBarColorG1, BottomBarColorB1)
+		BottomBarColorExample:SetText(BottomBarColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local EnchantsButtonColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	EnchantsButtonColorHeader:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorHeader:SetPoint("TOPLEFT", BottomBarColorHeader, "BOTTOMLEFT", 0, -25)
+	EnchantsButtonColorHeader:SetText("Enchant Buttons")
+	EnchantsButtonColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local EnchantsButtonColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorRBg:SetPoint("LEFT", EnchantsButtonColorHeader, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorR:SetSize(30, 20)
+	EnchantsButtonColorR:SetPoint("LEFT", EnchantsButtonColorHeader, "RIGHT", 14, 0)
+	EnchantsButtonColorR:SetAutoFocus(false)
+	EnchantsButtonColorR:SetNumeric(true)
+	EnchantsButtonColorR:SetMaxLetters(3)
+	EnchantsButtonColorR:SetMultiLine(false)
+	EnchantsButtonColorR:EnableMouse(true)
+    EnchantsButtonColorR:EnableKeyboard(true)
+	EnchantsButtonColorR:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorR:SetText(tostring(EnchantsButtonColorR1*255))
+	EnchantsButtonColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorR:GetText())
+		if new == nil then
+			EnchantsButtonColorR1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorR1 = 1
+		else
+			EnchantsButtonColorR1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColor = {EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1}
+		local EnchantsButtonColorHex = RGBToWoWColorCode(EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1)
+		EnchantsButtonColorExample:SetText(EnchantsButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local EnchantsButtonColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorGBg:SetPoint("LEFT", EnchantsButtonColorR, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorG:SetSize(30, 20)
+	EnchantsButtonColorG:SetPoint("LEFT", EnchantsButtonColorR, "RIGHT", 14, 0)
+	EnchantsButtonColorG:SetAutoFocus(false)
+	EnchantsButtonColorG:SetNumeric(true)
+	EnchantsButtonColorG:SetMaxLetters(3)
+	EnchantsButtonColorG:SetMultiLine(false)
+	EnchantsButtonColorG:EnableMouse(true)
+    EnchantsButtonColorG:EnableKeyboard(true)
+	EnchantsButtonColorG:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorG:SetText(tostring(EnchantsButtonColorG1*255))
+	EnchantsButtonColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorG:GetText())
+		if new == nil then
+			EnchantsButtonColorG1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorG1 = 1
+		else
+			EnchantsButtonColorG1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColor = {EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1}
+		local EnchantsButtonColorHex = RGBToWoWColorCode(EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1)
+		EnchantsButtonColorExample:SetText(EnchantsButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local EnchantsButtonColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorBBg:SetPoint("LEFT", EnchantsButtonColorG, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorB:SetSize(30, 20)
+	EnchantsButtonColorB:SetPoint("LEFT", EnchantsButtonColorG, "RIGHT", 14, 0)
+	EnchantsButtonColorB:SetAutoFocus(false)
+	EnchantsButtonColorB:SetNumeric(true)
+	EnchantsButtonColorB:SetMaxLetters(3)
+	EnchantsButtonColorB:SetMultiLine(false)
+	EnchantsButtonColorB:EnableMouse(true)
+    EnchantsButtonColorB:EnableKeyboard(true)
+	EnchantsButtonColorB:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorB:SetText(tostring(EnchantsButtonColorB1*255))
+	EnchantsButtonColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorB:GetText())
+		if new == nil then
+			EnchantsButtonColorB1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorB1 = 1
+		else
+			EnchantsButtonColorB1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColor = {EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1}
+		local EnchantsButtonColorHex = RGBToWoWColorCode(EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1)
+		EnchantsButtonColorExample:SetText(EnchantsButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local EnchantsButtonColorInactiveHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	EnchantsButtonColorInactiveHeader:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveHeader:SetPoint("TOPLEFT", EnchantsButtonColorHeader, "BOTTOMLEFT", 0, -25)
+	EnchantsButtonColorInactiveHeader:SetText("Disabled Enchant Buttons")
+	EnchantsButtonColorInactiveHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local EnchantsButtonColorInactiveRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorInactiveRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorInactiveRBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorInactiveRBg:SetPoint("LEFT", EnchantsButtonColorInactiveHeader, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorInactiveR = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorInactiveR:SetSize(30, 20)
+	EnchantsButtonColorInactiveR:SetPoint("LEFT", EnchantsButtonColorInactiveHeader, "RIGHT", 14, 0)
+	EnchantsButtonColorInactiveR:SetAutoFocus(false)
+	EnchantsButtonColorInactiveR:SetNumeric(true)
+	EnchantsButtonColorInactiveR:SetMaxLetters(3)
+	EnchantsButtonColorInactiveR:SetMultiLine(false)
+	EnchantsButtonColorInactiveR:EnableMouse(true)
+    EnchantsButtonColorInactiveR:EnableKeyboard(true)
+	EnchantsButtonColorInactiveR:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveR:SetText(tostring(EnchantsButtonColorInactiveR1*255))
+	EnchantsButtonColorInactiveR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveR:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorInactiveR:GetText())
+		if new == nil then
+			EnchantsButtonColorInactiveR1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorInactiveR1 = 1
+		else
+			EnchantsButtonColorInactiveR1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColorInactive = {EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1}
+		local EnchantsButtonColorInactiveHex = RGBToWoWColorCode(EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1)
+		EnchantsButtonColorInactiveExample:SetText(EnchantsButtonColorInactiveHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local EnchantsButtonColorInactiveGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorInactiveGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorInactiveGBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorInactiveGBg:SetPoint("LEFT", EnchantsButtonColorInactiveR, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorInactiveG = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorInactiveG:SetSize(30, 20)
+	EnchantsButtonColorInactiveG:SetPoint("LEFT", EnchantsButtonColorInactiveR, "RIGHT", 14, 0)
+	EnchantsButtonColorInactiveG:SetAutoFocus(false)
+	EnchantsButtonColorInactiveG:SetNumeric(true)
+	EnchantsButtonColorInactiveG:SetMaxLetters(3)
+	EnchantsButtonColorInactiveG:SetMultiLine(false)
+	EnchantsButtonColorInactiveG:EnableMouse(true)
+    EnchantsButtonColorInactiveG:EnableKeyboard(true)
+	EnchantsButtonColorInactiveG:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveG:SetText(tostring(EnchantsButtonColorInactiveG1*255))
+	EnchantsButtonColorInactiveG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveG:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorInactiveG:GetText())
+		if new == nil then
+			EnchantsButtonColorInactiveG1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorInactiveG1 = 1
+		else
+			EnchantsButtonColorInactiveG1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColorInactive = {EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1}
+		local EnchantsButtonColorInactiveHex = RGBToWoWColorCode(EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1)
+		EnchantsButtonColorInactiveExample:SetText(EnchantsButtonColorInactiveHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local EnchantsButtonColorInactiveBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	EnchantsButtonColorInactiveBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	EnchantsButtonColorInactiveBBg:SetSize(34, 24)  -- Adjust size as needed
+	EnchantsButtonColorInactiveBBg:SetPoint("LEFT", EnchantsButtonColorInactiveG, "RIGHT", 10, 0)
+
+	local EnchantsButtonColorInactiveB = CreateFrame("EditBox", nil, ColorsFrame)
+	EnchantsButtonColorInactiveB:SetSize(30, 20)
+	EnchantsButtonColorInactiveB:SetPoint("LEFT", EnchantsButtonColorInactiveG, "RIGHT", 14, 0)
+	EnchantsButtonColorInactiveB:SetAutoFocus(false)
+	EnchantsButtonColorInactiveB:SetNumeric(true)
+	EnchantsButtonColorInactiveB:SetMaxLetters(3)
+	EnchantsButtonColorInactiveB:SetMultiLine(false)
+	EnchantsButtonColorInactiveB:EnableMouse(true)
+    EnchantsButtonColorInactiveB:EnableKeyboard(true)
+	EnchantsButtonColorInactiveB:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveB:SetText(tostring(EnchantsButtonColorInactiveB1*255))
+	EnchantsButtonColorInactiveB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	EnchantsButtonColorInactiveB:SetScript("OnTextChanged", function()
+		local new = tonumber(EnchantsButtonColorInactiveB:GetText())
+		if new == nil then
+			EnchantsButtonColorInactiveB1 = 0
+		elseif new > 254 then
+			EnchantsButtonColorInactiveB1 = 1
+		else
+			EnchantsButtonColorInactiveB1 = new/255
+		end
+		ProEnchantersOptions.Colors.EnchantsButtonColorInactive = {EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1}
+		local EnchantsButtonColorInactiveHex = RGBToWoWColorCode(EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1, EnchantsButtonColorInactiveB1)
+		EnchantsButtonColorInactiveExample:SetText(EnchantsButtonColorInactiveHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local BorderColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	BorderColorHeader:SetFontObject("GameFontHighlight")
+	BorderColorHeader:SetPoint("TOPLEFT", EnchantsButtonColorInactiveHeader, "BOTTOMLEFT", 0, -25)
+	BorderColorHeader:SetText("Border Colors")
+	BorderColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local BorderColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BorderColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BorderColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	BorderColorRBg:SetPoint("LEFT", BorderColorHeader, "RIGHT", 10, 0)
+
+	local BorderColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	BorderColorR:SetSize(30, 20)
+	BorderColorR:SetPoint("LEFT", BorderColorHeader, "RIGHT", 14, 0)
+	BorderColorR:SetAutoFocus(false)
+	BorderColorR:SetNumeric(true)
+	BorderColorR:SetMaxLetters(3)
+	BorderColorR:SetMultiLine(false)
+	BorderColorR:EnableMouse(true)
+    BorderColorR:EnableKeyboard(true)
+	BorderColorR:SetFontObject("GameFontHighlight")
+	BorderColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorR:SetText(tostring(BorderColorR1*255))
+	BorderColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BorderColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BorderColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(BorderColorR:GetText())
+		if new == nil then
+			BorderColorR1 = 0
+		elseif new > 254 then
+			BorderColorR1 = 1
+		else
+			BorderColorR1 = new/255
+		end
+		ProEnchantersOptions.Colors.BorderColor = {BorderColorR1, BorderColorG1, BorderColorB1}
+		local BorderColorHex = RGBToWoWColorCode(BorderColorR1, BorderColorG1, BorderColorB1)
+		BorderColorExample:SetText(BorderColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local BorderColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BorderColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BorderColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	BorderColorGBg:SetPoint("LEFT", BorderColorR, "RIGHT", 10, 0)
+
+	local BorderColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	BorderColorG:SetSize(30, 20)
+	BorderColorG:SetPoint("LEFT", BorderColorR, "RIGHT", 14, 0)
+	BorderColorG:SetAutoFocus(false)
+	BorderColorG:SetNumeric(true)
+	BorderColorG:SetMaxLetters(3)
+	BorderColorG:SetMultiLine(false)
+	BorderColorG:EnableMouse(true)
+    BorderColorG:EnableKeyboard(true)
+	BorderColorG:SetFontObject("GameFontHighlight")
+	BorderColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorG:SetText(tostring(BorderColorG1*255))
+	BorderColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BorderColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BorderColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(BorderColorG:GetText())
+		if new == nil then
+			BorderColorG1 = 0
+		elseif new > 254 then
+			BorderColorG1 = 1
+		else
+			BorderColorG1 = new/255
+		end
+		ProEnchantersOptions.Colors.BorderColor = {BorderColorR1, BorderColorG1, BorderColorB1}
+		local BorderColorHex = RGBToWoWColorCode(BorderColorR1, BorderColorG1, BorderColorB1)
+		BorderColorExample:SetText(BorderColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local BorderColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	BorderColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	BorderColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	BorderColorBBg:SetPoint("LEFT", BorderColorG, "RIGHT", 10, 0)
+
+	local BorderColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	BorderColorB:SetSize(30, 20)
+	BorderColorB:SetPoint("LEFT", BorderColorG, "RIGHT", 14, 0)
+	BorderColorB:SetAutoFocus(false)
+	BorderColorB:SetNumeric(true)
+	BorderColorB:SetMaxLetters(3)
+	BorderColorB:SetMultiLine(false)
+	BorderColorB:EnableMouse(true)
+    BorderColorB:EnableKeyboard(true)
+	BorderColorB:SetFontObject("GameFontHighlight")
+	BorderColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorB:SetText(tostring(BorderColorB1*255))
+	BorderColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	BorderColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	BorderColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(BorderColorB:GetText())
+		if new == nil then
+			BorderColorB1 = 0
+		elseif new > 254 then
+			BorderColorB1 = 1
+		else
+			BorderColorB1 = new/255
+		end
+		ProEnchantersOptions.Colors.BorderColor = {BorderColorR1, BorderColorG1, BorderColorB1}
+		local BorderColorHex = RGBToWoWColorCode(BorderColorR1, BorderColorG1, BorderColorB1)
+		BorderColorExample:SetText(BorderColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local MainButtonColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	MainButtonColorHeader:SetFontObject("GameFontHighlight")
+	MainButtonColorHeader:SetPoint("TOPLEFT", BorderColorHeader, "BOTTOMLEFT", 0, -25)
+	MainButtonColorHeader:SetText("Main Buttons")
+	MainButtonColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local MainButtonColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainButtonColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainButtonColorRBg:SetSize(34, 24)  -- Adjust size as needed
+	MainButtonColorRBg:SetPoint("LEFT", MainButtonColorHeader, "RIGHT", 10, 0)
+
+	local MainButtonColorR = CreateFrame("EditBox", nil, ColorsFrame)
+	MainButtonColorR:SetSize(30, 20)
+	MainButtonColorR:SetPoint("LEFT", MainButtonColorHeader, "RIGHT", 14, 0)
+	MainButtonColorR:SetAutoFocus(false)
+	MainButtonColorR:SetNumeric(true)
+	MainButtonColorR:SetMaxLetters(3)
+	MainButtonColorR:SetMultiLine(false)
+	MainButtonColorR:EnableMouse(true)
+    MainButtonColorR:EnableKeyboard(true)
+	MainButtonColorR:SetFontObject("GameFontHighlight")
+	MainButtonColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorR:SetText(tostring(MainButtonColorR1*255))
+	MainButtonColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainButtonColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainButtonColorR:SetScript("OnTextChanged", function()
+		local new = tonumber(MainButtonColorR:GetText())
+		if new == nil then
+			MainButtonColorR1 = 0
+		elseif new > 254 then
+			MainButtonColorR1 = 1
+		else
+			MainButtonColorR1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainButtonColor = {MainButtonColorR1, MainButtonColorG1, MainButtonColorB1}
+		local MainButtonColorHex = RGBToWoWColorCode(MainButtonColorR1, MainButtonColorG1, MainButtonColorB1)
+		MainButtonColorExample:SetText(MainButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local MainButtonColorGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainButtonColorGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainButtonColorGBg:SetSize(34, 24)  -- Adjust size as needed
+	MainButtonColorGBg:SetPoint("LEFT", MainButtonColorR, "RIGHT", 10, 0)
+
+	local MainButtonColorG = CreateFrame("EditBox", nil, ColorsFrame)
+	MainButtonColorG:SetSize(30, 20)
+	MainButtonColorG:SetPoint("LEFT", MainButtonColorR, "RIGHT", 14, 0)
+	MainButtonColorG:SetAutoFocus(false)
+	MainButtonColorG:SetNumeric(true)
+	MainButtonColorG:SetMaxLetters(3)
+	MainButtonColorG:SetMultiLine(false)
+	MainButtonColorG:EnableMouse(true)
+    MainButtonColorG:EnableKeyboard(true)
+	MainButtonColorG:SetFontObject("GameFontHighlight")
+	MainButtonColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorG:SetText(tostring(MainButtonColorG1*255))
+	MainButtonColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainButtonColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainButtonColorG:SetScript("OnTextChanged", function()
+		local new = tonumber(MainButtonColorG:GetText())
+		if new == nil then
+			MainButtonColorG1 = 0
+		elseif new > 254 then
+			MainButtonColorG1 = 1
+		else
+			MainButtonColorG1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainButtonColor = {MainButtonColorR1, MainButtonColorG1, MainButtonColorB1}
+		local MainButtonColorHex = RGBToWoWColorCode(MainButtonColorR1, MainButtonColorG1, MainButtonColorB1)
+		MainButtonColorExample:SetText(MainButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local MainButtonColorBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	MainButtonColorBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	MainButtonColorBBg:SetSize(34, 24)  -- Adjust size as needed
+	MainButtonColorBBg:SetPoint("LEFT", MainButtonColorG, "RIGHT", 10, 0)
+
+	local MainButtonColorB = CreateFrame("EditBox", nil, ColorsFrame)
+	MainButtonColorB:SetSize(30, 20)
+	MainButtonColorB:SetPoint("LEFT", MainButtonColorG, "RIGHT", 14, 0)
+	MainButtonColorB:SetAutoFocus(false)
+	MainButtonColorB:SetNumeric(true)
+	MainButtonColorB:SetMaxLetters(3)
+	MainButtonColorB:SetMultiLine(false)
+	MainButtonColorB:EnableMouse(true)
+    MainButtonColorB:EnableKeyboard(true)
+	MainButtonColorB:SetFontObject("GameFontHighlight")
+	MainButtonColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorB:SetText(tostring(MainButtonColorB1*255))
+	MainButtonColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	MainButtonColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	MainButtonColorB:SetScript("OnTextChanged", function()
+		local new = tonumber(MainButtonColorB:GetText())
+		if new == nil then
+			MainButtonColorB1 = 0
+		elseif new > 254 then
+			MainButtonColorB1 = 1
+		else
+			MainButtonColorB1 = new/255
+		end
+		ProEnchantersOptions.Colors.MainButtonColor = {MainButtonColorR1, MainButtonColorG1, MainButtonColorB1}
+		local MainButtonColorHex = RGBToWoWColorCode(MainButtonColorR1, MainButtonColorG1, MainButtonColorB1)
+		MainButtonColorExample:SetText(MainButtonColorHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local SettingsWindowBackgroundHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	SettingsWindowBackgroundHeader:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundHeader:SetPoint("TOPLEFT", MainButtonColorHeader, "BOTTOMLEFT", 0, -25)
+	SettingsWindowBackgroundHeader:SetText("Settings Window Background")
+	SettingsWindowBackgroundHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local SettingsWindowBackgroundRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SettingsWindowBackgroundRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SettingsWindowBackgroundRBg:SetSize(34, 24)  -- Adjust size as needed
+	SettingsWindowBackgroundRBg:SetPoint("LEFT", SettingsWindowBackgroundHeader, "RIGHT", 10, 0)
+
+	local SettingsWindowBackgroundR = CreateFrame("EditBox", nil, ColorsFrame)
+	SettingsWindowBackgroundR:SetSize(30, 20)
+	SettingsWindowBackgroundR:SetPoint("LEFT", SettingsWindowBackgroundHeader, "RIGHT", 14, 0)
+	SettingsWindowBackgroundR:SetAutoFocus(false)
+	SettingsWindowBackgroundR:SetNumeric(true)
+	SettingsWindowBackgroundR:SetMaxLetters(3)
+	SettingsWindowBackgroundR:SetMultiLine(false)
+	SettingsWindowBackgroundR:EnableMouse(true)
+    SettingsWindowBackgroundR:EnableKeyboard(true)
+	SettingsWindowBackgroundR:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundR:SetText(tostring(SettingsWindowBackgroundR1*255))
+	SettingsWindowBackgroundR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundR:SetScript("OnTextChanged", function()
+		local new = tonumber(SettingsWindowBackgroundR:GetText())
+		if new == nil then
+			SettingsWindowBackgroundR1 = 0
+		elseif new > 254 then
+			SettingsWindowBackgroundR1 = 1
+		else
+			SettingsWindowBackgroundR1 = new/255
+		end
+		ProEnchantersOptions.Colors.SettingsWindowBackground = {SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1}
+		local SettingsWindowBackgroundHex = RGBToWoWColorCode(SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1)
+		SettingsWindowBackgroundExample:SetText(SettingsWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local SettingsWindowBackgroundGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SettingsWindowBackgroundGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SettingsWindowBackgroundGBg:SetSize(34, 24)  -- Adjust size as needed
+	SettingsWindowBackgroundGBg:SetPoint("LEFT", SettingsWindowBackgroundR, "RIGHT", 10, 0)
+
+	local SettingsWindowBackgroundG = CreateFrame("EditBox", nil, ColorsFrame)
+	SettingsWindowBackgroundG:SetSize(30, 20)
+	SettingsWindowBackgroundG:SetPoint("LEFT", SettingsWindowBackgroundR, "RIGHT", 14, 0)
+	SettingsWindowBackgroundG:SetAutoFocus(false)
+	SettingsWindowBackgroundG:SetNumeric(true)
+	SettingsWindowBackgroundG:SetMaxLetters(3)
+	SettingsWindowBackgroundG:SetMultiLine(false)
+	SettingsWindowBackgroundG:EnableMouse(true)
+    SettingsWindowBackgroundG:EnableKeyboard(true)
+	SettingsWindowBackgroundG:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundG:SetText(tostring(SettingsWindowBackgroundG1*255))
+	SettingsWindowBackgroundG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundG:SetScript("OnTextChanged", function()
+		local new = tonumber(SettingsWindowBackgroundG:GetText())
+		if new == nil then
+			SettingsWindowBackgroundG1 = 0
+		elseif new > 254 then
+			SettingsWindowBackgroundG1 = 1
+		else
+			SettingsWindowBackgroundG1 = new/255
+		end
+		ProEnchantersOptions.Colors.SettingsWindowBackground = {SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1}
+		local SettingsWindowBackgroundHex = RGBToWoWColorCode(SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1)
+		SettingsWindowBackgroundExample:SetText(SettingsWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local SettingsWindowBackgroundBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	SettingsWindowBackgroundBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	SettingsWindowBackgroundBBg:SetSize(34, 24)  -- Adjust size as needed
+	SettingsWindowBackgroundBBg:SetPoint("LEFT", SettingsWindowBackgroundG, "RIGHT", 10, 0)
+
+	local SettingsWindowBackgroundB = CreateFrame("EditBox", nil, ColorsFrame)
+	SettingsWindowBackgroundB:SetSize(30, 20)
+	SettingsWindowBackgroundB:SetPoint("LEFT", SettingsWindowBackgroundG, "RIGHT", 14, 0)
+	SettingsWindowBackgroundB:SetAutoFocus(false)
+	SettingsWindowBackgroundB:SetNumeric(true)
+	SettingsWindowBackgroundB:SetMaxLetters(3)
+	SettingsWindowBackgroundB:SetMultiLine(false)
+	SettingsWindowBackgroundB:EnableMouse(true)
+    SettingsWindowBackgroundB:EnableKeyboard(true)
+	SettingsWindowBackgroundB:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundB:SetText(tostring(SettingsWindowBackgroundB1*255))
+	SettingsWindowBackgroundB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	SettingsWindowBackgroundB:SetScript("OnTextChanged", function()
+		local new = tonumber(SettingsWindowBackgroundB:GetText())
+		if new == nil then
+			SettingsWindowBackgroundB1 = 0
+		elseif new > 254 then
+			SettingsWindowBackgroundB1 = 1
+		else
+			SettingsWindowBackgroundB1 = new/255
+		end
+		ProEnchantersOptions.Colors.SettingsWindowBackground = {SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1}
+		local SettingsWindowBackgroundHex = RGBToWoWColorCode(SettingsWindowBackgroundR1, SettingsWindowBackgroundG1, SettingsWindowBackgroundB1)
+		SettingsWindowBackgroundExample:SetText(SettingsWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local ScrollBarColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	ScrollBarColorsHeader:SetFontObject("GameFontHighlight")
+	ScrollBarColorsHeader:SetPoint("TOPLEFT", SettingsWindowBackgroundHeader, "BOTTOMLEFT", 0, -25)
+	ScrollBarColorsHeader:SetText("Scroll Bar Buttons")
+	ScrollBarColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local ScrollBarColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	ScrollBarColorsRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	ScrollBarColorsRBg:SetSize(34, 24)  -- Adjust size as needed
+	ScrollBarColorsRBg:SetPoint("LEFT", ScrollBarColorsHeader, "RIGHT", 10, 0)
+
+	local ScrollBarColorsR = CreateFrame("EditBox", nil, ColorsFrame)
+	ScrollBarColorsR:SetSize(30, 20)
+	ScrollBarColorsR:SetPoint("LEFT", ScrollBarColorsHeader, "RIGHT", 14, 0)
+	ScrollBarColorsR:SetAutoFocus(false)
+	ScrollBarColorsR:SetNumeric(true)
+	ScrollBarColorsR:SetMaxLetters(3)
+	ScrollBarColorsR:SetMultiLine(false)
+	ScrollBarColorsR:EnableMouse(true)
+    ScrollBarColorsR:EnableKeyboard(true)
+	ScrollBarColorsR:SetFontObject("GameFontHighlight")
+	ScrollBarColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsR:SetText(tostring(ScrollBarColorsR1*255))
+	ScrollBarColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsR:SetScript("OnTextChanged", function()
+		local new = tonumber(ScrollBarColorsR:GetText())
+		if new == nil then
+			ScrollBarColorsR1 = 0
+		elseif new > 254 then
+			ScrollBarColorsR1 = 1
+		else
+			ScrollBarColorsR1 = new/255
+		end
+		ProEnchantersOptions.Colors.ScrollBarColors = {ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1}
+		local ScrollBarColorsHex = RGBToWoWColorCode(ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1)
+		ScrollBarColorsExample:SetText(ScrollBarColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local ScrollBarColorsGBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	ScrollBarColorsGBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	ScrollBarColorsGBg:SetSize(34, 24)  -- Adjust size as needed
+	ScrollBarColorsGBg:SetPoint("LEFT", ScrollBarColorsR, "RIGHT", 10, 0)
+
+	local ScrollBarColorsG = CreateFrame("EditBox", nil, ColorsFrame)
+	ScrollBarColorsG:SetSize(30, 20)
+	ScrollBarColorsG:SetPoint("LEFT", ScrollBarColorsR, "RIGHT", 14, 0)
+	ScrollBarColorsG:SetAutoFocus(false)
+	ScrollBarColorsG:SetNumeric(true)
+	ScrollBarColorsG:SetMaxLetters(3)
+	ScrollBarColorsG:SetMultiLine(false)
+	ScrollBarColorsG:EnableMouse(true)
+    ScrollBarColorsG:EnableKeyboard(true)
+	ScrollBarColorsG:SetFontObject("GameFontHighlight")
+	ScrollBarColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsG:SetText(tostring(ScrollBarColorsG1*255))
+	ScrollBarColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsG:SetScript("OnTextChanged", function()
+		local new = tonumber(ScrollBarColorsG:GetText())
+		if new == nil then
+			ScrollBarColorsG1 = 0
+		elseif new > 254 then
+			ScrollBarColorsG1 = 1
+		else
+			ScrollBarColorsG1 = new/255
+		end
+		ProEnchantersOptions.Colors.ScrollBarColors = {ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1}
+		local ScrollBarColorsHex = RGBToWoWColorCode(ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1)
+		ScrollBarColorsExample:SetText(ScrollBarColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+	local ScrollBarColorsBBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	ScrollBarColorsBBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	ScrollBarColorsBBg:SetSize(34, 24)  -- Adjust size as needed
+	ScrollBarColorsBBg:SetPoint("LEFT", ScrollBarColorsG, "RIGHT", 10, 0)
+
+	local ScrollBarColorsB = CreateFrame("EditBox", nil, ColorsFrame)
+	ScrollBarColorsB:SetSize(30, 20)
+	ScrollBarColorsB:SetPoint("LEFT", ScrollBarColorsG, "RIGHT", 14, 0)
+	ScrollBarColorsB:SetAutoFocus(false)
+	ScrollBarColorsB:SetNumeric(true)
+	ScrollBarColorsB:SetMaxLetters(3)
+	ScrollBarColorsB:SetMultiLine(false)
+	ScrollBarColorsB:EnableMouse(true)
+    ScrollBarColorsB:EnableKeyboard(true)
+	ScrollBarColorsB:SetFontObject("GameFontHighlight")
+	ScrollBarColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsB:SetText(tostring(ScrollBarColorsB1*255))
+	ScrollBarColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	ScrollBarColorsB:SetScript("OnTextChanged", function()
+		local new = tonumber(ScrollBarColorsB:GetText())
+		if new == nil then
+			ScrollBarColorsB1 = 0
+		elseif new > 254 then
+			ScrollBarColorsB1 = 1
+		else
+			ScrollBarColorsB1 = new/255
+		end
+		ProEnchantersOptions.Colors.ScrollBarColors = {ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1}
+		local ScrollBarColorsHex = RGBToWoWColorCode(ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1)
+		ScrollBarColorsExample:SetText(ScrollBarColorsHex .. "EXAMPLE" .. ColorClose)
+	end)
+
+    local OpacityAmountHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
+	OpacityAmountHeader:SetFontObject("GameFontHighlight")
+	OpacityAmountHeader:SetPoint("TOPLEFT", ScrollBarColorsHeader, "BOTTOMLEFT", 0, -25)
+	OpacityAmountHeader:SetText("Opacity Amount for Transparent Colors")
+	OpacityAmountHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	local OpacityAmountRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
+	OpacityAmountRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	OpacityAmountRBg:SetSize(34, 24)  -- Adjust size as needed
+	OpacityAmountRBg:SetPoint("LEFT", OpacityAmountHeader, "RIGHT", 10, 0)
+
+	local OpacityAmountR = CreateFrame("EditBox", nil, ColorsFrame)
+	OpacityAmountR:SetSize(30, 20)
+	OpacityAmountR:SetPoint("LEFT", OpacityAmountHeader, "RIGHT", 14, 0)
+	OpacityAmountR:SetAutoFocus(false)
+	OpacityAmountR:SetNumeric(true)
+	OpacityAmountR:SetMaxLetters(3)
+	OpacityAmountR:SetMultiLine(false)
+	OpacityAmountR:EnableMouse(true)
+    OpacityAmountR:EnableKeyboard(true)
+	OpacityAmountR:SetFontObject("GameFontHighlight")
+	OpacityAmountR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	OpacityAmountR:SetText(tostring(OpacityAmountR1*100))
+	OpacityAmountR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	OpacityAmountR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	OpacityAmountR:SetScript("OnTextChanged", function()
+		local new = tonumber(OpacityAmountR:GetText())
+		if new == nil then
+			OpacityAmountR1 = 0
+		elseif new > 99 then
+			OpacityAmountR1 = 1
+		else
+			OpacityAmountR1 = new/100
+		end
+		ProEnchantersOptions.Colors.OpacityAmount = OpacityAmountR1
+	end)
 
 	-- Create a close button
 	local closeBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
-	closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+	closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 	closeBg:SetSize(400, 25)  -- Adjust size as needed
 	closeBg:SetPoint("BOTTOM", ColorsFrame, "BOTTOM", 0, 0)
 
@@ -4522,18 +5439,37 @@ end)
 	resetButton:SetNormalFontObject("GameFontHighlight")
 	resetButton:SetHighlightFontObject("GameFontNormal")
 	resetButton:SetScript("OnClick", function()
-		mainColorsR:SetText(tostring(22))
-		mainColorsG:SetText(tostring(26))
-		mainColorsB:SetText(tostring(48))
-		lightColorsR:SetText(tostring(240))
-		lightColorsG:SetText(tostring(236))
-		lightColorsB:SetText(tostring(229))
-		darkColorsR:SetText(tostring(49))
-		darkColorsG:SetText(tostring(48))
-		darkColorsB:SetText(tostring(77))
-		greyColorsR:SetText(tostring(71))
-		greyColorsG:SetText(tostring(71))
-		greyColorsB:SetText(tostring(71))
+		TopBarColorR:SetText(tostring(22))
+		TopBarColorG:SetText(tostring(26))
+		TopBarColorB:SetText(tostring(48))
+        SecondaryBarColorR:SetText(tostring(49))
+		SecondaryBarColorG:SetText(tostring(48))
+		SecondaryBarColorB:SetText(tostring(77))
+        MainWindowBackgroundR:SetText(tostring(22))
+		MainWindowBackgroundG:SetText(tostring(26))
+		MainWindowBackgroundB:SetText(tostring(48))
+        BottomBarColorR:SetText(tostring(22))
+		BottomBarColorG:SetText(tostring(26))
+		BottomBarColorB:SetText(tostring(48))
+        EnchantsButtonColorR:SetText(tostring(22))
+		EnchantsButtonColorG:SetText(tostring(26))
+		EnchantsButtonColorB:SetText(tostring(48))
+        EnchantsButtonColorInactiveR:SetText(tostring(22))
+		EnchantsButtonColorInactiveG:SetText(tostring(26))
+		EnchantsButtonColorInactiveB:SetText(tostring(48))
+        BorderColorR:SetText(tostring(2))
+		BorderColorG:SetText(tostring(2))
+		BorderColorB:SetText(tostring(2))
+        MainButtonColorR:SetText(tostring(22))
+		MainButtonColorG:SetText(tostring(26))
+		MainButtonColorB:SetText(tostring(48))
+        SettingsWindowBackgroundR:SetText(tostring(49))
+		SettingsWindowBackgroundG:SetText(tostring(48))
+		SettingsWindowBackgroundB:SetText(tostring(77))
+        ScrollBarColorsR:SetText(tostring(22))
+		ScrollBarColorsG:SetText(tostring(26))
+		ScrollBarColorsB:SetText(tostring(48))
+        OpacityAmountR:SetText(tostring(50))
 	end)
 
 	-- Help Reminder
@@ -4633,17 +5569,26 @@ function ProEnchantersCreateTriggersFrame()
 		TriggersFrame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    TriggersFrame:SetBackdrop(backdrop)
+    TriggersFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     TriggersFrame:Hide()
 
     -- Create a full background texture
     local bgTexture = TriggersFrame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(800, 325)
     bgTexture:SetPoint("TOP", TriggersFrame, "TOP", 0, -25)
 
     -- Create a title background
     local titleBg = TriggersFrame:CreateTexture(nil, "BACKGROUND")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(800, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", TriggersFrame, "TOP", 0, 0)
 
@@ -4669,7 +5614,7 @@ function ProEnchantersCreateTriggersFrame()
 	-- Create a close button background
 	local FilteredScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
 	FilteredScrollBg:SetSize(610, 80)
-	FilteredScrollBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	FilteredScrollBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	FilteredScrollBg:SetPoint("TOPLEFT", FilteredWordsHeader, "TOPRIGHT", 15, 5)
 
 	local FilteredScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersFilteredScrollFrame", TriggersFrame, "UIPanelScrollFrameTemplate")
@@ -4749,7 +5694,7 @@ function ProEnchantersCreateTriggersFrame()
 	-- Create a close button background
 	local TriggerScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
 	TriggerScrollBg:SetSize(610, 60)
-	TriggerScrollBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	TriggerScrollBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	TriggerScrollBg:SetPoint("TOP", FilteredScrollFrame, "BOTTOM", 0, -25)
 
 	local TriggerScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersFilteredScrollFrame", TriggersFrame, "UIPanelScrollFrameTemplate")
@@ -4827,7 +5772,7 @@ function ProEnchantersCreateTriggersFrame()
 	-- Create a close button background
 	local InvScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
 	InvScrollBg:SetSize(610, 40)
-	InvScrollBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	InvScrollBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	InvScrollBg:SetPoint("TOP", TriggerScrollFrame, "BOTTOM", 0, -25)
 
 	local InvScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersInvScrollFrame", TriggersFrame, "UIPanelScrollFrameTemplate")
@@ -4898,7 +5843,7 @@ function ProEnchantersCreateTriggersFrame()
 
 	-- Create a close button background
 		local closeBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
-		closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+		closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 		closeBg:SetSize(800, 25)  -- Adjust size as needed
 		closeBg:SetPoint("BOTTOMLEFT", TriggersFrame, "BOTTOMLEFT", 0, 0)
 
@@ -5029,17 +5974,26 @@ function ProEnchantersCreateWhisperTriggersFrame()
 		frame:StopMovingOrSizing()
 	end)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    frame:SetBackdrop(backdrop)
+    frame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
     frame:Hide()
 
     -- Create a full background texture
     local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
-    bgTexture:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
 	bgTexture:SetSize(800, 325)
     bgTexture:SetPoint("TOP", frame, "TOP", 0, -25)
 
     -- Create a title background
     local titleBg = frame:CreateTexture(nil, "BACKGROUND")
-    titleBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
     titleBg:SetSize(800, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", frame, "TOP", 0, 0)
 
@@ -5058,7 +6012,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 
 	--Create a scroll background
 	local scrollBg = frame:CreateTexture(nil, "BACKGROUND")
-	scrollBg:SetColorTexture(unpack(LightBgTrans))  -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
 	scrollBg:SetSize(17, 300)  -- Adjust size as needed
 	scrollBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -25)
 	
@@ -5068,7 +6022,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 	-- Customize Thumb Texture
 local thumbTexture = scrollBar:GetThumbTexture()
 thumbTexture:SetTexture(nil)  -- Clear existing texture
-thumbTexture:SetColorTexture(unpack(HeaderOpaque))
+thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
 thumbTexture:SetSize(15, 15)
 --thumbTexture:SetAllPoints(thumbTexture)
 
@@ -5085,10 +6039,10 @@ upButton:GetHighlightTexture():SetTexture(nil)
 local upButton = scrollBar.ScrollUpButton
 
 -- Set colors
-upButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Replace RGBA values as needed
-upButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Replace RGBA values as needed
-upButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Replace RGBA values as needed
-upButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Replace RGBA values as needed
+upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
 
 -- Repeat for Scroll Down Button
 local downButton = scrollBar.ScrollDownButton
@@ -5100,10 +6054,10 @@ downButton:GetDisabledTexture():SetTexture(nil)
 downButton:GetHighlightTexture():SetTexture(nil)
 
 -- Set colors
-downButton:GetNormalTexture():SetColorTexture(unpack(DarkBgOpaque)) -- Adjust colors as needed
-downButton:GetPushedTexture():SetColorTexture(unpack(LightBgOpaque)) -- Adjust colors as needed
-downButton:GetDisabledTexture():SetColorTexture(unpack(DarkBgTrans)) -- Adjust colors as needed
-downButton:GetHighlightTexture():SetColorTexture(unpack(LightBgTrans)) -- Adjust colors as needed
+downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
 
 local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 upButtonText:SetText("-") -- Set the text for the up button
@@ -5405,7 +6359,7 @@ createWhisperTriggers()
 
 	-- Create a close button background
 		local closeBg = frame:CreateTexture(nil, "OVERLAY")
-		closeBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+		closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 		closeBg:SetSize(800, 25)  -- Adjust size as needed
 		closeBg:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
 
@@ -5501,21 +6455,30 @@ function CreateCusWorkOrder(customerName)
         end
 	end
 
-	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild())
+	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "BackdropTemplate")
 	frame.customerName = customerName
 	frame.frameID = frameID
-    frame:SetSize(420, 160)
+    frame:SetSize(410, 160)
     frame.yOffset = yOffset
     frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, frame.yOffset)
 
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    frame:SetBackdrop(backdrop)
+    frame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
 	local customerBg = frame:CreateTexture(nil, "BACKGROUND")
-    customerBg:SetColorTexture(unpack(DarkBgOpaque))  -- Set RGBA values for your preferred color and alpha
-    customerBg:SetSize(420, 160)
+    customerBg:SetColorTexture(unpack(SecondaryBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    customerBg:SetSize(410, 160)
     customerBg:SetPoint("TOP", frame, "TOP", 0, 0)
 
 	local customerTextBg = frame:CreateTexture(nil, "OVERLAY")
-    customerTextBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
-    customerTextBg:SetSize(420, 20)  -- Adjust size as needed
+    customerTextBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    customerTextBg:SetSize(410, 20)  -- Adjust size as needed
     customerTextBg:SetPoint("TOP", frame, "TOP", 0, 0)
 
 	local customerTitleButton = CreateFrame("Button", nil, frame)
@@ -5783,8 +6746,8 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 			tradehistoryEditBox:SetText("")
             tradeHistoryScrollFrame:SetSize(400, 0)
             scrollChild:SetSize(400, 0)
-            customerBg:SetSize(420, 20)
-            frame:SetSize(420, 20)
+            customerBg:SetSize(410, 20)
+            frame:SetSize(410, 20)
             -- Move all existing frames up if they are lower than the frame being deleted
             for id, frameInfo in pairs(WorkOrderFrames) do
                 if id > frameID and not frameInfo.Completed then
@@ -5802,8 +6765,8 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
         elseif minimized == true then
             tradeHistoryScrollFrame:SetSize(400, 130)
             scrollChild:SetSize(400, 130)
-            customerBg:SetSize(420, 160)
-            frame:SetSize(420, 160)
+            customerBg:SetSize(410, 160)
+            frame:SetSize(410, 160)
 
         -- Move all existing frames up if they are lower than the frame being deleted
         for id, frameInfo in pairs(WorkOrderFrames) do
@@ -5844,8 +6807,8 @@ end)
 		if minimized == true then
             tradeHistoryScrollFrame:SetSize(400, 130)
             scrollChild:SetSize(400, 130)
-            customerBg:SetSize(420, 160)
-            frame:SetSize(420, 160)
+            customerBg:SetSize(410, 160)
+            frame:SetSize(410, 160)
 
         -- Move all existing frames up if they are lower than the frame being deleted
         for id, frameInfo in pairs(WorkOrderFrames) do
@@ -5945,13 +6908,27 @@ function ProEnchantersTradeWindowCreateFrame()
 	frame:SetSize(180, tradewindowHeight)
 	frame:SetPoint("BOTTOMLEFT", tradeFrame, "BOTTOMRIGHT", 0, 0)
 
+	local lowerframe = CreateFrame("Frame", "ProEnchantersTradeWindowLowerFrame", TradeFrame, "BackdropTemplate")
+    lowerframe:SetFrameStrata("DIALOG")
+    lowerframe:SetSize(tradewindowWidth, 180)
+    lowerframe:SetPoint("TOPRIGHT", frame, "BOTTOMLEFT", 0, 0)
+
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    lowerframe:SetBackdrop(backdrop)
+    lowerframe:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
 	local customerBg = frame:CreateTexture(nil, "BACKGROUND")
-	customerBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+	customerBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 	customerBg:SetSize(tradewindowWidth, 180)
 	customerBg:SetPoint("TOPRIGHT", frame, "BOTTOMLEFT", 0, 0)
 
 	local customerTextBg = frame:CreateTexture(nil, "BACKGROUND")
-	customerTextBg:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+	customerTextBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
 	customerTextBg:SetSize(tradewindowWidth, 20)  -- Adjust size as needed
 	customerTextBg:SetPoint("TOPRIGHT", frame, "BOTTOMLEFT", 0, 0)
 
@@ -6110,7 +7087,7 @@ end)
 				if matsMissingCheck ~= true then
 					-- Create button background
 					local enchantButtonBg = frame:CreateTexture(nil, "OVERLAY")
-					enchantButtonBg:SetColorTexture(unpack(HeaderOpaque))
+					enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))
 					enchantButtonBg:SetSize(145, 45)
 					enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 					-- Create a button
@@ -6133,7 +7110,7 @@ end)
 				else
 					-- Create button background
 					local enchantButtonBg = frame:CreateTexture(nil, "BACKGROUND")
-					enchantButtonBg:SetColorTexture(unpack(GreyedOpaque))
+					enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorInactiveOpaque))
 					enchantButtonBg:SetSize(145, 45)
 					enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 
@@ -6152,7 +7129,7 @@ end)
 
 					-- Create a Announce icon
 					local enchantMatsMissingDisplay = frame:CreateTexture(nil, "OVERLAY")
-					--enchantMatsMissingDisplay:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+					--enchantMatsMissingDisplay:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
 					enchantMatsMissingDisplay:SetTexture("Interface\\COMMON\\VOICECHAT-SPEAKER.BLP")
 					enchantMatsMissingDisplay:SetSize(16, 16)  -- Adjust size as needed
 					enchantMatsMissingDisplay:SetPoint("TOPRIGHT", enchantButton, "TOPRIGHT", 10, 5)
@@ -6566,7 +7543,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 				if matsMissingCheck ~= true then
 				-- Create button background
 				local enchantButtonBg = frame:CreateTexture(nil, "OVERLAY")
-				enchantButtonBg:SetColorTexture(unpack(HeaderOpaque))
+				enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))
 				enchantButtonBg:SetSize(145, 45)
 				enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 
@@ -6590,7 +7567,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 				else
 				-- Create button background
 				local enchantButtonBg = frame:CreateTexture(nil, "BACKGROUND")
-				enchantButtonBg:SetColorTexture(unpack(GreyedOpaque))
+				enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorInactiveOpaque))
 				enchantButtonBg:SetSize(145, 45)
 				enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 
@@ -6609,7 +7586,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
 				-- Create a Announce icon
 				local enchantMatsMissingDisplay = frame:CreateTexture(nil, "OVERLAY")
-				--enchantMatsMissingDisplay:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+				--enchantMatsMissingDisplay:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
 				enchantMatsMissingDisplay:SetTexture("Interface\\COMMON\\VOICECHAT-SPEAKER.BLP")
 				enchantMatsMissingDisplay:SetSize(16, 16)  -- Adjust size as needed
 				enchantMatsMissingDisplay:SetPoint("TOPRIGHT", enchantButton, "TOPRIGHT", 10, 5)
@@ -6626,7 +7603,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
 				-- Add a Spacer
 				local otherEnchantsBg = frame:CreateTexture(nil, "OVERLAY")
-				otherEnchantsBg:SetColorTexture(unpack(HeaderTrans))  -- Set RGBA values for your preferred color and alpha
+				otherEnchantsBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
 				otherEnchantsBg:SetSize(140, 20)
 				otherEnchantsBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 			
@@ -6677,7 +7654,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 					if matsMissingCheck ~= true then
 					-- Create button background
 					local enchantButtonBg = frame:CreateTexture(nil, "OVERLAY")
-					enchantButtonBg:SetColorTexture(unpack(HeaderOpaque))
+					enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))
 					enchantButtonBg:SetSize(145, 45)
 					enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 	
@@ -6722,7 +7699,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 					if matsMissingCheck == true then
 					-- Create button background
 					local enchantButtonBg = frame:CreateTexture(nil, "BACKGROUND")
-					enchantButtonBg:SetColorTexture(unpack(GreyedOpaque))
+					enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorInactiveOpaque))
 					enchantButtonBg:SetSize(145, 45)
 					enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, -enchyOffset)
 
@@ -6741,7 +7718,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
 					-- Create a Announce icon
 					local enchantMatsMissingDisplay = frame:CreateTexture(nil, "OVERLAY")
-					--enchantMatsMissingDisplay:SetColorTexture(unpack(HeaderOpaque))  -- Set RGBA values for your preferred color and alpha
+					--enchantMatsMissingDisplay:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
 					enchantMatsMissingDisplay:SetTexture("Interface\\COMMON\\VOICECHAT-SPEAKER.BLP")
 					enchantMatsMissingDisplay:SetSize(16, 16)  -- Adjust size as needed
 					enchantMatsMissingDisplay:SetPoint("TOPRIGHT", enchantButton, "TOPRIGHT", 10, 5)
@@ -6837,6 +7814,116 @@ end
 
 
 -- End trade order on trade frame
+
+local function LoadColorTables()
+    -- Initialize ProEnchantersOptions as a table if it's nil
+    if not ProEnchantersOptions then
+        ProEnchantersOptions = {}
+    end
+
+    -- Ensure ProEnchantersOptions["Colors"] is a table
+    if type(ProEnchantersOptions["Colors"]) ~= "table" then
+        ProEnchantersOptions["Colors"] = {}
+    end
+
+    -- Now safely initialize Colors if it hasn't been done
+    if not ProEnchantersOptions.Colors then
+        ProEnchantersOptions.Colors = {}
+    end
+
+	-- Function to safely initialize color tables if they aren't already set
+    local function initializeColorTable(colorPropertyName, defaultColor)
+        if type(ProEnchantersOptions.Colors[colorPropertyName]) ~= "table" or next(ProEnchantersOptions.Colors[colorPropertyName]) == nil then
+            ProEnchantersOptions.Colors[colorPropertyName] = defaultColor
+        end
+    end
+
+   -- Initialize TopBarColor if it's not already set
+	initializeColorTable("TopBarColor", {22/255, 26/255, 48/255})
+    initializeColorTable("SecondaryBarColor", {49/255, 48/255, 77/255})
+    initializeColorTable("MainWindowBackground", {22/255, 26/255, 48/255})
+    initializeColorTable("BottomBarColor", {22/255, 26/255, 48/255})
+    initializeColorTable("EnchantsButtonColor", {22/255, 26/255, 48/255})
+	initializeColorTable("EnchantsButtonColorInactive", {22/255, 26/255, 48/255})
+    initializeColorTable("BorderColor", {49/255, 48/255, 77/255})
+    initializeColorTable("MainButtonColor", {22/255, 26/255, 48/255})
+    initializeColorTable("SettingsWindowBackground", {22/255, 26/255, 48/255})
+    initializeColorTable("ScrollBarColors", {22/255, 26/255, 48/255})
+	
+	if ProEnchantersOptions.Colors.OpacityAmount == nil then
+		ProEnchantersOptions.Colors.OpacityAmount = 0.5
+	end
+end
+
+
+
+local function LoadColorVariables1()
+	--Color for Frames
+	OpacityAmount = ProEnchantersOptions.Colors.OpacityAmount or 0.5
+ 
+	TopBarColor = ProEnchantersOptions.Colors.TopBarColor or {22/255, 26/255, 48/255}
+	r1, g1, b1 = unpack(TopBarColor)
+	TopBarColorOpaque = {r1, g1, b1, 1}
+	TopBarColorTrans = {r1, g1, b1, OpacityAmount}
+   
+	SecondaryBarColor = ProEnchantersOptions.Colors.SecondaryBarColor or {49/255, 48/255, 77/255}
+	r2, g2, b2 = unpack(SecondaryBarColor)
+	SecondaryBarColorOpaque = {r2, g2, b2, 1}
+	SecondaryBarColorTrans = {r2, g2, b2, OpacityAmount}
+   
+	MainWindowBackground = ProEnchantersOptions.Colors.MainWindowBackground or {22/255, 26/255, 48/255}
+	r3, g3, b3 = unpack(MainWindowBackground)
+	MainWindowBackgroundOpaque = {r3, g3, b3, 1}
+	MainWindowBackgroundTrans = {r3, g3, b3, OpacityAmount}
+end
+local function LoadColorVariables2()
+	OpacityAmount = ProEnchantersOptions.Colors.OpacityAmount or 0.5
+
+	BottomBarColor = ProEnchantersOptions.Colors.BottomBarColor or {22/255, 26/255, 48/255}
+	r4, g4, b4 = unpack(BottomBarColor)
+	BottomBarColorOpaque = {r4, g4, b4, 1}
+	BottomBarColorTrans = {r4, g4, b4, OpacityAmount}
+   
+	EnchantsButtonColor = ProEnchantersOptions.Colors.EnchantsButtonColor or {22/255, 26/255, 48/255}
+	r5, g5, b5 = unpack(EnchantsButtonColor)
+	EnchantsButtonColorOpaque = {r5, g5, b5, 1}
+	EnchantsButtonColorTrans = {r5, g5, b5, OpacityAmount}
+   
+	EnchantsButtonColorInactive = ProEnchantersOptions.Colors.EnchantsButtonColorInactive or {71/255, 71/255, 71/255}
+	r6, g6, b6 = unpack(EnchantsButtonColorInactive)
+	EnchantsButtonColorInactiveOpaque = {r6, g6, b6, 1}
+	EnchantsButtonColorInactiveTrans = {r6, g6, b6, OpacityAmount}
+   
+	BorderColor = ProEnchantersOptions.Colors.BorderColor or {2/255, 2/255, 2/255}
+	r7, g7, b7 = unpack(BorderColor)
+	BorderColorOpaque = {r7, g7, b7, 1}
+	BorderColorTrans = {r7, g7, b7, OpacityAmount}
+end
+
+local function LoadColorVariables3()
+	OpacityAmount = ProEnchantersOptions.Colors.OpacityAmount or 0.5
+
+	MainButtonColor = ProEnchantersOptions.Colors.MainButtonColor or {22/255, 26/255, 48/255}
+	r8, g8, b8 = unpack(MainButtonColor)
+	MainButtonColorOpaque = {r8, g8, b8, 1}
+	MainButtonColorTrans = {r8, g8, b8, OpacityAmount}
+   
+	SettingsWindowBackground = ProEnchantersOptions.Colors.SettingsWindowBackground or {49/255, 48/255, 77/255}
+	r9, g9, b9 = unpack(SettingsWindowBackground)
+	SettingsWindowBackgroundOpaque = {r9, g9, b9, 1}
+	SettingsWindowBackgroundTrans = {r9, g9, b9, OpacityAmount}
+   
+	ScrollBarColors = ProEnchantersOptions.Colors.ScrollBarColors or {49/255, 48/255, 77/255}
+	r10, g10, b10 = unpack(ScrollBarColors)
+	ButtonStandardAndThumb = {r10, g10, b10, 1}
+	r10P, r10DH = ((r10*255)/4)/255, ((r10*255)/2)/255
+	g10P, g10DH = ((g10*255)/4)/255, ((g10*255)/2)/255
+	b10P, b10DH = ((b10*255)/4)/255, ((b10*255)/2)/255
+	ButtonPushed = {r10 + r10P, g10 + g10P, b10 + b10P, 1}
+	ButtonDisabled = {r10 - r10DH, g10 - g10DH, b10 - g10DH, 0.5}
+	ButtonHighlight = {r10 + r10DH, g10 + g10DH, b10 + b10DH, 1}
+end
+
 local function OnAddonLoaded()
 	-- Cache Items
 	PEItemCache()
@@ -6846,64 +7933,11 @@ local function OnAddonLoaded()
     ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
 	ProEnchantersOptions.whispertriggers = ProEnchantersOptions.whispertriggers or {}
 
-	if ProEnchantersOptions["Colors"] == nil or ProEnchantersOptions["Colors"] == {} then
-		ProEnchantersOptions["Colors"] = {
-			HeaderColor = {22/255, 26/255, 48/255},
-			TitleColor = {182/255, 187/255, 196/255},
-			LightBgColor = {240/255, 236/255, 229/255},
-			DarkBgColor = {49/255, 48/255, 77/255},
-			GreyedColor = {71/255, 71/255, 71/255}
-		}
-	else
-		ProEnchantersOptions["Colors"] = ProEnchantersOptions["Colors"]
-	end
-
-	if next(ProEnchantersOptions.Colors.HeaderColor) == nil then
-		ProEnchantersOptions.Colors.HeaderColor = {22/255, 26/255, 48/255}
-	end
-
-	if next(ProEnchantersOptions.Colors.TitleColor) == nil then
-		ProEnchantersOptions.Colors.TitleColor = {22/255, 26/255, 48/255}
-	end
-
-	if next(ProEnchantersOptions.Colors.LightBgColor) == nil then
-		ProEnchantersOptions.Colors.LightBgColor = {22/255, 26/255, 48/255}
-	end
-
-	if next(ProEnchantersOptions.Colors.DarkBgColor) == nil then
-		ProEnchantersOptions.Colors.DarkBgColor = {22/255, 26/255, 48/255}
-	end
-
-	if next(ProEnchantersOptions.Colors.GreyedColor) == nil then
-		ProEnchantersOptions.Colors.GreyedColor = {22/255, 26/255, 48/255}
-	end
-
-	--Color for Frames
-	HeaderColor = ProEnchantersOptions.Colors.HeaderColor or {22/255, 26/255, 48/255}
-	r1, g1, b1 = unpack(HeaderColor)
-	HeaderOpaque = {r1, g1, b1, 1}
-	HeaderTrans = {r1, g1, b1, 0.5}
-
-	TitleColor = ProEnchantersOptions.Colors.TitleColor or {182/255, 187/255, 196/255}
-	r2, g2, b2 = unpack(TitleColor)
-	TitleOpaque = {r2, g2, b2, 1}
-	TitleTrans = {r2, g2, b2, 0.5}
-
-	LightBgColor = ProEnchantersOptions.Colors.LightBgColor or {240/255, 236/255, 229/255}
-	r3, g3, b3 = unpack(LightBgColor)
-	LightBgOpaque = {r3, g3, b3, 1}
-	LightBgTrans = {r3, g3, b3, 0.5}
-
-	DarkBgColor = ProEnchantersOptions.Colors.DarkBgColor or {49/255, 48/255, 77/255}
-	r4, g4, b4 = unpack(DarkBgColor)
-	DarkBgOpaque = {r4, g4, b4, 1}
-	DarkBgTrans = {r4, g4, b4, 0.5}
-
-	GreyedColor = ProEnchantersOptions.Colors.GreyedColor or {71/255, 71/255, 71/255}
-	r5, g5, b5 = unpack(GreyedColor)
-	GreyedOpaque = {r5, g5, b5, 1}
-	GreyedTrans = {r5, g5, b5, 0.5}
-    
+	LoadColorTables()
+	LoadColorVariables1()
+	LoadColorVariables2()
+	LoadColorVariables3()
+	
     -- Now safe to register the events that use ProEnchantersWorkOrderFrame
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_SAY")
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_YELL")
@@ -7061,6 +8095,12 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["WhisperMats"] = ProEnchantersOptions["WhisperMats"]
 	end
 
+	if ProEnchantersOptions["DisableWhisperCommands"] ~= true then
+		ProEnchantersOptions["DisableWhisperCommands"] = false
+	else
+		ProEnchantersOptions["DisableWhisperCommands"] = ProEnchantersOptions["DisableWhisperCommands"]
+	end
+
 	if ProEnchantersOptions["AutoInvite"] ~= true then
 		AutoInvite = false
 		ProEnchantersOptions["AutoInvite"] = AutoInvite
@@ -7146,6 +8186,7 @@ local function OnAddonLoaded()
 
     print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
 
+	FullResetFrames()
 end
 
 -- Move the ADDON_LOADED event registration to the top
@@ -7773,6 +8814,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			local customcmdFound = 0
 			if cmdFound == true then
+				if ProEnchantersOptions["DisableWhisperCommands"] == true then
+					if debugLevel >= 1 then
+						print("!whisper commands currently disabled, ending checks")
+					end	
+					return
+				end
 				customcmdFound = 1
 				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
 					for cmd, rmsg in pairs(v) do
@@ -7812,6 +8859,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		
 		if cmdFound == true and customcmdFound == 1 then
+			if ProEnchantersOptions["DisableWhisperCommands"] == true then
+				if debugLevel >= 1 then
+					print("!whisper commands currently disabled, ending checks")
+				end	
+				return
+			end
 			if enchantKey then
 						--enchantKey, languageId
 							if ProEnchantersOptions.filters[enchantKey] == true then
@@ -7998,6 +9051,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			local customcmdFound = 0
 			if cmdFound == true then
+				if ProEnchantersOptions["DisableWhisperCommands"] == true then
+					if debugLevel >= 1 then
+						print("!whisper commands currently disabled, ending checks")
+					end	
+					return
+				end
 				customcmdFound = 1
 				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
 					for cmd, rmsg in pairs(v) do
@@ -8037,6 +9096,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		
 		if cmdFound == true and customcmdFound == 1 then
+			if ProEnchantersOptions["DisableWhisperCommands"] == true then
+				if debugLevel >= 1 then
+					print("!whisper commands currently disabled, ending checks")
+				end	
+				return
+			end
 			if enchantKey then
 						--enchantKey, languageId
 							if ProEnchantersOptions.filters[enchantKey] == true then
@@ -8667,7 +9732,6 @@ function PEdoTrade()
 		GoldTraded = GoldTraded + TargetMoney
 		UpdateTradeHistory(customerName)
 			if OnTheClock == true then
-			DoEmote("THANK", PEtradeWho)
 				if ProEnchantersOptions["TipMsg"] then
 					local tip = tostring(GetCoinText(TargetMoney))
 					local tipMsg = ProEnchantersOptions["TipMsg"]
@@ -8678,6 +9742,7 @@ function PEdoTrade()
 					if tipMsg == "" then
 						print(PEtradeWho .. " tipped " .. tip)
 					else
+						DoEmote("THANK", PEtradeWho)
 						if CheckIfPartyMember(PEtradeWho) == true then
 							SendChatMessage(newTipMsg2, IsInRaid() and "RAID" or "PARTY")
 						else
@@ -8685,6 +9750,7 @@ function PEdoTrade()
 						end
 					end
 				else
+					DoEmote("THANK", PEtradeWho)
 					local tip = tostring(GetCoinText(TargetMoney))
 					local capPlayerName = CapFirstLetter(PEtradeWho)
 					if CheckIfPartyMember(PEtradeWho) == true then
