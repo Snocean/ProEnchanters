@@ -691,6 +691,7 @@ ProEnchantersWorkOrderEnchantsFrame = nil
 ProEnchantersOptionsFrame = nil
 ProEnchantersTriggersFrame = nil
 ProEnchantersWhisperTriggersFrame = nil
+ProEnchantersImportFrame = nil
 ProEnchantersCreditsFrame = nil
 ProEnchantersGoldLogFrame = nil
 
@@ -701,7 +702,10 @@ PESupporters = {
 	"Braa",
 	"Emoree",
 	"Sechmann",
-	"Okazaki"
+	"Okazaki",
+	"JR004",
+	"CoreOverload",
+	"Fichek"
 }
 
 -- Filtered Words Table
@@ -2734,6 +2738,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersOptionsFrame:Hide()
 		ProEnchantersTriggersFrame:Hide()
 		ProEnchantersWhisperTriggersFrame:Hide()
+		ProEnchantersImportFrame:Hide()
 		--ProEnchantersGoldLogFrame:Hide()
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
@@ -4084,6 +4089,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	FullInvMsg = fullMsg
 	ProEnchantersTriggersFrame:Hide()
 	ProEnchantersWhisperTriggersFrame:Hide()
+	ProEnchantersImportFrame:Hide()
 	end)
 
 	return OptionsFrame
@@ -6437,14 +6443,14 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 -- Create a title for Options
 
-local InstructionsHeader = frame:CreateFontString(nil, "OVERLAY")
+local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 InstructionsHeader:SetFontObject("GameFontHighlight")
 InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
-InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 250 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nYou can include item links in your message by adding the items ID encased in [], example: [11083] will return as Soul Dust (max 5 item links in a message)\nLook up item ID's on wowhead, soul dust as an example: https://www.wowhead.com/classic/item=" .. ColorClose .. YELLOWGREEN .. 11083 .. ColorClose .. DARKORANGE .. "/soul-dust\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
+InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 256 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nYou can include item links in your message by adding the items ID encased in [], example: [11083] will return as Soul Dust (max 5 item links in a message)\nLook up item ID's on wowhead, soul dust as an example: https://www.wowhead.com/classic/item=" .. ColorClose .. YELLOWGREEN .. 11083 .. ColorClose .. DARKORANGE .. "/soul-dust\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
 InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 -- Create a reset button at the bottom
-local hideButton = CreateFrame("Button", nil, frame)
+local hideButton = CreateFrame("Button", nil, ScrollChild)
 hideButton:SetSize(100, 25)  -- Adjust size as needed
 hideButton:SetPoint("TOP", InstructionsHeader, "BOTTOM", 0, -2)  -- Adjust position as needed
 hideButton:SetText(GRAY .. "Hide Instructions" .. ColorClose)
@@ -6530,7 +6536,7 @@ local function createWhisperTriggers()
 			charLimit:SetFontObject("GameFontHighlight")
 			local msgLength = string.len(tostring(msgBox:GetText()))
 			local msgLengthText = GRAY .. tostring(msgLength) .. ColorClose
-			if msgLength >= 251 then
+			if msgLength >= 256 then
 				msgLengthText = RED .. tostring(msgLength) .. ColorClose
 			end
 			charLimit:SetText(msgLengthText)
@@ -6741,6 +6747,19 @@ createWhisperTriggers()
 		createWhisperTriggers()
 	end)
 
+	local importButton = CreateFrame("Button", nil, frame)
+	importButton:SetSize(80, 25)  -- Adjust size as needed
+	importButton:SetPoint("RIGHT", clearAllButton, "LEFT", -10, 0)  -- Adjust position as needed
+	importButton:SetText("Import/Export")
+	local importButtonText = importButton:GetFontString()
+	importButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	importButton:SetNormalFontObject("GameFontHighlight")
+	importButton:SetHighlightFontObject("GameFontNormal")
+	importButton:SetScript("OnClick", function()
+		frame:Hide()
+		ProEnchantersImportFrame:Show()
+	end)
+
 
 	local closeButton = CreateFrame("Button", nil, frame)
 	closeButton:SetSize(50, 25)  -- Adjust size as needed
@@ -6764,7 +6783,8 @@ createWhisperTriggers()
 
 	-- frame On Show Script
 	frame:SetScript("OnShow", function()
-		-- Stuff
+	RemoveWhisperTriggers()
+	createWhisperTriggers()
 	end)
 
 	frame:SetScript("OnHide", function()
@@ -6773,6 +6793,269 @@ createWhisperTriggers()
 
 	return frame
 end
+
+function ProEnchantersCreateImportFrame()
+    local frame = CreateFrame("Frame", "ProEnchantersImportFrame", UIParent, "BackdropTemplate")
+    frame:SetFrameStrata("FULLSCREEN")
+    frame:SetSize(800, 700)  -- Adjust height as needed
+    frame:SetPoint("TOP", 0, -300)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+	frame:SetScript("OnDragStop", function()
+		frame:StopMovingOrSizing()
+	end)
+
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    frame:SetBackdrop(backdrop)
+    frame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
+    frame:Hide()
+
+    -- Create a full background texture
+    local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(800, 675)
+    bgTexture:SetPoint("TOP", frame, "TOP", 0, -25)
+
+    -- Create a title background
+    local titleBg = frame:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetSize(800, 25)  -- Adjust size as needed
+    titleBg:SetPoint("TOP", frame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader:SetText("Pro Enchanters Commands Import/Export")
+	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+
+	-- Scroll frame setup...
+    local ImportScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersImportScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    ImportScrollFrame:SetSize(775, 650)
+    ImportScrollFrame:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 1, 0)
+
+	--Create a scroll background
+	local scrollBg = frame:CreateTexture(nil, "ARTWORK")
+	scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetSize(20, 650)  -- Adjust size as needed
+	scrollBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -25)
+	
+	-- Access the Scroll Bar
+	local scrollBar = ImportScrollFrame.ScrollBar
+
+	-- Customize Thumb Texture
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil)  -- Clear existing texture
+	thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
+	thumbTexture:SetSize(18, 27)
+	--thumbTexture:SetAllPoints(thumbTexture)
+
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Customize Scroll Up Button Textures with Solid Colors
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Set colors
+	upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+	upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+	upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+	upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
+
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
+
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Set colors
+	downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+	downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+	downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+	downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
+
+	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	upButtonText:SetText("-") -- Set the text for the up button
+	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+
+	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	downButtonText:SetText("-") -- Set the text for the down button
+	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+
+
+		-- Scroll child frame where elements are actually placed
+		local ScrollChild = CreateFrame("Frame")
+		ScrollChild:SetSize(800, 650)  -- Adjust height based on the number of elements
+		ImportScrollFrame:SetScrollChild(ScrollChild)
+
+	-- Scroll child items below
+
+	-- Create a title for Options
+
+	local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	InstructionsHeader:SetFontObject("GameFontHighlight")
+	InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
+	InstructionsHeader:SetText(DARKORANGE .. "Copy the text below and save it to a file for exporting.\nAdd or replace the text below and hit import to bulk change commands." .. ColorClose)
+	InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Create a reset button at the bottom
+	local hideButton = CreateFrame("Button", nil, ScrollChild)
+	hideButton:SetSize(100, 25)  -- Adjust size as needed
+	hideButton:SetPoint("TOP", InstructionsHeader, "BOTTOM", 0, -2)  -- Adjust position as needed
+	hideButton:SetText(GRAY .. "Show Instructions" .. ColorClose)
+	local hideButtonText = hideButton:GetFontString()
+	hideButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	hideButton:SetNormalFontObject("GameFontHighlight")
+	hideButton:SetHighlightFontObject("GameFontNormal")
+	local hideButtonStatus = true
+	hideButton:SetScript("OnClick", function()
+		if hideButtonStatus == true then
+			hideButtonStatus = false
+			hideButton:SetText(GRAY .. "Hide Instructions" .. ColorClose)
+			InstructionsHeader:SetText(DARKORANGE .. "Copy the text below and save it to a file for exporting.\nAdd or replace the text below and hit import to bulk change commands.\nFormat needs to stay the same where it is a '!command,response' and then a new line.\nThis will overwrite your commands so make sure you backup first by copying the text and saving it somewhere.\nUse Ctrl+A, Ctrl+C, and Ctrl+V to Select All, Copy, and Paste text into the box easily.\nPre-made import lists can be found on the Supporters discord channel: https://discord.gg/9CMhszeJfu" .. ColorClose)
+		elseif hideButtonStatus == false then
+			hideButtonStatus = true
+			hideButton:SetText(GRAY .. "Show Instructions" .. ColorClose)
+			InstructionsHeader:SetText(DARKORANGE .. "Copy the text below and save it to a file for exporting.\nAdd or replace the text below and hit import to bulk change commands." .. ColorClose)
+		end
+	end)
+
+
+	local scrollHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	scrollHeader:SetFontObject("GameFontHighlight")
+	scrollHeader:SetPoint("TOP", hideButton, "BOTTOM", -230, -5)
+	scrollHeader:SetText("Modify the text below in the same format presented")
+	scrollHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Initialize the buttons table if it doesn't exist
+	if not frame.fieldscmd then
+		frame.fieldscmd = {}
+		frame.fieldsmsg = {}
+	end
+
+	local function getWhisperTriggers()
+		local lines = {} -- Table to hold each cmd,msg pair
+		for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+			for cmd, msg in pairs(v) do
+				-- Insert the cmd,msg pair as a string into the lines table
+				table.insert(lines, cmd .. "," .. msg)
+			end
+		end
+		-- Concatenate all the lines with a newline separator
+		local whisperTriggersLine = table.concat(lines, "\n")
+		return whisperTriggersLine
+	end	
+
+	-- Create Cmd Box
+	local cmdBoxMain = CreateFrame("EditBox", "cmdBoxMain", ScrollChild)
+	cmdBoxMain:SetSize(700, 625)
+	cmdBoxMain:SetPoint("TOPLEFT", scrollHeader, "BOTTOMLEFT", -15, -10)
+	cmdBoxMain:SetAutoFocus(false)
+	cmdBoxMain:SetMultiLine(true)
+	cmdBoxMain:SetFontObject("GameFontHighlight")
+	cmdBoxMain:SetText(getWhisperTriggers())
+	cmdBoxMain:SetScript("OnTextChanged", function()
+		--stuff
+	end)
+	cmdBoxMain:SetScript("OnEscapePressed", function(Self)
+		Self:ClearFocus()
+	end)
+
+	-- Create a close button background
+	local cmdBoxMainBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+	cmdBoxMainBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	cmdBoxMainBg:SetPoint("TOPLEFT", cmdBoxMain, "TOPLEFT", -5, 5)
+	cmdBoxMainBg:SetPoint("BOTTOMRIGHT", cmdBoxMain, "BOTTOMRIGHT", 5, -20)
+
+	local function importWhisperTriggers()
+		ProEnchantersOptions.whispertriggers = {}
+		local newTriggers = cmdBoxMain:GetText()
+			-- Iterate over each line in the input string
+			for line in string.gmatch(newTriggers, "[^\n]+") do
+				-- Split the line by a comma to separate the command and the message
+				local cmd, msg = line:match("([^,]+),(.+)")
+				if cmd and msg then
+					-- Insert the command and message into the table
+					table.insert(ProEnchantersOptions.whispertriggers, {[cmd] = msg})
+				end
+			end
+		end
+
+
+	-- Create a close button background
+	local closeBg = frame:CreateTexture(nil, "OVERLAY")
+	closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+	closeBg:SetSize(800, 25)  -- Adjust size as needed
+	closeBg:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+
+
+	local importButton = CreateFrame("Button", nil, frame)
+	importButton:SetSize(80, 25)  -- Adjust size as needed
+	importButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0)  -- Adjust position as needed
+	importButton:SetText("Import/Export")
+	local importButtonText = importButton:GetFontString()
+	importButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	importButton:SetNormalFontObject("GameFontHighlight")
+	importButton:SetHighlightFontObject("GameFontNormal")
+	importButton:SetScript("OnClick", function()
+		importWhisperTriggers()
+		print(YELLOWGREEN .. "Commands Imported." .. ColorClose)
+	end)
+
+
+	local closeButton = CreateFrame("Button", nil, frame)
+	closeButton:SetSize(50, 25)  -- Adjust size as needed
+	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0)  -- Adjust position as needed
+	closeButton:SetText("Close")
+	local closeButtonText = closeButton:GetFontString()
+	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButton:SetNormalFontObject("GameFontHighlight")
+	closeButton:SetHighlightFontObject("GameFontNormal")
+	closeButton:SetScript("OnClick", function()
+		frame:Hide()
+		ProEnchantersWhisperTriggersFrame:Show()
+	end)
+
+	-- Help Reminder
+	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
+	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
+	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
+	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- frame On Show Script
+	frame:SetScript("OnShow", function()
+		print(RED .. "Make sure you copy the text and save it somewhere first to act as a backup before doing an import!")
+		cmdBoxMain:SetText(getWhisperTriggers())
+	end)
+
+	frame:SetScript("OnHide", function()
+		-- Stuff
+	end)
+
+	return frame
+end
+
 -- Whisper Triggers Frame End
 
 function UpdateCheckboxesBasedOnFilters()
@@ -8876,6 +9159,7 @@ local function OnAddonLoaded()
 	ProEnchantersOptionsFrame = ProEnchantersCreateOptionsFrame()
 	ProEnchantersTriggersFrame = ProEnchantersCreateTriggersFrame()
 	ProEnchantersWhisperTriggersFrame = ProEnchantersCreateWhisperTriggersFrame()
+	ProEnchantersImportFrame = ProEnchantersCreateImportFrame()
 	ProEnchantersCreditsFrame = ProEnchantersCreateCreditsFrame()
 	ProEnchantersColorsFrame = ProEnchantersCreateColorsFrame()
     ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
@@ -9227,13 +9511,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local city = GetZoneText()
 		local author = string.gsub(author2, "%-.*", "")
 		local author3 = string.lower(author)
+		if LocalLanguage == nil then 
+			LocalLanguage = "English"
+		end
+		local localGeneralChannel = PEenchantingLocales["GeneralChannelName"][LocalLanguage]
+		local localLFGChannel = PEenchantingLocales["LFGChannelName"][LocalLanguage]
+		local localTradeChannel = PEenchantingLocales["TradeChannelName"][LocalLanguage]
+		local localDefenseChannel = PEenchantingLocales["DefenseChannelName"][LocalLanguage]
 		local channelCheck = "General - " .. city
 		local defenseCheck = "LocalDefense - " .. city
 		local guildrecruitCheck = "GuildRecruitment - City"
 		if debugLevel >= 3 then
 			print("channelName/channelNumber/channelNameWithNumber from " .. author2 .. ": " .. channelName .. "/" .. channelNumber .. "/" .. channelNameWithNumber)
 		end
-		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and channelName == "Trade - City" then
+		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and string.find(channelName, localTradeChannel, 1, true) then
 					if debugLevel >= 1 then
 						print("Message found in Trade Channel: " .. channelName)
 					end
@@ -9317,7 +9608,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 			end
-		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and channelName == "LookingForGroup" then
+		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
 					if debugLevel >= 1 then
 						print("Message found in LFG Channel: " .. channelName)
 					end
@@ -9401,7 +9692,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					end
 				end
-			elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and channelName == defenseCheck then
+			elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
 				if debugLevel >= 1 then
 					print("Message found in LFG Channel: " .. channelName)
 				end
@@ -9485,7 +9776,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 			end
-			elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and channelName == channelCheck then
+			elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
 					if debugLevel >= 1 then
 						print("Message found in local city channel: " .. channelName)
 					end

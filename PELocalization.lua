@@ -39,6 +39,54 @@ PEenchantingLocales = {
 		["Spanish"] = "Encantamiento",
 		["Taiwanese"] = "附魔"
 	},
+	["LFGChannelName"] = {
+		["Chinese"] = "寻求组队",
+		["English"]="LookingForGroup",
+		["French"] = "RechercheDeGroupe",
+		["German"] = "SucheNachGruppe",
+		["Korean"] = "파티찾기",
+		["Mexican"] = "BuscarGrupo",
+		["Portuguese"] = "ProcurandoGrupo",
+		["Russian"] = "ПоискСпутников",
+		["Spanish"] = "BuscarGrupo",
+		["Taiwanese"] = "尋求組隊"
+	},
+	["GeneralChannelName"] = {
+		["Chinese"] = "综合",
+		["English"]="General",
+		["French"] = "Général",
+		["German"] = "Allgemein",
+		["Korean"] = "일반",
+		["Mexican"] = "BuscarGrupo",
+		["Portuguese"] = "BuscarGrupo",
+		["Russian"] = "Общий",
+		["Spanish"] = "BuscarGrupo",
+		["Taiwanese"] = "綜合"
+	},
+	["TradeChannelName"] = {
+		["Chinese"] = "交易",
+		["English"]="Trade",
+		["French"] = "Commerce",
+		["German"] = "Handel",
+		["Korean"] = "거래",
+		["Mexican"] = "Comercio",
+		["Portuguese"] = "Comercio",
+		["Russian"] = "Торговля",
+		["Spanish"] = "Comercio",
+		["Taiwanese"] = "交易"
+	},
+	["DefenseChannelName"] = {
+		["Chinese"] = "本地防御",
+		["English"]="LocalDefense",
+		["French"] = "DéfenseLocale",
+		["German"] = "LokaleVerteidigung",
+		["Korean"] = "지역방어",
+		["Mexican"] = "DefensaLocal",
+		["Portuguese"] = "DefesaLocal",
+		["Russian"] = "МестнаяОборона",
+		["Spanish"] = "DefensaLocal",
+		["Taiwanese"] = "本地防禦"
+	},
 	["EnchantSearch"] = {
 		["Chinese"] = "附魔",
 		["English"] = "Enchant ",
