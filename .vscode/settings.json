@@ -20,6 +20,9 @@
         "ERR_TRADE_CANCELLED",
         "ERR_TRADE_BAG_FULL",
         "ERR_TRADE_TARGET_BAG_FULL",
-        "English"
+        "English",
+        "TradeRecipientItem7",
+        "TradeRecipientItem7ItemButton",
+        "StaticPopup1Button1"
     ]
 }

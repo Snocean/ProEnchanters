@@ -26,6 +26,12 @@ local debugLevel = 0
 local normHeight = 630
 local tradeYoffset = 0
 
+function CreatePEMacros()
+	if not GetMacroInfo("PEMacro1") then
+        CreateMacro("PEMacro1", "Spell_holy_healingaura", "/run TradeRecipientItem7ItemButton:Click()\n/click StaticPopup1Button1")
+    end
+end
+
 function Test8utf()
 	local line = ""
 	for k, v in pairs(utf8_lc_uc) do
@@ -259,10 +265,10 @@ local function FullResetFrames()
 		local x, y = GetCursorPosition()
     	local scale = UIParent:GetEffectiveScale()
 		x, y = x / scale, y / scale
-	if currentHeight < 250 then
+	--if currentHeight < 250 then
         ProEnchantersWorkOrderFrame:SetSize(455, 630)
 		--ProEnchantersWorkOrderEnchantsFrame:Show()
-    end
+   --end
     RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 end
 
@@ -705,7 +711,8 @@ PESupporters = {
 	"Okazaki",
 	"JR004",
 	"CoreOverload",
-	"Fichek"
+	"Fichek",
+	"Chenice"
 }
 
 -- Filtered Words Table
@@ -2743,6 +2750,10 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
 	end)
+
+	--[[WorkOrderFrame:SetScript("OnShow", function()
+		CreatePEMacros()
+	end)]]
 
 	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
 	resizeButton:SetSize(16, 16)
@@ -7540,6 +7551,7 @@ end
 function ProEnchantersTradeWindowCreateFrame()
 	local customerName = "temp"
 	local tradeFrame = TradeFrame
+	local tradeFrameSlot7 = TradeRecipientItem7ItemButton
 	-- local tradewindowHeight = tradeFrame:GetHeight()
 	local tradewindowWidth, tradewindowHeight = tradeFrame:GetSize()
 	local frame = CreateFrame("Frame", "ProEnchantersTradeWindowFrame", TradeFrame)
@@ -7584,7 +7596,41 @@ function ProEnchantersTradeWindowCreateFrame()
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
 	end)
+
+	local acceptButtonBg = frame:CreateTexture(nil, "BACKGROUND")
+	acceptButtonBg:SetColorTexture(0, 0.4, 0, .2)  -- Set RGBA values for your preferred color and alpha
+	acceptButtonBg:SetAllPoints(tradeFrameSlot7)
+	acceptButtonBg:Hide()
 	
+	-- Create a button
+	local acceptbuttonName = "AutoAcceptReplacementEnchants"
+	local macroButton = CreateFrame("Button", acceptbuttonName, frame, "SecureActionButtonTemplate")
+	--enchantButton:SetSize(145, 45)
+	macroButton:SetAllPoints(tradeFrameSlot7)
+	macroButton:SetText("Ench Here")
+	local macroButtonText = macroButton:GetFontString()
+	macroButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize - 4, "")
+	macroButton:SetNormalFontObject("GameFontHighlight")
+	macroButton:SetHighlightFontObject("GameFontNormal")
+	macroButton:SetMouseClickEnabled(true)
+    macroButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+	macroButton:SetScript("PreClick", function(self, btn, down)
+        if (down) then
+			print("PRECLICK: Clicked button")
+			macroButton:Hide()
+			acceptButtonBg:Hide()
+		end
+    end)
+	macroButton:SetAttribute("type", "macro")
+	macroButton:SetAttribute("macro", "PEMacro1")
+	
+	macroButton:Hide()
+	
+	local acceptButtonBg = frame:CreateTexture(nil, "BACKGROUND")
+	acceptButtonBg:SetColorTexture(0, 0.4, 0, .2)  -- Set RGBA values for your preferred color and alpha
+	acceptButtonBg:SetAllPoints(tradeFrameSlot7)
+	acceptButtonBg:Hide()
+	macroButton:Hide()
 
 	-- Use Mats from Inventory Checkbox
 	frame.useAllMatsCb = CreateFrame("CheckButton", nil, frame, "ChatConfigCheckButtonTemplate")
@@ -7708,6 +7754,16 @@ frame.tradewindowEditBox = tradewindowEditBox
 			enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 			enchantButtonBg:Hide()
 
+			-- Create a Macro
+			
+local macro1 = [=[
+/cast enchValue
+/run TradeRecipientItem7ItemButton:Click()
+/click StaticPopup1Button1
+]=]
+
+			local macro2 = string.gsub(macro1, "enchValue", enchValue)
+
 			-- Create a button
 			local buttonName = key .. "cusbuttonactive"
 			local enchantButton = CreateFrame("Button", buttonName, frame, "SecureActionButtonTemplate")
@@ -7718,8 +7774,18 @@ frame.tradewindowEditBox = tradewindowEditBox
 			enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 			enchantButton:SetNormalFontObject("GameFontHighlight")
 			enchantButton:SetHighlightFontObject("GameFontNormal")
-			enchantButton:SetAttribute("type", "spell")
+			enchantButton:SetMouseClickEnabled(true)
+   			enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+			enchantButton:SetAttribute("type", "macro")
+			enchantButton:SetAttribute("macrotext", macro2)
+			--[[enchantButton:SetAttribute("type", "spell")
 			enchantButton:SetAttribute("spell", enchValue)
+			enchantButton:SetScript("PostClick", function(self, btn, down)
+				if (down) then 
+					acceptButtonBg:Show()
+					macroButton:Show()
+				end
+			end)]]
 			enchantButton:Hide()
 	
 			-- Increase yOffset for the next button
@@ -7828,6 +7894,14 @@ frame.tradewindowEditBox = tradewindowEditBox
 			enchantButtonBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 			enchantButtonBg:Hide()
 
+local macro1 = [=[
+/cast enchValue
+/run TradeRecipientItem7ItemButton:Click()
+/click StaticPopup1Button1
+]=]
+
+			local macro2 = string.gsub(macro1, "enchValue", enchValue)
+
 			-- Create a button
 			local buttonName = key .. "buttonactive"
 			local enchantButton = CreateFrame("Button", buttonName, frame, "SecureActionButtonTemplate")
@@ -7838,8 +7912,19 @@ frame.tradewindowEditBox = tradewindowEditBox
 			enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 			enchantButton:SetNormalFontObject("GameFontHighlight")
 			enchantButton:SetHighlightFontObject("GameFontNormal")
-			enchantButton:SetAttribute("type", "spell")
+			enchantButton:SetMouseClickEnabled(true)
+   			enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+
+			enchantButton:SetAttribute("type", "macro")
+			enchantButton:SetAttribute("macrotext", macro2)
+			--[[enchantButton:SetAttribute("type", "spell")
 			enchantButton:SetAttribute("spell", enchValue)
+			enchantButton:SetScript("PostClick", function(self, btn, down)
+				if (down) then 
+					acceptButtonBg:Show()
+					macroButton:Show()
+				end
+			end)]]
 			enchantButton:Hide()
 
 
@@ -7905,6 +7990,10 @@ frame.tradewindowEditBox = tradewindowEditBox
 				frame.namedButtons[buttonNameBg2] = enchantMatsMissingDisplay
 				
 	end
+	frame:SetScript("OnHide", function()
+		acceptButtonBg:Hide()
+		macroButton:Hide()
+	end)
 	return frame
 end
 
@@ -9166,8 +9255,8 @@ local function OnAddonLoaded()
 
 
     print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
-
-	FullResetFrames()
+	--CreatePEMacros()
+	--FullResetFrames()
 end
 
 -- Move the ADDON_LOADED event registration to the top
@@ -10755,6 +10844,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		TargetMoney = GetTargetTradeMoney()
 		--Items Traded Start
 	elseif (event == "TRADE_PLAYER_ITEM_CHANGED") or (event == "TRADE_TARGET_ITEM_CHANGED") then
+		PEtradeWho = UnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
 		local target = customerName
