@@ -9,6 +9,7 @@
         "UIDropDownMenu_SetText",
         "UIDropDownMenu_Initialize",
         "TradeFrame",
+        "TradeRecipientItem7ItemButton",
         "StaticPopup_Show",
         "UIDropDownMenu_AddButton",
         "UIDropDownMenu_CreateInfo",
@@ -19,6 +20,7 @@
         "ERR_TRADE_TARGET_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED_IS",
         "ERR_TRADE_CANCELLED",
         "ERR_TRADE_BAG_FULL",
-        "ERR_TRADE_TARGET_BAG_FULL"
+        "ERR_TRADE_TARGET_BAG_FULL",
+        "TradeFrameTradeButton"
     ]
 }
