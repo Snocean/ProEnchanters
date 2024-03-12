@@ -4,6 +4,12 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 5.0
+-New: There is now a running gold log that persists through sessions. You can access this gold log by hitting the Gold Traded display on the main window (this is now a button)
+-Added more localization to work towards enabling the Automessages
+-Fixed again: Localization issue with French for Dismantle enchant (myself and another have confirmed it's working now, this should be good... haha)
+
+
 ## Update 4.9.1
 -Fixed: Localization issue with French for Dismantle enchant
 

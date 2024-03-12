@@ -5,6 +5,7 @@
 
 -- First Initilizations
 ProEnchantersOptions = ProEnchantersOptions or {}
+ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersOptions.filters = {}
 WorkOrderFrames = {}
 local enchantButtons = {}
@@ -2669,6 +2670,8 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		closeBg:Hide()
 	end
 
+	WorkOrderFrame.closeBg = closeBg
+
 	-- Create a close button at the bottom
 	local closeButton = CreateFrame("Button", nil, WorkOrderFrame)
 	closeButton:SetSize(35, 25)  -- Adjust size as needed
@@ -2730,14 +2733,20 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	end)
 
 	-- GoldTraded Display
-	local GoldTradedDisplay = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
-	GoldTradedDisplay:SetFontObject("GameFontHighlight")
-	GoldTradedDisplay:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 7)
+	local GoldTradedDisplay = CreateFrame("Button", nil, WorkOrderFrame)
+	GoldTradedDisplay:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -15, 0)
 	GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
-	GoldTradedDisplay:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	GoldTradedDisplay:SetSize(string.len(GoldTradedDisplay:GetText()) + 25, 25)  -- Adjust size as needed
+	local GoldTradedDisplayText = GoldTradedDisplay:GetFontString()
+	GoldTradedDisplayText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	GoldTradedDisplay:SetNormalFontObject("GameFontHighlight")
+	GoldTradedDisplay:SetHighlightFontObject("GameFontNormal")
 	if wofSize < 240 then
 		GoldTradedDisplay:Hide()
 	end
+	GoldTradedDisplay:SetScript("OnClick", function()
+	ProEnchantersGoldFrame:Show()
+	end)
 
 	WorkOrderFrame.GoldTradedDisplay = GoldTradedDisplay
 	
@@ -2746,7 +2755,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersTriggersFrame:Hide()
 		ProEnchantersWhisperTriggersFrame:Hide()
 		ProEnchantersImportFrame:Hide()
-		--ProEnchantersGoldLogFrame:Hide()
+		ProEnchantersGoldFrame:Hide()
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
 	end)
@@ -7067,7 +7076,235 @@ function ProEnchantersCreateImportFrame()
 	return frame
 end
 
--- Whisper Triggers Frame End
+function ProEnchantersCreateGoldFrame()
+    local frame = CreateFrame("Frame", "ProEnchantersGoldFrame", UIParent, "BackdropTemplate")
+    frame:SetFrameStrata("FULLSCREEN")
+    frame:SetSize(500, 600)  -- Adjust height as needed
+    frame:SetPoint("TOP", 0, -300)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+	frame:SetScript("OnDragStop", function()
+		frame:StopMovingOrSizing()
+	end)
+
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    frame:SetBackdrop(backdrop)
+    frame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
+    frame:Hide()
+
+    -- Create a full background texture
+    local bgTexture = frame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(500, 575)
+    bgTexture:SetPoint("TOP", frame, "TOP", 0, -25)
+
+    -- Create a title background
+    local titleBg = frame:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetSize(500, 25)  -- Adjust size as needed
+    titleBg:SetPoint("TOP", frame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader:SetText("Pro Enchanters Gold Log")
+	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+
+	-- Scroll frame setup...
+    local GoldScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersGoldScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    GoldScrollFrame:SetSize(475, 550)
+    GoldScrollFrame:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 1, 0)
+
+	--Create a scroll background
+	local scrollBg = frame:CreateTexture(nil, "ARTWORK")
+	scrollBg:SetColorTexture(unpack(ButtonDisabled))  -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetSize(20, 550)  -- Adjust size as needed
+	scrollBg:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, -25)
+	
+	-- Access the Scroll Bar
+	local scrollBar = GoldScrollFrame.ScrollBar
+
+	-- Customize Thumb Texture
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil)  -- Clear existing texture
+	thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
+	thumbTexture:SetSize(18, 27)
+	--thumbTexture:SetAllPoints(thumbTexture)
+
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Customize Scroll Up Button Textures with Solid Colors
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Set colors
+	upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+	upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+	upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+	upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
+
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
+
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Set colors
+	downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+	downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+	downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+	downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
+
+	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	upButtonText:SetText("-") -- Set the text for the up button
+	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+
+	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	downButtonText:SetText("-") -- Set the text for the down button
+	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+
+
+		-- Scroll child frame where elements are actually placed
+		local ScrollChild = CreateFrame("Frame")
+		ScrollChild:SetSize(475, 550)  -- Adjust height based on the number of elements
+		GoldScrollFrame:SetScrollChild(ScrollChild)
+
+	-- Scroll child items below
+
+	-- Create a title for Options
+
+	local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	InstructionsHeader:SetFontObject("GameFontHighlight")
+	InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
+	InstructionsHeader:SetText(DARKORANGE .. "Gold traded to your by players while you have the add-on window open.\nThis number may be slightly inaccurate but should give a rough idea\nof how much gold has been made while enchanting." .. ColorClose)
+	InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- Input gold logs
+	local function GetGoldLogs()
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, {name = name, gold = gold})
+		end
+	
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+	
+	local function GoldLogText()
+		local messageboxtext = ""
+		local goldlogs, check = GetGoldLogs()
+		local totalgold = 0
+		if not check then
+			return "No text to display" -- Ensures a string is always returned
+		end
+	
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext .. (messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+	
+		messageboxtext = "Total gold from all logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	-- Create Cmd Box
+	local goldLogEditBox = CreateFrame("EditBox", "cmdBoxMain", ScrollChild)
+	goldLogEditBox:SetSize(450, 525)
+	goldLogEditBox:SetPoint("TOP", ScrollChild, "TOP", 0, -65)
+	goldLogEditBox:SetAutoFocus(false)
+	goldLogEditBox:SetMultiLine(true)
+	goldLogEditBox:EnableMouse(false)
+	goldLogEditBox:EnableKeyboard(false)
+	goldLogEditBox:SetFontObject("GameFontHighlight")
+	goldLogEditBox:SetText(GoldLogText())
+	goldLogEditBox:SetScript("OnTextChanged", function()
+		--stuff
+	end)
+	goldLogEditBox:SetScript("OnEscapePressed", function(Self)
+		Self:ClearFocus()
+	end)
+
+	-- Create a close button background
+	local goldLogEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+	goldLogEditBoxBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	goldLogEditBoxBg:SetPoint("TOPLEFT", goldLogEditBox, "TOPLEFT", -5, 5)
+	goldLogEditBoxBg:SetPoint("BOTTOMRIGHT", goldLogEditBox, "BOTTOMRIGHT", 5, -20)
+
+
+	-- Create a close button background
+	local closeBg = frame:CreateTexture(nil, "OVERLAY")
+	closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+	closeBg:SetSize(500, 25)  -- Adjust size as needed
+	closeBg:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+
+
+	local closeButton = CreateFrame("Button", nil, frame)
+	closeButton:SetSize(50, 25)  -- Adjust size as needed
+	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0)  -- Adjust position as needed
+	closeButton:SetText("Close")
+	local closeButtonText = closeButton:GetFontString()
+	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButton:SetNormalFontObject("GameFontHighlight")
+	closeButton:SetHighlightFontObject("GameFontNormal")
+	closeButton:SetScript("OnClick", function()
+		frame:Hide()
+	end)
+
+	-- Help Reminder
+	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
+	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
+	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
+	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
+	-- frame On Show Script
+	frame:SetScript("OnShow", function()
+		goldLogEditBox:SetText(GoldLogText())
+	end)
+
+	frame:SetScript("OnHide", function()
+		-- Stuff
+	end)
+
+	return frame
+end
 
 function UpdateCheckboxesBasedOnFilters()
     for key, checkbox in pairs(enchantFilterCheckboxes) do
@@ -9279,6 +9516,7 @@ local function OnAddonLoaded()
 	ProEnchantersImportFrame = ProEnchantersCreateImportFrame()
 	ProEnchantersCreditsFrame = ProEnchantersCreateCreditsFrame()
 	ProEnchantersColorsFrame = ProEnchantersCreateColorsFrame()
+	ProEnchantersGoldFrame = ProEnchantersCreateGoldFrame()
     ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 
@@ -9450,13 +9688,22 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	local cmdFound = false
 	if event == "CHAT_MSG_SYSTEM" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
-			if string.find(text, "to join your group.", 1, true) then
+		if LocalLanguage == nil then 
+			LocalLanguage = "English"
+		end
+		local localInvitedText = PEenchantingLocales["PlayerInvitedText"][LocalLanguage]
+		local localInvitedTextSpecific = PEenchantingLocales["PlayerInvitedSpecificText"][LocalLanguage]
+		local localPlayerJoinsParty = PEenchantingLocales["PlayerJoinsPartyText"][LocalLanguage]
+		local localPlayerJoinsRaid = PEenchantingLocales["PlayerJoinsRaidText"][LocalLanguage]
+		local localPlayerInGroup = PEenchantingLocales["PlayerAlreadyInGroupText"][LocalLanguage]
+		if string.find(text, localInvitedText, 1, true) then
 				if AddonInvite == false then
 					NonAddonInvite = true
 				end
 				if AddonInvite == true then
 				AddonInvite = false
-				local playerName = string.match(text, "You have invited (.+) to join your group.")
+				local matchString = string.gsub(localInvitedTextSpecific, "PLAYER", "(.+)")
+				local playerName = string.match(text, matchString)
 				local autoInvMsg = AutoInviteMsg
 				local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", playerName)
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -9473,8 +9720,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 					end
 			end
-		elseif string.find(text, "joins the party.", 1, true) then
-			local playerName = string.match(text, "(.+) joins the party.")
+		elseif string.find(text, localPlayerJoinsParty, 1, true) then
+			local matchString = "(.+) " .. localPlayerJoinsParty
+			local playerName = string.match(text, matchString)
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
@@ -9535,8 +9783,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 			NonAddonInvite = false
-		elseif string.find(text, "has joined the raid group", 1, true) then
-			local playerName = string.match(text, "(.+) has joined the raid group")
+		elseif string.find(text, localPlayerJoinsRaid, 1, true) then
+			local matchString = "(.+) " .. localPlayerJoinsRaid
+			local playerName = string.match(text, matchString)
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
@@ -9597,13 +9846,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 			NonAddonInvite = false
-		elseif string.find(text, "is already in a group.", 1, true) then
+		elseif string.find(text, localPlayerInGroup, 1, true) then
 			if AddonInvite == false then
 				NonAddonInvite = true
 			end
 			if AddonInvite == true then
 			AddonInvite = false
-			local playerName = string.match(text, "(.+) is already in a group.")
+			local matchString = "(.+) " .. localPlayerInGroup
+			local playerName = string.match(text, matchString)
 			local FailInvMsg = ProEnchantersOptions["FailInvMsg"]
 			local FailInvMsg2 = string.gsub(FailInvMsg, "CUSTOMER", playerName)
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -10796,9 +11046,13 @@ end
 function UpdateGoldTraded()
 	if GoldTraded < 0 then
 		local deficitAmount = -GoldTraded
-		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Sent: " .. GetMoneyString(deficitAmount))
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: -" .. GetMoneyString(deficitAmount))
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 22, 25)  -- Adjust size as needed
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg, "BOTTOMRIGHT", -15, 0)
 	else
-    ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Received: " .. GetMoneyString(GoldTraded))
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25)  -- Adjust size as needed
+		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg, "BOTTOMRIGHT", -15, 0)
 	end
 end
 
@@ -10998,6 +11252,9 @@ function PEdoTrade()
 		traded = true
 	end
 
+	--[[if type(ProEnchantersLog[customerName]) ~= table then
+		ProEnchantersLog[customerName] = {}
+	end]]
 
 	if traded then
 		-- Trade Log Start Line
@@ -11023,6 +11280,10 @@ function PEdoTrade()
 		GoldTraded = GoldTraded + TargetMoney
 		UpdateTradeHistory(customerName)
 			if OnTheClock == true then
+				if ProEnchantersLog[customerName] == nil then
+					ProEnchantersLog[customerName] = {}
+				end
+				table.insert(ProEnchantersLog[customerName], TargetMoney)
 				if ProEnchantersOptions["TipMsg"] then
 					local tip = tostring(GetCoinText(TargetMoney))
 					local tipMsg = ProEnchantersOptions["TipMsg"]

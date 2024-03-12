@@ -10,6 +10,7 @@
         "UIDropDownMenu_Initialize",
         "TradeFrame",
         "TradeRecipientItem7ItemButton",
+        "TradeFrameTradeButton",
         "StaticPopup_Show",
         "UIDropDownMenu_AddButton",
         "UIDropDownMenu_CreateInfo",
@@ -21,6 +22,6 @@
         "ERR_TRADE_CANCELLED",
         "ERR_TRADE_BAG_FULL",
         "ERR_TRADE_TARGET_BAG_FULL",
-        "TradeFrameTradeButton"
+        "GetText"
     ]
 }
