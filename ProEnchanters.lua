@@ -6,8 +6,10 @@
 -- First Initilizations
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
+ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
 ProEnchantersOptions.filters = {}
-WorkOrderFrames = {}
+ProEnchantersWorkOrderFrames = {}
+ProEnchantersOptions.favorites = {}
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -26,6 +28,66 @@ local maxPartySizeReached = false
 local debugLevel = 0
 local normHeight = 630
 local tradeYoffset = 0
+local target = ""
+local isConnected = true
+local LSM = LibStub("LibSharedMedia-3.0")
+local version = "v6.5"
+
+-- Sound Register
+LSM:Register("sound", "Orc Work work", "Interface\\AddOns\\ProEnchanters\\Media\\workwork.ogg")
+LSM:Register("sound", "Orc I can do that", "Interface\\AddOns\\ProEnchanters\\Media\\icandothat.ogg")
+LSM:Register("sound", "Orc Be happy to", "Interface\\AddOns\\ProEnchanters\\Media\\behappyto.ogg")
+LSM:Register("sound", "Orc Me busy", "Interface\\AddOns\\ProEnchanters\\Media\\mebusyleavemealone.ogg")
+LSM:Register("sound", "Orc Ready to work", "Interface\\AddOns\\ProEnchanters\\Media\\readytowork.ogg")
+LSM:Register("sound", "Orc Something need doing", "Interface\\AddOns\\ProEnchanters\\Media\\somethingneeddoing.ogg")
+LSM:Register("sound", "Orc What you want", "Interface\\AddOns\\ProEnchanters\\Media\\whatyouwant.ogg")
+LSM:Register("sound", "Cyberpunk Alert", "Interface\\AddOns\\ProEnchanters\\Media\\cyberpunkalert.ogg")
+LSM:Register("sound", "Druid At once", "Interface\\AddOns\\ProEnchanters\\Media\\druidatonce.ogg")
+LSM:Register("sound", "Druid Ill make short work", "Interface\\AddOns\\ProEnchanters\\Media\\druidillmakeshortworkofthem.ogg")
+LSM:Register("sound", "Druid Im awake", "Interface\\AddOns\\ProEnchanters\\Media\\druidimawake.ogg")
+LSM:Register("sound", "Dwarf Who wants some", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfalrightwhowantssome.ogg")
+LSM:Register("sound", "Dwarf Aye sir", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfayesir.ogg")
+LSM:Register("sound", "Dwarf For Ironforge", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfforironforge.ogg")
+LSM:Register("sound", "Dwarf Give me something", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfgjvemesomethingtodo.ogg")
+LSM:Register("sound", "Dwarf Ill take care of it", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfilltakecareofit.ogg")
+LSM:Register("sound", "Dwarf What do you need", "Interface\\AddOns\\ProEnchanters\\Media\\dwarftwhatdoyouneed.ogg")
+LSM:Register("sound", "Dwarf Whats this", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfwhatsthis.ogg")
+LSM:Register("sound", "Human I guess I can", "Interface\\AddOns\\ProEnchanters\\Media\\humaniguessican.ogg")
+LSM:Register("sound", "Human More work", "Interface\\AddOns\\ProEnchanters\\Media\\humanmorework.ogg")
+LSM:Register("sound", "Human Ready for action", "Interface\\AddOns\\ProEnchanters\\Media\\humanreadyforaction.ogg")
+LSM:Register("sound", "Human Ready to work", "Interface\\AddOns\\ProEnchanters\\Media\\humanreadytowork.ogg")
+LSM:Register("sound", "Human What do you need", "Interface\\AddOns\\ProEnchanters\\Media\\humanwhatdoyouneed.ogg")
+LSM:Register("sound", "Human What is it", "Interface\\AddOns\\ProEnchanters\\Media\\humanwhatisit.ogg")
+LSM:Register("sound", "Human Yes mi lord", "Interface\\AddOns\\ProEnchanters\\Media\\humanyesmilord.ogg")
+LSM:Register("sound", "Human Yes my liege", "Interface\\AddOns\\ProEnchanters\\Media\\humanyesmyliege.ogg")
+LSM:Register("sound", "Tauren Bring it on", "Interface\\AddOns\\ProEnchanters\\Media\\taurenbringiton.ogg")
+LSM:Register("sound", "Tauren For the tribes", "Interface\\AddOns\\ProEnchanters\\Media\\taurenforthetribes.ogg")
+LSM:Register("sound", "Tauren I am able to help", "Interface\\AddOns\\ProEnchanters\\Media\\taureniamabletohelp.ogg")
+LSM:Register("sound", "Troll How may I serve", "Interface\\AddOns\\ProEnchanters\\Media\\trollhowmayiserve.ogg")
+LSM:Register("sound", "Troll I do it now", "Interface\\AddOns\\ProEnchanters\\Media\\trollidoitnow.ogg")
+LSM:Register("sound", "Troll I hear the summons", "Interface\\AddOns\\ProEnchanters\\Media\\trollihearthesummons.ogg")
+LSM:Register("sound", "Troll I may have something", "Interface\\AddOns\\ProEnchanters\\Media\\trollimayhavesomethingforya.ogg")
+LSM:Register("sound", "Troll you need me help", "Interface\\AddOns\\ProEnchanters\\Media\\trollyouneedmehelp.ogg")
+local workwork = "Orc Work work"
+local icandothat = "Orc I can do that"
+local behappyto = "Orc Be happy to"
+local mebusy = "Orc Me busy"
+local readytowork = "Orc Ready to work"
+local somethingneeddoing = "Orc Something need doing"
+local whatyouwant = "Orc What you want"
+
+function PESound(soundname)
+	if ProEnchantersOptions["EnableSounds"] == true then
+		local sound = LSM:Fetch('sound', soundname)
+		PlaySoundFile(sound, "Master")
+	end
+end
+
+-- Fonts
+local UIFontBasic = CreateFont("ProEnchantersUIFont")
+UIFontBasic:CopyFontObject(GameFontHighlight)
+UIFontBasic:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+UIFontBasic:SetTextColor(1, 1, 1)
 
 function CreatePEMacros()
 	if not GetMacroInfo("PEMacro1") then
@@ -39,6 +101,11 @@ function Test8utf()
 		line = line .. ", " .. k .. " = " .. v
 	end
 	print(line)
+end
+
+function stringshorten(enchName)
+    local shortened = enchName:match("^Enchant%s+(%w+)")
+    return shortened or enchName
 end
 
 function CapFirstLetter(word)
@@ -116,25 +183,50 @@ function InviteUnitPEAddon(name)
 		currentPartySize = tonumber(GetNumGroupMembers())
 	end
 
-	if maxPartySize > currentPartySize then
-		if not IsInRaid() then
-			if currentPartySize >= 4 then
-				ConvertToRaid()
-				print("Converting party to raid")
-				raidConvert = true
+	if ProEnchantersOptions["DelayInviteTime"] > 0 then
+		C_Timer.After(ProEnchantersOptions["DelayInviteTime"], function()
+			if maxPartySize > currentPartySize then
+				if not IsInRaid() then
+					if currentPartySize >= 4 then
+						ConvertToRaid()
+						print("Converting party to raid")
+						raidConvert = true
+					end
+				end
+				if raidConvert == true then
+					if not string.find(selfnameCheck, nameCheck, 1, true) then
+						C_Timer.After(1, function() InviteUnit(name) end)
+					end
+				else
+					if not string.find(selfnameCheck, nameCheck, 1, true) then
+						InviteUnit(name)
+					end
+				end
+			elseif maxPartySize <= currentPartySize then
+				print("Party size limit reached, consider increasing the size of your maximum party within the options")
 			end
+		end)
+	else
+		if maxPartySize > currentPartySize then
+			if not IsInRaid() then
+				if currentPartySize >= 4 then
+					ConvertToRaid()
+					print("Converting party to raid")
+					raidConvert = true
+				end
+			end
+			if raidConvert == true then
+				if not string.find(selfnameCheck, nameCheck, 1, true) then
+					C_Timer.After(1, function() InviteUnit(name) end)
+				end
+			else
+				if not string.find(selfnameCheck, nameCheck, 1, true) then
+					InviteUnit(name)
+				end
+			end
+		elseif maxPartySize <= currentPartySize then
+			print("Party size limit reached, consider increasing the size of your maximum party within the options")
 		end
-		if raidConvert == true then
-			if not string.find(selfnameCheck, nameCheck, 1, true) then
-				C_Timer.After(1, function() InviteUnit(name) end)
-			end
-		else
-			if not string.find(selfnameCheck, nameCheck, 1, true) then
-				InviteUnit(name)
-			end
-		end
-	elseif maxPartySize <= currentPartySize then
-		print("Party size limit reached, consider increasing the size of your maximum party within the options")
 	end
 end
 
@@ -160,34 +252,32 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
     preferredIndex = 3,  -- Avoid taint issues
 }
 
-StaticPopupDialogs["AUTO_INVITE_POPUP"] = {
-	text = "Enter text for Auto Invite Message",
+StaticPopupDialogs["CUS_REQ_POPUP"] = {
+	text = "Enter text for custom request",
 	button1 = ACCEPT,
 	button2 = CANCEL,
 	OnShow = function(self)
-		self.editBox:SetText(AutoInviteMsg)
+		self.editBox:SetText("")
+		self.editBox:SetFocus()
 	end,
 	OnAccept = function(self)
-		ProEnchantersOptions["AutoInviteMsg"] = (self.editBox:GetText())
-		if AutoInviteMsg ~= ProEnchantersOptions["AutoInviteMsg"] then
-		AutoInviteMsg = ProEnchantersOptions["AutoInviteMsg"]
-		else
-		end
+		local cusreq = (self.editBox:GetText())
+		local cusName = string.lower(ProEnchantersCustomerNameEditBox:GetText())
+		local cusreqHyperlink = "|cFFF5F5F5|Haddon:ProEnchanters:" .. "cusreq" .. ":" .. cusreq .. ":" .. cusName .. ":1234|h" .. cusreq .. "|h|r"
+		AddTradeLine(cusName, MEDIUMSPRINGGREEN .. "Custom Request: " .. ColorClose .. cusreqHyperlink)
 	end,
-	EditBoxOnEnterPressed = function(self)	
-		ProEnchantersOptions["AutoInviteMsg"] = (self.editBox:GetText())
-		if AutoInviteMsg ~= ProEnchantersOptions["AutoInviteMsg"] then
-			AutoInviteMsg = ProEnchantersOptions["AutoInviteMsg"]
-		else
-		end
+	--[[EditBoxOnEnterPressed = function(self)	
+		local cusreq = (self.editBox:GetText())
+		local cusName = string.lower(ProEnchantersCustomerNameEditBox:GetText())
+		AddTradeLine(cusName, MEDIUMSPRINGGREEN .. "Custom Request: " .. ColorClose .. cusreq)
 		self:GetParent():Hide()
-	end,
+	end,]]
 	EditBoxOnEscapePressed = function(self)
 		self:GetParent():Hide()
 	end,
 	hasEditBox = true,
 	editBoxWidth = 500,
-	maxLetters = 250,
+	maxLetters = 500,
 	timeout = 0,
 	exclusive = true,
 	whileDead = true,
@@ -233,18 +323,21 @@ local function RepositionEnchantsFrame(WorkOrderEnchantsFrame)
         WorkOrderEnchantsFrame:ClearAllPoints()
 		local _, wofSize = ProEnchantersWorkOrderFrame:GetSize()
 		if wofSize < 250 then
+			--WorkOrderEnchantsFrame:SetSize(230, 630)
         	WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
 		else
+			WorkOrderEnchantsFrame:SetSize(230, 630)
 			WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
 			WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1, 0)
 		end
+		WorkOrderEnchantsFrame:SetFrameLevel(1)
     end
 end
 
 local function ResetFrames()
     --ProEnchantersWorkOrderFrame:ClearAllPoints()
     --ProEnchantersWorkOrderFrame:SetPoint("TOP", UIParent, "TOP", 0, -200)
-    RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+    RepositionEnchantsFrame(ProEnchantersWorkOrderEnchantsFrame)
 end
 
 local function FullResetFrames()
@@ -270,7 +363,7 @@ local function FullResetFrames()
         ProEnchantersWorkOrderFrame:SetSize(455, 630)
 		--ProEnchantersWorkOrderEnchantsFrame:Show()
    --end
-    RepositionEnchantsFrame(WorkOrderEnchantsFrame)
+    RepositionEnchantsFrame(ProEnchantersWorkOrderEnchantsFrame)
 end
 
 -- PopUp Menu to create work order
@@ -713,7 +806,10 @@ PESupporters = {
 	"JR004",
 	"CoreOverload",
 	"Fichek",
-	"Chenice"
+	"Chenice",
+	"Ath",
+	"Paulallen",
+	"Artyrus"
 }
 
 -- Filtered Words Table
@@ -914,6 +1010,282 @@ EnchantsName = {
 	ENCH134="Enchant Shield - Minor Stamina"
 }
 
+-- Enchants Sorted by Slot Type
+EnchantsSortedSlot = {
+	"ENCH6",
+	"ENCH7",
+	"ENCH8",
+	"ENCH97",
+	"ENCH73",
+	"ENCH83",
+	"ENCH98",
+	"ENCH59",
+	"ENCH99",
+	"ENCH9",
+	"ENCH60",
+	"ENCH10",
+	"ENCH11",
+	"ENCH61",
+	"ENCH12",
+	"ENCH13",
+	"ENCH14",
+	"ENCH62",
+	"ENCH84",
+	"ENCH100",
+	"ENCH101",
+	"ENCH102",
+	"ENCH103",
+	"ENCH15",
+	"ENCH104",
+	"ENCH105",
+	"ENCH106",
+	"ENCH107",
+	"ENCH108",
+	"ENCH109",
+	"ENCH110",
+	"ENCH85",
+	"ENCH86",
+	"ENCH16",
+	"ENCH17",
+	"ENCH18",
+	"ENCH111",
+	"ENCH87",
+	"ENCH19",
+	"ENCH112",
+	"ENCH113",
+	"ENCH114",
+	"ENCH115",
+	"ENCH74",
+	"ENCH20",
+	"ENCH21",
+	"ENCH116",
+	"ENCH117",
+	"ENCH118",
+	"ENCH119",
+	"ENCH120",
+	"ENCH75",
+	"ENCH22",
+	"ENCH63",
+	"ENCH23",
+	"ENCH121",
+	"ENCH24",
+	"ENCH88",
+	"ENCH76",
+	"ENCH25",
+	"ENCH26",
+	"ENCH27",
+	"ENCH64",
+	"ENCH122",
+	"ENCH123",
+	"ENCH124",
+	"ENCH125",
+	"ENCH126",
+	"ENCH127",
+	"ENCH77",
+	"ENCH28",
+	"ENCH29",
+	"ENCH30",
+	"ENCH65",
+	"ENCH66",
+	"ENCH67",
+	"ENCH31",
+	"ENCH128",
+	"ENCH32",
+	"ENCH33",
+	"ENCH34",
+	"ENCH35",
+	"ENCH129",
+	"ENCH130",
+	"ENCH36",
+	"ENCH37",
+	"ENCH38",
+	"ENCH78",
+	"ENCH68",
+	"ENCH39",
+	"ENCH40",
+	"ENCH41",
+	"ENCH42",
+	"ENCH43",
+	"ENCH79",
+	"ENCH131",
+	"ENCH132",
+	"ENCH133",
+	"ENCH89",
+	"ENCH69",
+	"ENCH44",
+	"ENCH134",
+	"ENCH1",
+	"ENCH2",
+	"ENCH70",
+	"ENCH90",
+	"ENCH91",
+	"ENCH92",
+	"ENCH3",
+	"ENCH4",
+	"ENCH93",
+	"ENCH5",
+	"ENCH45",
+	"ENCH46",
+	"ENCH47",
+	"ENCH80",
+	"ENCH48",
+	"ENCH49",
+	"ENCH50",
+	"ENCH51",
+	"ENCH71",
+	"ENCH72",
+	"ENCH94",
+	"ENCH52",
+	"ENCH53",
+	"ENCH54",
+	"ENCH95",
+	"ENCH96",
+	"ENCH55",
+	"ENCH56",
+	"ENCH81",
+	"ENCH57",
+	"ENCH58",
+	"ENCH82",
+}
+
+-- Enchants Sorted by Stat Type
+EnchantsSortedStat = {
+	"ENCH19",
+	"ENCH22",
+	"ENCH74",
+	"ENCH120",
+	"ENCH1",
+	"ENCH6",
+	"ENCH7",
+	"ENCH33",
+	"ENCH39",
+	"ENCH45",
+	"ENCH64",
+	"ENCH67",
+	"ENCH97",
+	"ENCH98",
+	"ENCH104",
+	"ENCH125",
+	"ENCH13",
+	"ENCH18",
+	"ENCH34",
+	"ENCH56",
+	"ENCH68",
+	"ENCH86",
+	"ENCH103",
+	"ENCH109",
+	"ENCH3",
+	"ENCH11",
+	"ENCH53",
+	"ENCH62",
+	"ENCH91",
+	"ENCH100",
+	"ENCH8",
+	"ENCH12",
+	"ENCH17",
+	"ENCH43",
+	"ENCH60",
+	"ENCH69",
+	"ENCH83",
+	"ENCH85",
+	"ENCH99",
+	"ENCH102",
+	"ENCH108",
+	"ENCH133",
+	"ENCH134",
+	"ENCH4",
+	"ENCH9",
+	"ENCH16",
+	"ENCH42",
+	"ENCH44",
+	"ENCH54",
+	"ENCH61",
+	"ENCH73",
+	"ENCH89",
+	"ENCH92",
+	"ENCH101",
+	"ENCH107",
+	"ENCH110",
+	"ENCH132",
+	"ENCH20",
+	"ENCH63",
+	"ENCH106",
+	"ENCH111",
+	"ENCH112",
+	"ENCH114",
+	"ENCH118",
+	"ENCH15",
+	"ENCH21",
+	"ENCH23",
+	"ENCH87",
+	"ENCH115",
+	"ENCH116",
+	"ENCH119",
+	"ENCH75",
+	"ENCH10",
+	"ENCH84",
+	"ENCH105",
+	"ENCH30",
+	"ENCH76",
+	"ENCH121",
+	"ENCH123",
+	"ENCH126",
+	"ENCH131",
+	"ENCH25",
+	"ENCH26",
+	"ENCH27",
+	"ENCH41",
+	"ENCH77",
+	"ENCH88",
+	"ENCH122",
+	"ENCH124",
+	"ENCH127",
+	"ENCH24",
+	"ENCH2",
+	"ENCH5",
+	"ENCH31",
+	"ENCH32",
+	"ENCH38",
+	"ENCH47",
+	"ENCH48",
+	"ENCH49",
+	"ENCH55",
+	"ENCH57",
+	"ENCH70",
+	"ENCH71",
+	"ENCH72",
+	"ENCH80",
+	"ENCH81",
+	"ENCH82",
+	"ENCH90",
+	"ENCH93",
+	"ENCH94",
+	"ENCH95",
+	"ENCH96",
+	"ENCH14",
+	"ENCH35",
+	"ENCH50",
+	"ENCH52",
+	"ENCH28",
+	"ENCH29",
+	"ENCH36",
+	"ENCH40",
+	"ENCH37",
+	"ENCH59",
+	"ENCH65",
+	"ENCH66",
+	"ENCH78",
+	"ENCH128",
+	"ENCH129",
+	"ENCH130",
+	"ENCH79",
+	"ENCH113",
+	"ENCH117",
+	"ENCH46",
+	"ENCH51",
+	"ENCH58",
+}	
+	
 -- Enchants Slots
 EnchantsSlot = {
 	ENCH1="Weapon",
@@ -1208,8 +1580,8 @@ EnchantsStats = {
 	ENCH14=" (+24 Heal Power)",
 	ENCH15=" (+4 Mana every 5s)",
 	ENCH16=" (+9 Spirit)",
-	ENCH17=" (+9 Stamina)",
-	ENCH18=" (+9 Strength)",
+	ENCH17=" (+9 Stam)",
+	ENCH18=" (+9 Str)",
 	ENCH19=" (+4 All Stats)",
 	ENCH20=" (+100 Health)",
 	ENCH21=" (+100 Mana)",
@@ -1313,7 +1685,7 @@ EnchantsStats = {
 	ENCH119=" (+5 Mana)",
 	ENCH120=" (+1 All Stats)",
 	ENCH121=" (+30 Armor)",
-	ENCH122=" (+5 Fire)",
+	ENCH122=" (+5 Fire Res)",
 	ENCH123=" (+20 Armor)",
 	ENCH124=" (+10 Shadow Res)",
 	ENCH125=" (+1 Agi)",
@@ -1487,6 +1859,32 @@ local truesilverbar = "\124cff1eff00\124Hitem:6037::::::::60:::::\124h[Truesilve
 local wildvine = "\124cffffffff\124Hitem:8153::::::::60:::::\124h[Wildvine]\124h\124r"
 local wintersbite = "\124cffffffff\124Hitem:3819::::::::60:::::\124h[Wintersbite]\124h\124r"
 
+-- PE Convertables
+PEConvertablesName = {
+    "Lesser Magic Essence",
+	"Greater Magic Essence",
+    "Lesser Astral Essence",
+    "Greater Astral Essence",
+    "Lesser Mystic Essence",
+    "Greater Mystic Essence",
+    "Lesser Eternal Essence",
+    "Greater Eternal Essence",
+    "Lesser Nether Essence",
+    "Greater Nether Essence"
+}
+
+PEConvertablesId = {
+    "10938",
+	"10939",
+    "10998",
+    "11082",
+    "11134",
+    "11135",
+    "16202",
+    "16203",
+    "11174",
+    "11175"
+}
 
 
 -- Enchanting Recipe Lists
@@ -2046,6 +2444,187 @@ MaterialsForEnchanting = {
 		}
 }
 
+--- DropDown Menu Creation by Jordan Benge
+--- Opts:
+---     name (string): Name of the dropdown (lowercase)
+---     parent (Frame): Parent frame of the dropdown.
+---     items (Table): String table of the dropdown options.
+---     defaultVal (String): String value for the dropdown to default to (empty otherwise).
+---     changeFunc (Function): A custom function to be called, after selecting a dropdown option.
+
+local function hideTextureRegions(frame)
+    local regions = {frame:GetRegions()}
+    for _, region in ipairs(regions) do
+        if region:IsObjectType("Texture") then
+            region:Hide()
+        end
+    end
+end
+local function createDropdown(opts)
+    local dropdown_name = '$parent_' .. opts['name'] .. '_dropdown'
+    local menu_items = opts['items'] or {}
+    local title_text = opts['title'] or ''
+    local dropdown_width = 0
+    local default_val = opts['defaultVal'] or ''
+    local change_func = opts['changeFunc'] or function (dropdown_val) end
+
+    local dropdown = CreateFrame("Frame", dropdown_name, opts['parent'], 'UIDropDownMenuTemplate')
+	dropdown:SetWidth(120)
+	local children = {dropdown:GetChildren()}
+    for _, child in ipairs(children) do
+        -- Hide textures of the dropdown button itself
+        if child:GetName() then
+            --hideTextureRegions(child)
+			print(tostring(child:GetName()))
+            -- Additionally, if you want to access and modify the child of this button, you can do so here
+        end
+    end
+
+    -- Hide textures of the dropdown frame
+    hideTextureRegions(dropdown)
+
+	-- Create a new background texture
+	local bg = dropdown:CreateTexture(nil, "BACKGROUND")
+	bg:SetColorTexture(unpack(MainButtonColorOpaque)) -- RGBA color
+	bg:SetPoint("TOPLEFT", dropdown, "TOPLEFT", 30, -3)
+	bg:SetSize(65, 20)
+    local dd_title = dropdown:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+    dd_title:SetPoint("TOPLEFT", 20, 10)
+
+    for _, item in pairs(menu_items) do -- Sets the dropdown width to the largest item string width.
+        dd_title:SetText(item)
+        local text_width = dd_title:GetStringWidth() + 20
+        if text_width > dropdown_width then
+            dropdown_width = text_width
+        end
+    end
+
+    UIDropDownMenu_SetWidth(dropdown, dropdown_width)
+    UIDropDownMenu_SetText(dropdown, default_val)
+    dd_title:SetText(title_text)
+
+    UIDropDownMenu_Initialize(dropdown, function(self, level, _)
+        local info = UIDropDownMenu_CreateInfo()
+        for key, val in pairs(menu_items) do
+            info.text = val;
+            info.checked = false
+            info.menuList= key
+            info.hasArrow = false
+            info.func = function(b)
+                UIDropDownMenu_SetSelectedValue(dropdown, b.value, b.value)
+                UIDropDownMenu_SetText(dropdown, b.value)
+                b.checked = true
+                change_func(dropdown, b.value)
+            end
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+
+    return dropdown
+end
+
+local function createScrollableDropdown(opts)
+    local dropdown_name = '$parent_' .. opts['name'] .. '_dropdown'
+    local menu_items = opts['items'] or {}
+    local title_text = opts['title'] or 'Select Option' -- Default title if none provided
+    local default_val = opts['defaultVal'] or menu_items[1] -- Use the first item as default if none provided
+    local change_func = opts['changeFunc']
+    local itemHeight = 20
+    local displayItems = 10
+    local scrollFrameHeight = displayItems * itemHeight
+
+    local dropdown = CreateFrame("Frame", dropdown_name, opts['parent'])
+    dropdown:SetSize(250, scrollFrameHeight + 30)
+
+    -- Title or Selected Value Display
+    local dd_title = dropdown:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+    dd_title:SetPoint("TOP", dropdown, "TOP", 15, -8)
+    dd_title:SetText(title_text) -- Set to default value or title
+
+    -- Scroll Frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, dropdown, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOP", dd_title, "BOTTOM", 0, -4)
+    scrollFrame:SetSize(250, scrollFrameHeight)
+
+	-- Access the Scroll Bar
+	local scrollBar = scrollFrame.ScrollBar
+
+	-- Customize Thumb Texture
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil)  -- Clear existing texture
+	thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
+	--thumbTexture:SetAllPoints(thumbTexture)
+
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Customize Scroll Up Button Textures with Solid Colors
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Set colors
+	upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+	upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+	upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+	upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
+
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
+
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Set colors
+	downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+	downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+	downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+	downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
+
+	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	upButtonText:SetText("-") -- Set the text for the up button
+	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+
+	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	downButtonText:SetText("-") -- Set the text for the down button
+	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollFrame:SetScrollChild(scrollChild)
+    scrollChild:SetSize(scrollFrame:GetWidth(), #menu_items * itemHeight)
+
+    for i, item in ipairs(menu_items) do
+		local buttonBg = scrollChild:CreateTexture(nil, "OVERLAY")
+        buttonBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
+        buttonBg:SetSize(222, itemHeight - 2)  -- Adjust size as needed
+        buttonBg:SetPoint("TOP", scrollChild, "TOP", 10, -(i-1) * itemHeight)
+
+        local button = CreateFrame("Button", nil, scrollChild)
+        button:SetSize(220, itemHeight)
+        button:SetPoint("TOP", scrollChild, "TOP", 10, -(i-1) * itemHeight)
+        button:SetText(item)
+		local buttonText = button:GetFontString()
+		buttonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		button:SetNormalFontObject("GameFontHighlight")
+		button:SetHighlightFontObject("GameFontNormal")
+        button:SetScript("OnClick", function()
+            dd_title:SetText(item) -- Update title/display to show selected item
+            change_func(dropdown, item)
+        end)
+    end
+
+    return dropdown
+end
+
 function PEItemCache()
     local NoneCachedItems = ""
     local CachedItems = ""
@@ -2118,7 +2697,7 @@ function GetAllReqMats(customerName)
     -- Count the occurrences of each enchantment
 	local customerName = string.lower(customerName)
     local enchantCounts = {}
-	for _, frameInfo in pairs(WorkOrderFrames) do
+	for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
     		for _, enchantID in ipairs(frameInfo.Enchants) do
        			enchantCounts[enchantID] = (enchantCounts[enchantID] or 0) + 1
@@ -2168,7 +2747,7 @@ end
 function GetAllReqMatsNoLink(customerName)
 	local customerName = string.lower(customerName)
     local enchantCounts = {}
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             for _, enchantID in ipairs(frameInfo.Enchants) do
                 enchantCounts[enchantID] = (enchantCounts[enchantID] or 0) + 1
@@ -2209,70 +2788,13 @@ function GetAllReqMatsNoLink(customerName)
 end
 
 
-function stringshorten(enchName)
-    local shortened = enchName:match("^Enchant%s+(%w+)")
-    return shortened or enchName
-end
-
---- DropDown Menu Creation by Jordan Benge
---- Opts:
----     name (string): Name of the dropdown (lowercase)
----     parent (Frame): Parent frame of the dropdown.
----     items (Table): String table of the dropdown options.
----     defaultVal (String): String value for the dropdown to default to (empty otherwise).
----     changeFunc (Function): A custom function to be called, after selecting a dropdown option.
-local function createDropdown(opts)
-    local dropdown_name = '$parent_' .. opts['name'] .. '_dropdown'
-    local menu_items = opts['items'] or {}
-    local title_text = opts['title'] or ''
-    local dropdown_width = 0
-    local default_val = opts['defaultVal'] or ''
-    local change_func = opts['changeFunc'] or function (dropdown_val) end
-
-    local dropdown = CreateFrame("Frame", dropdown_name, opts['parent'], 'UIDropDownMenuTemplate')
-	dropdown:SetWidth(120)
-    local dd_title = dropdown:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-    dd_title:SetPoint("TOPLEFT", 20, 10)
-
-    for _, item in pairs(menu_items) do -- Sets the dropdown width to the largest item string width.
-        dd_title:SetText(item)
-        local text_width = dd_title:GetStringWidth() + 20
-        if text_width > dropdown_width then
-            dropdown_width = text_width
-        end
-    end
-
-    UIDropDownMenu_SetWidth(dropdown, dropdown_width)
-    UIDropDownMenu_SetText(dropdown, default_val)
-    dd_title:SetText(title_text)
-
-    UIDropDownMenu_Initialize(dropdown, function(self, level, _)
-        local info = UIDropDownMenu_CreateInfo()
-        for key, val in pairs(menu_items) do
-            info.text = val;
-            info.checked = false
-            info.menuList= key
-            info.hasArrow = false
-            info.func = function(b)
-                UIDropDownMenu_SetSelectedValue(dropdown, b.value, b.value)
-                UIDropDownMenu_SetText(dropdown, b.value)
-                b.checked = true
-                change_func(dropdown, b.value)
-            end
-            UIDropDownMenu_AddButton(info)
-        end
-    end)
-
-    return dropdown
-end
-
 
 function GetAllReqEnchNoLink(customerName)
 	local customerName = string.lower(customerName)
     -- Count the occurrences of each enchantment
     local enchantCounts = {}
 	local AllEnchsReq = ""
-	for _, frameInfo in pairs(WorkOrderFrames) do
+	for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
     for _, enchantID in ipairs(frameInfo.Enchants) do
         enchantCounts[enchantID] = (enchantCounts[enchantID] or 0) + 1
@@ -2309,7 +2831,7 @@ end
 
 --[[function GetAllReqMatsNoLink(customerName)
     local enchantCounts = {}
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             for _, enchantID in ipairs(frameInfo.Enchants) do
                 enchantCounts[enchantID] = (enchantCounts[enchantID] or 0) + 1
@@ -2402,7 +2924,7 @@ local function ScrollToActiveWorkOrder(customerName)
     	cusName = string.lower(ProEnchantersCustomerNameEditBox:GetText())
 	end
 
-    for id, frameInfo in pairs(WorkOrderFrames) do
+    for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 
 		local frameInfoString = tostring(frameInfo)
 		local cusFrameCheck = string.lower(frameInfo.Frame.customerName)
@@ -2420,6 +2942,18 @@ local function ScrollToActiveWorkOrder(customerName)
     end
     -- Set the scroll position to bring the active work order into view
     scrollFrame:SetVerticalScroll(scrollPosition)
+end
+
+-- Function to check if the frames are connected
+local function CheckIfConnected()
+	-- Example condition to check if frames are connected
+	-- This is a simplistic check; you might need a more sophisticated method
+	local point, relativeTo = ProEnchantersWorkOrderEnchantsFrame:GetPoint()
+	if relativeTo == ProEnchantersWorkOrderFrame then
+		isConnected = true
+	else
+		isConnected = false
+	end
 end
 
 function ProEnchantersCreateWorkOrderFrame()
@@ -2480,7 +3014,7 @@ function ProEnchantersCreateWorkOrderFrame()
 
 	-- Expand enchants button
 	local enchantsShowButton = CreateFrame("Button", nil, WorkOrderFrame)--, "GameMenuButtonTemplate")
-	enchantsShowButton:SetSize(25, 25)
+	enchantsShowButton:SetSize(15, 25)
 	--enchantsShowButton:SetFrameLevel(9001)
 	enchantsShowButton:SetPoint("TOPRIGHT", titleBg, "BOTTOMRIGHT", 0, -5)
 	enchantsShowButton:SetText(">")
@@ -2499,10 +3033,9 @@ function ProEnchantersCreateWorkOrderFrame()
 
 	-- Auto Invite text
 	local autoinviteHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
-	autoinviteHeader:SetFontObject("GameFontHighlight")
+	autoinviteHeader:SetFontObject(UIFontBasic)
 	autoinviteHeader:SetPoint("RIGHT", autoInviteCb, "LEFT", -5, 0)
 	autoinviteHeader:SetText("Auto Invite?")
-	autoinviteHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local newcustomerBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
     newcustomerBg:SetColorTexture(unpack(SecondaryBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
@@ -2516,10 +3049,16 @@ function ProEnchantersCreateWorkOrderFrame()
     newcustomerBorder:SetPoint("BOTTOMLEFT", newcustomerBg, "BOTTOMLEFT", 0, 0)
 	newcustomerBorder:SetPoint("BOTTOMRIGHT", newcustomerBg, "BOTTOMRIGHT", 0, 0)
 
-	--[[local customerNameEditBoxBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
-    customerNameEditBoxBg:SetColorTexture(unpack(ButtonPushed))  -- Set RGBA values for your preferred color and alpha
-    customerNameEditBoxBg:SetSize(160, 22)  -- Adjust size as needed
-    customerNameEditBoxBg:SetPoint("TOP", newcustomerBg, "TOP", -5, -9)]]
+	local targetButton = CreateFrame("Button", "targetbutton", WorkOrderFrame, "SecureActionButtonTemplate")
+    targetButton:SetSize(60, 25)
+    targetButton:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -15, -33)
+	targetButton:SetText("Target")
+	local targetButtonText = targetButton:GetFontString()
+	targetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	targetButton:SetNormalFontObject("GameFontHighlight")
+	targetButton:SetHighlightFontObject("GameFontNormal")
+	targetButton:SetAttribute("type", "macro")
+	targetButton:SetAttribute("macrotext", "/tar " .. target)
 
 	-- Create an EditBox for the customer name
 	local customerNameEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderFrame, "InputBoxTemplate")
@@ -2534,13 +3073,16 @@ function ProEnchantersCreateWorkOrderFrame()
 		local customerName = ProEnchantersCustomerNameEditBox:GetText()
 		UpdateTradeHistory(customerName)
 	end)
+	customerNameEditBox:SetScript("OnTextChanged", function()
+		target = customerNameEditBox:GetText()
+		targetButton:SetAttribute("macrotext", "/tar " .. target)
+	end)
 
 	-- Create a header for the customer name input
 	local customerHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
-	customerHeader:SetFontObject("GameFontHighlight")
+	customerHeader:SetFontObject(UIFontBasic)
 	customerHeader:SetPoint("RIGHT", customerNameEditBox, "LEFT", -10, 0)
 	customerHeader:SetText("Customer:")
-	customerHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local createBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
     createBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
@@ -2563,6 +3105,16 @@ function ProEnchantersCreateWorkOrderFrame()
 		local customerName = ProEnchantersCustomerNameEditBox:GetText()
 		UpdateTradeHistory(customerName)
 	end)
+
+	--local targetmacro = "/say test"--"/tar " .. customerName
+
+	--local macro2 = string.gsub(macro1, "enchValue", enchValue)
+
+	local targetBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
+    targetBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    targetBg:SetSize(60, 20)  -- Adjust size as needed
+    targetBg:SetPoint("LEFT", createBg, "RIGHT", 10, 0)
+
 
     -- Scroll frame setup...
     local WorkOrderScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersWorkOrderScrollFrame", WorkOrderFrame, "UIPanelScrollFrameTemplate")
@@ -2718,7 +3270,7 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ClearAllButton:Hide()
 	end
 	ClearAllButton:SetScript("OnClick", function()
-		for id, frameInfo in pairs(WorkOrderFrames) do
+		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 			if frameInfo.Completed == false then
 				frameInfo.Completed = true
 				frameInfo.Frame:Hide()
@@ -2760,9 +3312,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersColorsFrame:Hide()
 	end)
 
-	--[[WorkOrderFrame:SetScript("OnShow", function()
-		CreatePEMacros()
-	end)]]
+	WorkOrderFrame:SetScript("OnShow", function()
+		--nothing
+	end)
 
 	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
 	resizeButton:SetSize(16, 16)
@@ -2793,30 +3345,29 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
 	titleButton:SetScript("OnClick", function()
-        --[[local isVisible = ScrollChild:IsVisible()
-		bgTexture:SetShown(not isVisible)
-        ScrollChild:SetShown(not isVisible)
-        closeBg:SetShown(not isVisible)
-		ClearAllButton:SetShown(not isVisible)
-		resizeButton:SetShown(not isVisible)
-        closeButton:SetShown(not isVisible)
-		settingsButton:SetShown(not isVisible)
-		GoldTradedDisplay:SetShown(not isVisible)
-        scrollBg:SetShown(not isVisible)
-		local isVisible2 = WorkOrderScrollFrame:IsVisible()
-		WorkOrderScrollFrame:SetShown(not isVisible2)]]
 		local currentWidth, currentHeight = WorkOrderFrame:GetSize()
 		local point, relativeTo, relativePoint, xOfs, yOfs = WorkOrderFrame:GetPoint()
 		local x, y = GetCursorPosition()
     	local scale = UIParent:GetEffectiveScale()
 		x, y = x / scale, y / scale
+		-- Assuming 'yourFrame' is your frame object
+		local frameTop = WorkOrderFrame:GetTop()
+		local frameCenter = WorkOrderFrame:GetCenter()
+		-- UI scale correction
+		local uiScale = UIParent:GetEffectiveScale()
+		-- Calculate the distance from the top of the screen to the top of the frame, corrected for UI scale
+		local distanceFromTop = (frameTop * uiScale)
+		local distanceFromCenter = (frameCenter * uiScale)
+		CheckIfConnected()
 	if currentHeight < 240 then
-		ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-        ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-		ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1, 0)
+		if isConnected then
+			ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+			ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+			ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1, 0)
+		end
 		WorkOrderFrame:ClearAllPoints()
-        WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(455, normHeight)
+		WorkOrderFrame:SetSize(455, normHeight)
+        WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
 		local isVisible = ScrollChild:IsVisible()
 		bgTexture:Show()
         ScrollChild:Show()
@@ -2831,12 +3382,14 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		WorkOrderScrollFrame:Show()
 		--ProEnchantersWorkOrderEnchantsFrame:Show()
     else
-		ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-        ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+		if isConnected then
+			ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+			ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+		end
 		_, normHeight = WorkOrderFrame:GetSize()
         WorkOrderFrame:ClearAllPoints()
-        WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", x, 10 + y)
-        WorkOrderFrame:SetSize(455, 60)
+		WorkOrderFrame:SetSize(455, 60)
+        WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
 		local isVisible = ScrollChild:IsVisible()
 		bgTexture:Hide()
         ScrollChild:Hide()
@@ -2872,12 +3425,13 @@ end
 
 function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
     local WorkOrderEnchantsFrame = CreateFrame("Frame", "ProEnchantersWorkOrderEnchantsFrame", ProEnchantersWorkOrderFrame, "BackdropTemplate")
-    WorkOrderEnchantsFrame:SetSize(180, 630)  -- Adjust height as needed
+    WorkOrderEnchantsFrame:SetSize(230, 630)  -- Adjust height as needed
     WorkOrderEnchantsFrame:SetFrameStrata("DIALOG")
+	WorkOrderEnchantsFrame:SetFrameLevel(1)
     WorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
 	WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMLEFT", -1, 0)
 	WorkOrderEnchantsFrame:SetResizable(true)
-	WorkOrderEnchantsFrame:SetResizeBounds(180, 250, 180, 1000)
+	WorkOrderEnchantsFrame:SetResizeBounds(230, 250, 230, 1000)
 	WorkOrderEnchantsFrame:SetMovable(true)
     WorkOrderEnchantsFrame:EnableMouse(true)
     WorkOrderEnchantsFrame:RegisterForDrag("LeftButton")
@@ -2896,63 +3450,73 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
     -- Create a full background texture
     local bgTexture = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
     bgTexture:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
-	bgTexture:SetSize(180, 570)
+	bgTexture:SetSize(230, 570)
     bgTexture:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, -60)
 	bgTexture:SetPoint("BOTTOM", WorkOrderEnchantsFrame, "BOTTOM", 0, 25)
 
     -- Create a title background
     local titleBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
     titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
-    titleBg:SetSize(180, 25)  -- Adjust size as needed
+    titleBg:SetSize(230, 25)  -- Adjust size as needed
     titleBg:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, 0)
 
 
 	local filterBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
     filterBg:SetColorTexture(unpack(SecondaryBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
-    filterBg:SetSize(180, 35)  -- Adjust size as needed
+    filterBg:SetSize(230, 35)  -- Adjust size as needed
     filterBg:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, -25)
 
 	local filterBgBorder = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
     filterBgBorder:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
-    filterBgBorder:SetSize(180, 1)  -- Adjust size as needed
+    filterBgBorder:SetSize(230, 1)  -- Adjust size as needed
     filterBgBorder:SetPoint("BOTTOM", filterBg, "BOTTOM", 0, 0)
 
+	-- Create a header for the customer name input
+	local filterHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
+	filterHeader:SetFontObject(UIFontBasic)
+	filterHeader:SetPoint("TOPLEFT", filterBg, "TOPLEFT", 10, -15)
+	filterHeader:SetText("Filter:")
+
+	local defaultVal = ProEnchantersOptions["SortBy"]
+
+	local sortby_opts = {
+		['name']='sortby',
+		['parent']=WorkOrderEnchantsFrame,
+		['title']='',
+		['items']= {"Default","Slot View","Stat View"},
+		['defaultVal']=defaultVal,
+		['changeFunc']=function(dropdown_frame, dropdown_val)
+			ProEnchantersOptions["SortBy"] = dropdown_val
+			FilterEnchantButtons()
+		end
+	}
+
+	local SortByDD = createDropdown(sortby_opts)
+	-- Don't forget to set your dropdown's points, we don't do this in the creation method for simplicities sake.
+	SortByDD:SetPoint("LEFT", filterHeader, "RIGHT", -25, -2)
 
 	-- Create an EditBox for the customer name
 	local filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame, "InputBoxTemplate")
-	filterEditBox:SetSize(65, 20)
-	filterEditBox:SetPoint("TOP", filterBg, "TOP", 0, -10)
+	filterEditBox:SetSize(50, 20)
+	filterEditBox:SetPoint("LEFT", SortByDD, "RIGHT", -8, 3)
 	filterEditBox:SetAutoFocus(false)
 	-- Set Text
 	filterEditBox:SetFontObject("GameFontHighlight")
 	-- Scripts
 	filterEditBox:SetScript("OnEnterPressed", filterEditBox.ClearFocus)
-
-	local filterEditBoxBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
-    filterEditBoxBg:SetColorTexture(0.4, 0.4, 0.4, 0)  -- Set RGBA values for your preferred color and alpha
-    filterEditBoxBg:SetSize(70, 22)  -- Adjust size as needed
-    filterEditBoxBg:SetPoint("TOP", filterBg, "TOP", 0, -9)
-
 	filterEditBox:SetScript("OnTextChanged", function()
 		FilterEnchantButtons()
 	end)
 
-	-- Create a header for the customer name input
-	local filterHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
-	filterHeader:SetFontObject("GameFontHighlight")
-	filterHeader:SetPoint("RIGHT", filterEditBox, "LEFT", -10, 0)
-	filterHeader:SetText("Filter:")
-	filterHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-
 	local clearBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
     clearBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
     clearBg:SetSize(40, 20)  -- Adjust size as needed
-    clearBg:SetPoint("LEFT", filterEditBox, "RIGHT", 10, 0)
+    clearBg:SetPoint("LEFT", filterEditBox, "RIGHT", 5, 0)
 
 	-- Create a "Create" button
 	local clearButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)--, "GameMenuButtonTemplate")
 	clearButton:SetSize(40, 20)
-	clearButton:SetPoint("LEFT", filterEditBox, "RIGHT", 10, 0)
+	clearButton:SetPoint("LEFT", filterEditBox, "RIGHT", 5, 0)
 	clearButton:SetText("Clear")
 	local clearButtonText = clearButton:GetFontString()
 	clearButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
@@ -2966,7 +3530,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
     -- Setup for the scroll frame
     local WorkOrderEnchantsScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersWorkOrderEnchantsScrollFrame", WorkOrderEnchantsFrame, "UIPanelScrollFrameTemplate")
-    WorkOrderEnchantsScrollFrame:SetSize(150, 570)
+    WorkOrderEnchantsScrollFrame:SetSize(200, 570)
     WorkOrderEnchantsScrollFrame:SetPoint("TOP", filterBg, "BOTTOM", -8, -1)
 	WorkOrderEnchantsScrollFrame:SetPoint("BOTTOM", WorkOrderEnchantsFrame, "BOTTOM", -8, 25)
 
@@ -2981,69 +3545,69 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	local scrollBar = WorkOrderEnchantsScrollFrame.ScrollBar
 
 	-- Customize Thumb Texture
-local thumbTexture = scrollBar:GetThumbTexture()
-thumbTexture:SetTexture(nil)  -- Clear existing texture
-thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
---thumbTexture:SetAllPoints(thumbTexture)
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil)  -- Clear existing texture
+	thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
+	--thumbTexture:SetAllPoints(thumbTexture)
 
--- Customize Scroll Up Button Textures
-local upButton = scrollBar.ScrollUpButton
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
 
--- Clear existing textures
-upButton:GetNormalTexture():SetTexture(nil)
-upButton:GetPushedTexture():SetTexture(nil)
-upButton:GetDisabledTexture():SetTexture(nil)
-upButton:GetHighlightTexture():SetTexture(nil)
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
 
--- Customize Scroll Up Button Textures with Solid Colors
-local upButton = scrollBar.ScrollUpButton
+	-- Customize Scroll Up Button Textures with Solid Colors
+	local upButton = scrollBar.ScrollUpButton
 
--- Set solid color for normal state
-upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+	-- Set solid color for normal state
+	upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
 
--- Set solid color for pushed state
-upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
+	-- Set solid color for pushed state
+	upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Replace RGBA values as needed
 
--- Set solid color for disabled state
-upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
+	-- Set solid color for disabled state
+	upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Replace RGBA values as needed
 
--- Set solid color for highlight state
-upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
+	-- Set solid color for highlight state
+	upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Replace RGBA values as needed
 
--- Repeat for Scroll Down Button
-local downButton = scrollBar.ScrollDownButton
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
 
--- Clear existing textures
-downButton:GetNormalTexture():SetTexture(nil)
-downButton:GetPushedTexture():SetTexture(nil)
-downButton:GetDisabledTexture():SetTexture(nil)
-downButton:GetHighlightTexture():SetTexture(nil)
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
 
--- Set solid color for normal state
-downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+	-- Set solid color for normal state
+	downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
 
--- Set solid color for pushed state
-downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
+	-- Set solid color for pushed state
+	downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed)) -- Adjust colors as needed
 
--- Set solid color for disabled state
-downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
+	-- Set solid color for disabled state
+	downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled)) -- Adjust colors as needed
 
--- Set solid color for highlight state
-downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
+	-- Set solid color for highlight state
+	downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight)) -- Adjust colors as needed
 
-local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-upButtonText:SetText("-") -- Set the text for the up button
-upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	upButtonText:SetText("-") -- Set the text for the up button
+	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
-local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-downButtonText:SetText("-") -- Set the text for the down button
-downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	downButtonText:SetText("-") -- Set the text for the down button
+	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
     -- Scroll child frame where elements are actually placed
     local ScrollChild = CreateFrame("Frame")
-    ScrollChild:SetSize(150, 565)  -- Adjust height based on the number of elements
+    ScrollChild:SetSize(200, 565)  -- Adjust height based on the number of elements
     WorkOrderEnchantsScrollFrame:SetScrollChild(ScrollChild)
 
 	-- Using "for _, Enchants in ipairs(EnchantsName) do", create a clickable button that is 120x30, uses the key from enchants as the ID of the button and uses the value of the key as the text on the button. When this button is pressed, update the table CusEnchant in the current focus CusWorkOrder ENCHANTS frame by adding +1 to the value of the key. As an example, the start of the CusEnchant table should be ENCH1=0, update this to be ENCH1=1. When pressed again, add +1 again so that it is now ENCH1=2, and so forth as buttons are pressed.
@@ -3066,33 +3630,72 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	for k in pairs(EnchantsName) do
 		table.insert(keys, k)
 	end
-	table.sort(keys, alphanumericSort)  -- Sorts the keys in natural alphanumeric order
+	table.sort(keys, alphanumericSort)
+	  -- Sorts the keys in natural alphanumeric order
 	
 	enchantButtons = {}
 	function FilterEnchantButtons()
+		local sortby = ProEnchantersOptions["SortBy"]
 		local filterText = filterEditBox:GetText():lower()
 		local enchyOffset = 5
 		local enchxOffset = 5
+		local keys = keys
+		if sortby == "Stat View" then
+			keys = EnchantsSortedStat
+		elseif sortby == "Slot View" then
+			keys = EnchantsSortedSlot
+		end
 
 		for _, key in ipairs(keys) do
 			if ProEnchantersOptions.filters[key] == true then
-			local enchantInfo = enchantButtons[key]
-				local enchantName = EnchantsName[key]:lower()
-				local enchantStats1 = EnchantsStats[key]
-				local enchantStats2 = string.gsub(enchantStats1, "%(", "")
-				local enchantStats3 = string.gsub(enchantStats2, "%)", "")
-				local filterCheck = string.lower(enchantName .. enchantStats3)
-				if filterText == "" or filterCheck:find(filterText, 1, true) then
-					-- Show and position the button
-					enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
-					enchantInfo.button:Show()
-					enchantInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
-					enchantInfo.background:Show()
-					enchyOffset = enchyOffset + 50
-				else
-					-- Hide the button
-					enchantInfo.button:Hide()
-					enchantInfo.background:Hide()
+				if ProEnchantersOptions.favorites[key] == true then
+					local enchantInfo = enchantButtons[key]
+					local enchantName = EnchantsName[key]:lower()
+					local enchantStats1 = EnchantsStats[key]
+					local enchantStats2 = string.gsub(enchantStats1, "%(", "")
+					local enchantStats3 = string.gsub(enchantStats2, "%)", "")
+					local filterCheck = string.lower(enchantName .. enchantStats3)
+					if filterText == "" or filterCheck:find(filterText, 1, true) then
+						-- Show and position the button
+						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.button:Show()
+						enchantInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.background:Show()
+						enchantInfo.favicon:Show()
+						enchyOffset = enchyOffset + 35
+					else
+						-- Hide the button
+						enchantInfo.button:Hide()
+						enchantInfo.background:Hide()
+						enchantInfo.favicon:Hide()
+					end
+				end
+			end
+		end
+
+		for _, key in ipairs(keys) do
+			if ProEnchantersOptions.filters[key] == true then
+				if ProEnchantersOptions.favorites[key] ~= true then
+					local enchantInfo = enchantButtons[key]
+					local enchantName = EnchantsName[key]:lower()
+					local enchantStats1 = EnchantsStats[key]
+					local enchantStats2 = string.gsub(enchantStats1, "%(", "")
+					local enchantStats3 = string.gsub(enchantStats2, "%)", "")
+					local filterCheck = string.lower(enchantName .. enchantStats3)
+					if filterText == "" or filterCheck:find(filterText, 1, true) then
+						-- Show and position the button
+						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.button:Show()
+						enchantInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.background:Show()
+						enchantInfo.favicon:Hide()
+						enchyOffset = enchyOffset + 35
+					else
+						-- Hide the button
+						enchantInfo.button:Hide()
+						enchantInfo.background:Hide()
+						enchantInfo.favicon:Hide()
+					end
 				end
 			end
 		end
@@ -3109,20 +3712,20 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		local enchantStats3 = string.gsub(enchantStats2, "%)", "")
 		local enchantStats = string.gsub(enchantStats3, "%+", "")
         -- Split the enchantment name at the dash
-        local enchantTitleText1 = string.gsub(value, " %- ", "\n")
+        local enchantTitleText1 = string.gsub(value, "Enchant ", "")
 		local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
         local ench = key
         local enchName = value
 
         -- Create button Bg
-        local enchantButtonBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+        local enchantButtonBg = ScrollChild:CreateTexture(nil, "ARTWORK")
         enchantButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
-        enchantButtonBg:SetSize(145, 45)  -- Adjust size as needed
+        enchantButtonBg:SetSize(195, 30)  -- Adjust size as needed
         enchantButtonBg:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 
         -- Create a button
         local enchantButton = CreateFrame("Button", key, ScrollChild)
-        enchantButton:SetSize(145, 45) -- Adjust the size as needed
+        enchantButton:SetSize(195, 30) -- Adjust the size as needed
         enchantButton:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
         enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
@@ -3130,84 +3733,108 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
         enchantButton:SetNormalFontObject("GameFontHighlight")
         enchantButton:SetHighlightFontObject("GameFontNormal")
 
+		-- Create a Announce icon
+		local enchantFavIcon = ScrollChild:CreateTexture(nil, "OVERLAY")
+		--enchantMatsMissingDisplay:SetColorTexture(unpack(EnchantsButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
+		enchantFavIcon:SetTexture("Interface\\COMMON\\FavoritesIcon.blp")
+		enchantFavIcon:SetSize(24, 24)  -- Adjust size as needed
+		enchantFavIcon:SetPoint("TOPRIGHT", enchantButtonBg, "TOPRIGHT", 6, 3)
+		if ProEnchantersOptions.favorites[ench] == true then
+			enchantFavIcon:Show()
+		else
+			enchantFavIcon:Hide()
+		end
+
         -- Set the script for the button's OnClick event
-        enchantButton:SetScript("OnClick", function(self, button)
+		enchantButton:RegisterForClicks("RightButtonUp", "LeftButtonUp")
+        enchantButton:SetScript("OnMouseUp", function(self, button)
 			local customerName = ProEnchantersCustomerNameEditBox:GetText()
 			customerName = string.lower(customerName)
 			customerName = CapFirstLetter(customerName)
 			local reqEnchant = ench
 			local enchName, enchStats = GetEnchantName(reqEnchant)
 			filterEditBox.ClearFocus(filterEditBox)
-			if IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown() then
-				ProEnchantersOptions.filters[reqEnchant] = false
-				enchantButton:Hide()
-				enchantButtonBg:Hide()
-				FilterEnchantButtons()
-				UpdateCheckboxesBasedOnFilters()
-			elseif IsShiftKeyDown() then -- Link to player via party or whisper
-				--local matsReq = ProEnchants_GetReagentListNoLink(reqEnchant)
-				local matsReq = ProEnchants_GetReagentList(reqEnchant)
-				local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
-				local cusName = tostring(customerName)
-				if ProEnchantersOptions["WhisperMats"] == true and cusName and cusName ~= "" then
-					SendChatMessage(msgReq, "WHISPER", nil, cusName)
-				elseif CheckIfPartyMember(customerName) == true then
-					local capPlayerName = CapFirstLetter(customerName)
-					SendChatMessage(capPlayerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
-				elseif cusName and cusName ~= "" then
-					SendChatMessage(msgReq, "WHISPER", nil, cusName)
+			if button == "RightButton" then
+				if ProEnchantersOptions.favorites[ench] == true then
+					ProEnchantersOptions.favorites[ench] = false
+					enchantFavIcon:Hide()
 				else
-					SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+					ProEnchantersOptions.favorites[ench] = true
+					enchantFavIcon:Show()
 				end
-			elseif IsControlKeyDown() and IsAltKeyDown() then -- Remove from current trade target
-				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-				local currentTradeTarget = UnitName("NPC")
-				if currentTradeTarget ~= nil then
-					RemoveRequestedEnchant(currentTradeTarget, reqEnchant)
-					ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
-				end
-				local confirmTradeTarget = UnitName("NPC")
-				if confirmTradeTarget == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
-					ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
-				end
-			elseif IsControlKeyDown() then -- Remove from current customer
-				RemoveRequestedEnchant(customerName, reqEnchant)
-				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-				local currentTradeTarget = UnitName("NPC")
-				if currentCusFocus == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
-					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
-				end
-			elseif IsAltKeyDown() then -- Add to current trade target
-				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-				local currentTradeTarget = UnitName("NPC")
-				if currentTradeTarget ~= nil then
-					AddRequestedEnchant(currentTradeTarget, reqEnchant)
-					ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
-				end
-				local confirmTradeTarget = UnitName("NPC")
-				if confirmTradeTarget == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
-					ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
-				end
-			else
-				-- Actions to perform if no modifier is held down
-				AddRequestedEnchant(customerName, reqEnchant)
-				local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-				local currentTradeTarget = UnitName("NPC")
-				if currentCusFocus == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
-					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
+				FilterEnchantButtons()
+			elseif button == "LeftButton" then
+				if IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown() then
+					ProEnchantersOptions.filters[reqEnchant] = false
+					enchantButton:Hide()
+					enchantButtonBg:Hide()
+					FilterEnchantButtons()
+					UpdateCheckboxesBasedOnFilters()
+				elseif IsShiftKeyDown() then -- Link to player via party or whisper
+					--local matsReq = ProEnchants_GetReagentListNoLink(reqEnchant)
+					local matsReq = ProEnchants_GetReagentList(reqEnchant)
+					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+					local cusName = tostring(customerName)
+					if ProEnchantersOptions["WhisperMats"] == true and cusName and cusName ~= "" then
+						SendChatMessage(msgReq, "WHISPER", nil, cusName)
+					elseif CheckIfPartyMember(customerName) == true then
+						local capPlayerName = CapFirstLetter(customerName)
+						SendChatMessage(capPlayerName .. ": " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					elseif cusName and cusName ~= "" then
+						SendChatMessage(msgReq, "WHISPER", nil, cusName)
+					else
+						SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+					end
+				elseif IsControlKeyDown() and IsAltKeyDown() then -- Remove from current trade target
+					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
+					local currentTradeTarget = UnitName("NPC")
+					if currentTradeTarget ~= nil then
+						RemoveRequestedEnchant(currentTradeTarget, reqEnchant)
+						ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
+					end
+					local confirmTradeTarget = UnitName("NPC")
+					if confirmTradeTarget == currentTradeTarget then
+						ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
+					end
+				elseif IsControlKeyDown() then -- Remove from current customer
+					RemoveRequestedEnchant(customerName, reqEnchant)
+					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
+					local currentTradeTarget = UnitName("NPC")
+					if currentCusFocus == currentTradeTarget then
+						ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						ProEnchantersUpdateTradeWindowText(currentTradeTarget)
+					end
+				elseif IsAltKeyDown() then -- Add to favorites
+					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
+					local currentTradeTarget = UnitName("NPC")
+					if currentTradeTarget ~= nil then
+						AddRequestedEnchant(currentTradeTarget, reqEnchant)
+						ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
+					end
+					local confirmTradeTarget = UnitName("NPC")
+					if confirmTradeTarget == currentTradeTarget then
+						ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
+					end
+				else
+					-- Actions to perform if no modifier is held down
+					AddRequestedEnchant(customerName, reqEnchant)
+					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
+					local currentTradeTarget = UnitName("NPC")
+					if currentCusFocus == currentTradeTarget then
+						ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						ProEnchantersUpdateTradeWindowText(currentTradeTarget)
+					end
 				end
 			end
 		end)
 
         -- Increase yOffset for the next button
-        enchyOffset = enchyOffset + 50 -- Adjust the offset increment as needed
+        enchyOffset = enchyOffset + 35 -- Adjust the offset increment as needed
 		
 		-- Store the button and its background in the table
-		enchantButtons[key] = { button = enchantButton, background = enchantButtonBg }
+		enchantButtons[key] = { button = enchantButton, background = enchantButtonBg, favicon = enchantFavIcon}
 		if ProEnchantersOptions.filters[key] == false then
 			enchantButton:Hide()
 			enchantButtonBg:Hide()
@@ -3255,19 +3882,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 	end)
 
-local isConnected = false -- Variable to store connection status
+	isConnected = false -- Variable to store connection status
 
--- Function to check if the frames are connected
-local function CheckIfConnected()
-    -- Example condition to check if frames are connected
-    -- This is a simplistic check; you might need a more sophisticated method
-    local point, relativeTo = WorkOrderEnchantsFrame:GetPoint()
-    if relativeTo == ProEnchantersWorkOrderFrame then
-        isConnected = true
-    else
-        isConnected = false
-    end
-end
+
 
 	local resizeButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
 	resizeButton:SetSize(16, 16)
@@ -3280,7 +3897,7 @@ end
 		CheckIfConnected() -- Check and store the connection status
    		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT")
     	WorkOrderEnchantsFrame:SetUserPlaced(true)
-end)
+	end)
 	
 	resizeButton:SetScript("OnMouseUp", function(self, button)
 		WorkOrderEnchantsFrame:StopMovingOrSizing()
@@ -3292,9 +3909,22 @@ end)
 	-- Create a close button background
     local closeBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
     closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
-    closeBg:SetSize(440, 25)  -- Adjust size as needed
+    closeBg:SetSize(230, 25)  -- Adjust size as needed
     closeBg:SetPoint("BOTTOMLEFT", WorkOrderEnchantsFrame, "BOTTOMLEFT", 0, 0)
 	closeBg:SetPoint("BOTTOMRIGHT", WorkOrderEnchantsFrame, "BOTTOMRIGHT", 0, 0)
+
+	local cusreqButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
+	cusreqButton:SetSize(100, 25)  -- Adjust size as needed
+	--closeButton:SetFrameLevel(9001)
+	cusreqButton:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 0)  -- Adjust position as needed
+	cusreqButton:SetText("Custom Request")
+	local cusreqButtonText = cusreqButton:GetFontString()
+	cusreqButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	cusreqButton:SetNormalFontObject("GameFontHighlight")
+	cusreqButton:SetHighlightFontObject("GameFontNormal")
+	cusreqButton:SetScript("OnClick", function()
+		StaticPopup_Show("CUS_REQ_POPUP")
+	end)
 
 	local titleButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
 	titleButton:SetSize(60, 25)  -- Adjust size as needed
@@ -3370,13 +4000,11 @@ function ProEnchantersCreateOptionsFrame()
     titleBg:SetPoint("TOP", OptionsFrame, "TOP", 0, 0)
 
 	-- Create a title for Options
-	local titleHeader = OptionsFrame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
-	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
-	titleHeader:SetText("Pro Enchanters Settings")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-
-
+	local titleHeader3 = OptionsFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader3:SetFontObject(UIFontBasic)
+	titleHeader3:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader3:SetText("Pro Enchanters Settings")
+	
     -- Scroll frame setup...
     local OptionsScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersOptionsScrollFrame", OptionsFrame, "UIPanelScrollFrameTemplate")
     OptionsScrollFrame:SetSize(775, 300)
@@ -3450,10 +4078,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a header for Work While Closed
 	local WorkWhileClosedHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	WorkWhileClosedHeader:SetFontObject("GameFontHighlight")
+	WorkWhileClosedHeader:SetFontObject(UIFontBasic)
 	WorkWhileClosedHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 30, -10)
 	WorkWhileClosedHeader:SetText("Work while closed? (Auto invite, potential customer alerts, welcome msg's, etc)")
-	WorkWhileClosedHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Work While Closed Checkbox
 	local WorkWhileClosedCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3466,112 +4093,140 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		WorkWhileClosed = ProEnchantersOptions["WorkWhileClosed"]
 	end)
 
-		-- Create a header for Channel Searches for Customers
-		local AutoInviteAllChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		AutoInviteAllChannelsHeader:SetFontObject("GameFontHighlight")
-		AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 40, -35)
-		AutoInviteAllChannelsHeader:SetText(DARKORANGE .. "Channels to search for potential customers" .. ColorClose)
-		AutoInviteAllChannelsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	
-		-- Create a header for SAY/YELL
-		local SayYellChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		SayYellChannelsHeader:SetFontObject("GameFontHighlight")
-		SayYellChannelsHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 30, -50)
-		SayYellChannelsHeader:SetText("Say/Yell")
-		SayYellChannelsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	-- Create a header for Work While Closed
+	local EnableSoundsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	EnableSoundsHeader:SetFontObject(UIFontBasic)
+	EnableSoundsHeader:SetPoint("TOPLEFT", WorkWhileClosedHeader, "BOTTOMLEFT", 0, -10)
+	EnableSoundsHeader:SetText("Enable custom sound for when players join your party? (Volume tied to 'Master' channel)")
 
-		-- Create a header for Local City
-		local LocalCityChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		LocalCityChannelHeader:SetFontObject("GameFontHighlight")
-		LocalCityChannelHeader:SetPoint("LEFT", SayYellChannelsHeader, "RIGHT", 15, 0)
-		LocalCityChannelHeader:SetText("Current City")
-		LocalCityChannelHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	-- Work While Closed Checkbox
+	local EnableSoundsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	EnableSoundsCb:SetPoint("LEFT", EnableSoundsHeader, "RIGHT", 10, 0)
+	EnableSoundsCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnableSoundsCb:SetHitRectInsets(0, 0, 0, 0)
+	EnableSoundsCb:SetChecked(ProEnchantersOptions["EnableSounds"])
+	EnableSoundsCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["EnableSounds"] = self:GetChecked()
+	end)
 
-		-- Create a header for Trade - City
-		local TradeChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		TradeChannelHeader:SetFontObject("GameFontHighlight")
-		TradeChannelHeader:SetPoint("LEFT", LocalCityChannelHeader, "RIGHT", 15, 0)
-		TradeChannelHeader:SetText("Trade Chat")
-		TradeChannelHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	local soundsButtonBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
+	soundsButtonBg:SetColorTexture(unpack(MainButtonColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    soundsButtonBg:SetSize(150, 25)  -- Adjust size as needed
+	soundsButtonBg:SetPoint("TOPLEFT", EnableSoundsCb, "TOPRIGHT", 10, 2)
 
-		-- Create a header for LookingForGroup
-		local LFGChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		LFGChannelHeader:SetFontObject("GameFontHighlight")
-		LFGChannelHeader:SetPoint("LEFT", TradeChannelHeader, "RIGHT", 15, 0)
-		LFGChannelHeader:SetText("LFG Chat")
-		LFGChannelHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	-- Create a Trigger and Filters for invites button
+	local soundsButton = CreateFrame("Button", nil, ScrollChild)
+	soundsButton:SetSize(150, 25)  -- Adjust size as needed
+	soundsButton:SetPoint("CENTER", soundsButtonBg, "CENTER", 0, 0) -- Adjust position as needed
+	soundsButton:SetText("Click here to set sounds")
+	local soundsButtonText = soundsButton:GetFontString()
+	soundsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	soundsButton:SetNormalFontObject("GameFontHighlight")
+	soundsButton:SetHighlightFontObject("GameFontNormal")
+	soundsButton:SetScript("OnClick", function()
+		ProEnchantersSoundsFrame:Show()
+		OptionsFrame:Hide()
+	end)
 
-		-- Create a header for Local Defense
-		local LocalDefenseChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		LocalDefenseChannelHeader:SetFontObject("GameFontHighlight")
-		LocalDefenseChannelHeader:SetPoint("LEFT", LFGChannelHeader, "RIGHT", 15, 0)
-		LocalDefenseChannelHeader:SetText("Local City Defense")
-		LocalDefenseChannelHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	-- Create a header for Channel Searches for Customers
+	local AutoInviteAllChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	AutoInviteAllChannelsHeader:SetFontObject(UIFontBasic)
+	AutoInviteAllChannelsHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 40, -55)
+	AutoInviteAllChannelsHeader:SetText(DARKORANGE .. "Channels to search for potential customers" .. ColorClose)
 
-		-- Checkboxes
-		local SayYellChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-		SayYellChannelCb:SetPoint("TOP", SayYellChannelsHeader, "TOP", 0, -15)
-		SayYellChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-		SayYellChannelCb:SetHitRectInsets(0, 0, 0, 0)
-		SayYellChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["SayYell"])
-		SayYellChannelCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions["AllChannels"]["SayYell"] = self:GetChecked()
-		end)
+	-- Create a header for SAY/YELL
+	local SayYellChannelsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	SayYellChannelsHeader:SetFontObject(UIFontBasic)
+	SayYellChannelsHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 30, -70)
+	SayYellChannelsHeader:SetText("Say and Yell")
 
-		local LocalCityChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-		LocalCityChannelCb:SetPoint("TOP", LocalCityChannelHeader, "TOP", 0, -15)
-		LocalCityChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-		LocalCityChannelCb:SetHitRectInsets(0, 0, 0, 0)
-		LocalCityChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LocalCity"])
-		LocalCityChannelCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions["AllChannels"]["LocalCity"] = self:GetChecked()
-		end)
+	-- Create a header for Local City
+	local LocalCityChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	LocalCityChannelHeader:SetFontObject(UIFontBasic)
+	LocalCityChannelHeader:SetPoint("LEFT", SayYellChannelsHeader, "RIGHT", 15, 0)
+	LocalCityChannelHeader:SetText("Current City")
 
-		local TradeChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-		TradeChannelCb:SetPoint("TOP", TradeChannelHeader, "TOP", 0, -15)
-		TradeChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-		TradeChannelCb:SetHitRectInsets(0, 0, 0, 0)
-		TradeChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["TradeChannel"])
-		TradeChannelCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions["AllChannels"]["TradeChannel"] = self:GetChecked()
-		end)
+	-- Create a header for Trade - City
+	local TradeChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	TradeChannelHeader:SetFontObject(UIFontBasic)
+	TradeChannelHeader:SetPoint("LEFT", LocalCityChannelHeader, "RIGHT", 15, 0)
+	TradeChannelHeader:SetText("Trade Chat")
 
-		local LFGChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-		LFGChannelCb:SetPoint("TOP", LFGChannelHeader, "TOP", 0, -15)
-		LFGChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-		LFGChannelCb:SetHitRectInsets(0, 0, 0, 0)
-		LFGChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LFGChannel"])
-		LFGChannelCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions["AllChannels"]["LFGChannel"] = self:GetChecked()
-		end)
+	-- Create a header for LookingForGroup
+	local LFGChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	LFGChannelHeader:SetFontObject(UIFontBasic)
+	LFGChannelHeader:SetPoint("LEFT", TradeChannelHeader, "RIGHT", 15, 0)
+	LFGChannelHeader:SetText("LFG Chat")
 
-		local LocalDefenseChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
-		LocalDefenseChannelCb:SetPoint("TOP", LocalDefenseChannelHeader, "TOP", 0, -15)
-		LocalDefenseChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-		LocalDefenseChannelCb:SetHitRectInsets(0, 0, 0, 0)
-		LocalDefenseChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LocalDefense"])
-		LocalDefenseChannelCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions["AllChannels"]["LocalDefense"] = self:GetChecked()
-		end)
+	-- Create a header for Local Defense
+	local LocalDefenseChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	LocalDefenseChannelHeader:SetFontObject(UIFontBasic)
+	LocalDefenseChannelHeader:SetPoint("LEFT", LFGChannelHeader, "RIGHT", 15, 0)
+	LocalDefenseChannelHeader:SetText("Local City Defense")
+
+	-- Checkboxes
+	local SayYellChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	SayYellChannelCb:SetPoint("TOP", SayYellChannelsHeader, "TOP", 0, -15)
+	SayYellChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	SayYellChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	SayYellChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["SayYell"])
+	SayYellChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["SayYell"] = self:GetChecked()
+	end)
+
+	local LocalCityChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	LocalCityChannelCb:SetPoint("TOP", LocalCityChannelHeader, "TOP", 0, -15)
+	LocalCityChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	LocalCityChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	LocalCityChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LocalCity"])
+	LocalCityChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["LocalCity"] = self:GetChecked()
+	end)
+
+	local TradeChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	TradeChannelCb:SetPoint("TOP", TradeChannelHeader, "TOP", 0, -15)
+	TradeChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	TradeChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	TradeChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["TradeChannel"])
+	TradeChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["TradeChannel"] = self:GetChecked()
+	end)
+
+	local LFGChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	LFGChannelCb:SetPoint("TOP", LFGChannelHeader, "TOP", 0, -15)
+	LFGChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	LFGChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	LFGChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LFGChannel"])
+	LFGChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["LFGChannel"] = self:GetChecked()
+	end)
+
+	local LocalDefenseChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	LocalDefenseChannelCb:SetPoint("TOP", LocalDefenseChannelHeader, "TOP", 0, -15)
+	LocalDefenseChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	LocalDefenseChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	LocalDefenseChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LocalDefense"])
+	LocalDefenseChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["LocalDefense"] = self:GetChecked()
+	end)
 
 
 	local maxPartySizeHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	maxPartySizeHeader:SetFontObject("GameFontHighlight")
+	maxPartySizeHeader:SetFontObject(UIFontBasic)
 	maxPartySizeHeader:SetPoint("TOPLEFT", SayYellChannelsHeader, "TOPLEFT", 0, -50)
-	maxPartySizeHeader:SetText("Party size limit to temporarily stop add-on invites? (Including yourself)")
-	maxPartySizeHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	maxPartySizeHeader:SetText("Party size limit to temporarily stop add-on invites?")
 
 	local maxPartySizeEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
 	maxPartySizeEditBoxBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
-	maxPartySizeEditBoxBg:SetSize(25, 25)  -- Adjust size as needed
+	maxPartySizeEditBoxBg:SetSize(35, 25)  -- Adjust size as needed
 	maxPartySizeEditBoxBg:SetPoint("LEFT", maxPartySizeHeader, "RIGHT", 10, 0)
 
 	local maxPartySizeEditBox = CreateFrame("EditBox", nil, ScrollChild)
-	maxPartySizeEditBox:SetSize(30, 20)
+	maxPartySizeEditBox:SetSize(35, 20)
 	maxPartySizeEditBox:SetPoint("LEFT", maxPartySizeHeader, "RIGHT", 14, 0)
 	maxPartySizeEditBox:SetAutoFocus(false)
 	maxPartySizeEditBox:SetNumeric(true)
-	maxPartySizeEditBox:SetMaxLetters(2)
+	maxPartySizeEditBox:SetMaxLetters(4)
 	maxPartySizeEditBox:SetMultiLine(false)
 	maxPartySizeEditBox:EnableMouse(true)
     maxPartySizeEditBox:EnableKeyboard(true)
@@ -3592,12 +4247,85 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 		ProEnchantersOptions["MaxPartySize"] = newMaxSize
 	end)
 
+	local DelayInviteHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	DelayInviteHeader:SetFontObject(UIFontBasic)
+	DelayInviteHeader:SetPoint("TOPLEFT", maxPartySizeHeader, "TOPLEFT", 0, -30)
+	DelayInviteHeader:SetText("Time delay before sending invites? (9.999 second max, enter in milliseconds, 1000 is 1 second)")
+
+	local DelayInviteEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+	DelayInviteEditBoxBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	DelayInviteEditBoxBg:SetSize(35, 25)  -- Adjust size as needed
+	DelayInviteEditBoxBg:SetPoint("LEFT", DelayInviteHeader, "RIGHT", 10, 0)
+
+	local DelayInviteEditBox = CreateFrame("EditBox", nil, ScrollChild)
+	DelayInviteEditBox:SetSize(35, 20)
+	DelayInviteEditBox:SetPoint("LEFT", DelayInviteHeader, "RIGHT", 14, 0)
+	DelayInviteEditBox:SetAutoFocus(false)
+	DelayInviteEditBox:SetNumeric(true)
+	DelayInviteEditBox:SetMaxLetters(4)
+	DelayInviteEditBox:SetMultiLine(false)
+	DelayInviteEditBox:EnableMouse(true)
+    DelayInviteEditBox:EnableKeyboard(true)
+	DelayInviteEditBox:SetFontObject("GameFontHighlight")
+	DelayInviteEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	DelayInviteEditBox:SetText(tostring(ProEnchantersOptions["DelayInviteTime"]*1000))
+	DelayInviteEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	DelayInviteEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	DelayInviteEditBox:SetScript("OnTextChanged", function()
+		local newTime = tonumber(DelayInviteEditBox:GetText())
+		if newTime == nil then
+			newTime = 0
+		elseif newTime > 9999 then
+			newTime = 9999
+		elseif newTime < 0 then
+			newTime = 0
+		end
+		local convertednewTime = newTime / 1000
+		ProEnchantersOptions["DelayInviteTime"] = convertednewTime
+	end)
+
+	local DelayInviteMsgHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	DelayInviteMsgHeader:SetFontObject(UIFontBasic)
+	DelayInviteMsgHeader:SetPoint("TOPLEFT", DelayInviteHeader, "TOPLEFT", 0, -30)
+	DelayInviteMsgHeader:SetText("Delay AFTER invite sent before a follow up message is sent?")
+
+	local DelayInviteMsgEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
+	DelayInviteMsgEditBoxBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
+	DelayInviteMsgEditBoxBg:SetSize(35, 25)  -- Adjust size as needed
+	DelayInviteMsgEditBoxBg:SetPoint("LEFT", DelayInviteMsgHeader, "RIGHT", 10, 0)
+
+	local DelayInviteMsgEditBox = CreateFrame("EditBox", nil, ScrollChild)
+	DelayInviteMsgEditBox:SetSize(35, 20)
+	DelayInviteMsgEditBox:SetPoint("LEFT", DelayInviteMsgHeader, "RIGHT", 14, 0)
+	DelayInviteMsgEditBox:SetAutoFocus(false)
+	DelayInviteMsgEditBox:SetNumeric(true)
+	DelayInviteMsgEditBox:SetMaxLetters(4)
+	DelayInviteMsgEditBox:SetMultiLine(false)
+	DelayInviteMsgEditBox:EnableMouse(true)
+    DelayInviteMsgEditBox:EnableKeyboard(true)
+	DelayInviteMsgEditBox:SetFontObject("GameFontHighlight")
+	DelayInviteMsgEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	DelayInviteMsgEditBox:SetText(tostring(ProEnchantersOptions["DelayInviteMsgTime"]*1000))
+	DelayInviteMsgEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
+	DelayInviteMsgEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+	DelayInviteMsgEditBox:SetScript("OnTextChanged", function()
+		local newTime = tonumber(DelayInviteMsgEditBox:GetText())
+		if newTime == nil then
+			newTime = 0
+		elseif newTime > 9999 then
+			newTime = 9999
+		elseif newTime < 0 then
+			newTime = 0
+		end
+		local convertednewTime = newTime / 1000
+		ProEnchantersOptions["DelayInviteMsgTime"] = convertednewTime
+	end)
+
 	-- Create a header for AutoInviteAllChannels
 	local DelayWorkOrderHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	DelayWorkOrderHeader:SetFontObject("GameFontHighlight")
-	DelayWorkOrderHeader:SetPoint("TOPLEFT", maxPartySizeHeader, "TOPLEFT", 0, -30)
+	DelayWorkOrderHeader:SetFontObject(UIFontBasic)
+	DelayWorkOrderHeader:SetPoint("TOPLEFT", DelayInviteMsgHeader, "TOPLEFT", 0, -30)
 	DelayWorkOrderHeader:SetText("Delay work order creation on non-addon invited players?")
-	DelayWorkOrderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Auto Invite Checkbox
 	local DelayWorkOrderCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3611,10 +4339,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a header for AutoInviteAllChannels
 	local WhisperMatsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	WhisperMatsHeader:SetFontObject("GameFontHighlight")
+	WhisperMatsHeader:SetFontObject(UIFontBasic)
 	WhisperMatsHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
 	WhisperMatsHeader:SetText("Always whisper the players mats and requested enchants instead of party chat?")
-	WhisperMatsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Auto Invite Checkbox
 	local WhisperMatsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3666,10 +4393,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a header for Disable !commands
 	local DisableWhisperCommandsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	DisableWhisperCommandsHeader:SetFontObject("GameFontHighlight")
+	DisableWhisperCommandsHeader:SetFontObject(UIFontBasic)
 	DisableWhisperCommandsHeader:SetPoint("TOPLEFT", filtersButtonBg, "BOTTOMLEFT", 4, -10)
 	DisableWhisperCommandsHeader:SetText("Disable whisper !commands? (Stops any commands that start with a !)")
-	DisableWhisperCommandsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Auto Invite Checkbox
 	local DisableWhisperCommandsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3685,10 +4411,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a header for AutoInv Msg
 	local AutoInviteMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	AutoInviteMsgEditBoxHeader:SetFontObject("GameFontHighlight")
+	AutoInviteMsgEditBoxHeader:SetFontObject(UIFontBasic)
 	AutoInviteMsgEditBoxHeader:SetPoint("TOPLEFT", DisableWhisperCommandsHeader, "TOPLEFT", 0, -30)
 	AutoInviteMsgEditBoxHeader:SetText("Auto Invite Msg:")
-	AutoInviteMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 		-- Create an EditBox for AutoInv Msg
 		local AutoInviteMsgEditBox = CreateFrame("EditBox", "ProEnchantersAutoInviteMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3708,10 +4433,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	-- Create a header for Failed Inv Msg
 	local FailInviteMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	FailInviteMsgEditBoxHeader:SetFontObject("GameFontHighlight")
+	FailInviteMsgEditBoxHeader:SetFontObject(UIFontBasic)
 	FailInviteMsgEditBoxHeader:SetPoint("TOPLEFT", AutoInviteMsgEditBoxHeader, "TOPLEFT", 0, -30)
 	FailInviteMsgEditBoxHeader:SetText("Failed Invite Msg:")
-	FailInviteMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 		-- Create an EditBox for Failed Inv Msg
 		local FailInviteMsgEditBox = CreateFrame("EditBox", "ProEnchantersAutoInviteMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3731,10 +4455,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 		-- Create a header for Full Inv Msg
 	local FullInviteMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	FullInviteMsgEditBoxHeader:SetFontObject("GameFontHighlight")
+	FullInviteMsgEditBoxHeader:SetFontObject(UIFontBasic)
 	FullInviteMsgEditBoxHeader:SetPoint("TOPLEFT", FailInviteMsgEditBoxHeader, "TOPLEFT", 0, -30)
 	FullInviteMsgEditBoxHeader:SetText("Full Group Inv Msg:")
-	FullInviteMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Create an EditBox for Full Inv Msg
 		local FullInviteMsgEditBox = CreateFrame("EditBox", "ProEnchantersAutoInviteMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3754,10 +4477,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 		-- Create a header for Welcome Msg
 	local WelcomeMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	WelcomeMsgEditBoxHeader:SetFontObject("GameFontHighlight")
+	WelcomeMsgEditBoxHeader:SetFontObject(UIFontBasic)
 	WelcomeMsgEditBoxHeader:SetPoint("TOPLEFT", FullInviteMsgEditBoxHeader, "TOPLEFT", 0, -30)
 	WelcomeMsgEditBoxHeader:SetText("Party Welcome Msg:")
-	WelcomeMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	
 	-- Create an EditBox for Welcome Msg
 	local WelcomeMsgEditBox = CreateFrame("EditBox", "ProEnchantersWelcomeMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3777,10 +4499,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 -- Create a header for Trade msg
 	local TradeMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	TradeMsgEditBoxHeader:SetFontObject("GameFontHighlight")
+	TradeMsgEditBoxHeader:SetFontObject(UIFontBasic)
 	TradeMsgEditBoxHeader:SetPoint("TOPLEFT", WelcomeMsgEditBoxHeader, "TOPLEFT", 0, -30)
 	TradeMsgEditBoxHeader:SetText("Trade Started Msg:")
-	TradeMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	
 	-- Create an EditBox for Trade msg
 	local TradeMsgEditBox = CreateFrame("EditBox", "ProEnchantersTradeMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3798,11 +4519,10 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	end)
 
 	-- Create a header for Tip Msg
-		local TipMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-		TipMsgEditBoxHeader:SetFontObject("GameFontHighlight")
-		TipMsgEditBoxHeader:SetPoint("TOPLEFT", TradeMsgEditBoxHeader, "TOPLEFT", 0, -30)
-		TipMsgEditBoxHeader:SetText("Tip Received Msg:")
-		TipMsgEditBoxHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	local TipMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	TipMsgEditBoxHeader:SetFontObject(UIFontBasic)
+	TipMsgEditBoxHeader:SetPoint("TOPLEFT", TradeMsgEditBoxHeader, "TOPLEFT", 0, -30)
+	TipMsgEditBoxHeader:SetText("Tip Received Msg:")
 
 	-- Create an EditBox for Tip Msg
 	local TipMsgEditBox = CreateFrame("EditBox", "ProEnchantersTipMsgEditBox", ScrollChild, "InputBoxTemplate")
@@ -3821,11 +4541,31 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 	end)
 
 	-- Create a header for Tip Msg
+	local TipResponsesHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	TipResponsesHeader:SetFontObject(UIFontBasic)
+	TipResponsesHeader:SetPoint("TOPLEFT", TipMsgEditBoxHeader, "TOPLEFT", 0, -30)
+	TipResponsesHeader:SetText("Tip Emote:\n(Blank to Disable)")
+
+	-- Create an EditBox for Tip Msg
+	local TipResponseEditBox = CreateFrame("EditBox", "ProEnchantersTipResponseEditBox", ScrollChild, "InputBoxTemplate")
+	TipResponseEditBox:SetSize(120, 20)
+	TipResponseEditBox:SetPoint("TOPLEFT", TipMsgEditBox, "TOPLEFT", 0, -30)
+	TipResponseEditBox:SetAutoFocus(false)
+	TipResponseEditBox:SetFontObject("GameFontHighlight")
+	TipResponseEditBox:SetText(ProEnchantersOptions["TipEmote"])
+	TipResponseEditBox:SetScript("OnTextChanged", function()
+		local newEmote = TipResponseEditBox:GetText()
+		ProEnchantersOptions["TipEmote"] = newEmote
+	end)
+	TipResponseEditBox:SetScript("OnEnterPressed", function()
+		TipResponseEditBox:ClearFocus()
+	end)
+
+	-- Create a header for Tip Msg
 	local RaidIconHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	RaidIconHeader:SetFontObject("GameFontHighlight")
-	RaidIconHeader:SetPoint("TOPLEFT", TipMsgEditBoxHeader, "TOPLEFT", 0, -30)
+	RaidIconHeader:SetFontObject(UIFontBasic)
+	RaidIconHeader:SetPoint("TOPLEFT", TipResponsesHeader, "TOPLEFT", 0, -45)
 	RaidIconHeader:SetText("Auto Raid Icon:")
-	RaidIconHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local defaultVal = "None"
 	if ProEnchantersOptions["RaidIcon"] == 0 then
@@ -3881,16 +4621,15 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 
 	local RaidIconDD = createDropdown(raidicon_opts)
 	-- Don't forget to set your dropdown's points, we don't do this in the creation method for simplicities sake.
-	RaidIconDD:SetPoint("TOPLEFT", TipMsgEditBox, "TOPLEFT", -21, -30)
+	RaidIconDD:SetPoint("LEFT", RaidIconHeader, "RIGHT", 3, 0)
 
 
 	-- Create checkboxes for every available enchant to hard filter them out from being available
 	-- Create a header for enchant filter
 	local enchantFilterHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	enchantFilterHeader:SetFontObject("GameFontHighlight")
+	enchantFilterHeader:SetFontObject(UIFontBasic)
 	enchantFilterHeader:SetPoint("TOPLEFT", RaidIconHeader, "TOPLEFT", 30, -30)
 	enchantFilterHeader:SetText(DARKORANGE .. "Filter the below enchants by unchecking them to stop them from displaying in other parts of the add-on" .. ColorClose)
-	enchantFilterHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local enchantToggleYoffset = 60
 
@@ -3918,10 +4657,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 			local enchantStats = EnchantsStats[sortedKey]
 			-- Create a header for enchant filter
 			local enchantFilterName = ScrollChild:CreateFontString(nil, "OVERLAY")
-			enchantFilterName:SetFontObject("GameFontHighlight")
+			enchantFilterName:SetFontObject(UIFontBasic)
 			enchantFilterName:SetPoint("TOPLEFT", RaidIconHeader, "TOPLEFT", 0, -enchantToggleYoffset)
 			enchantFilterName:SetText(enchantName .. enchantStats)
-			enchantFilterName:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 			-- Create a checkbox for enchant filter
 			local enchantFilterCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -4159,10 +4897,9 @@ function ProEnchantersCreateCreditsFrame()
 
 	-- Create a title for Options
 	local titleHeader = CreditsFrame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Credits")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local MainCreditsHeader = CreditsFrame:CreateFontString(nil, "OVERLAY")
 	MainCreditsHeader:SetFontObject("GameFontHighlight")
@@ -4263,6 +5000,13 @@ function ProEnchantersCreateCreditsFrame()
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
 	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
+	-- version number
+	local versionHeader = CreditsFrame:CreateFontString(nil, "OVERLAY")
+	versionHeader:SetFontObject("GameFontGreen")
+	versionHeader:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 6)
+	versionHeader:SetText(STEELBLUE .. version .. ColorClose)
+	versionHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
 	return CreditsFrame
 end
 
@@ -4304,17 +5048,15 @@ function ProEnchantersCreateColorsFrame()
 
 	-- Create a title for Options
 	local titleHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Colors Settings")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Create Instructions text
 	local instructionsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	instructionsHeader:SetFontObject("GameFontHighlight")
+	instructionsHeader:SetFontObject(UIFontBasic)
 	instructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
 	instructionsHeader:SetText("~How to change colors~\nEach line below has a Red Green Blue value set between 0-255\nOpacity is a percentage (0-100 percent)\nChange the numbers and then do a /reload")
-	instructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Extract Colors from Table
 	local TopBarColorR1, TopBarColorG1, TopBarColorB1 = unpack(ProEnchantersOptions.Colors.TopBarColor)
@@ -4422,10 +5164,9 @@ function ProEnchantersCreateColorsFrame()
 
     -- Color EditBoxes
     local TopBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	TopBarColorHeader:SetFontObject("GameFontHighlight")
+	TopBarColorHeader:SetFontObject(UIFontBasic)
 	TopBarColorHeader:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 10, -80)
 	TopBarColorHeader:SetText("Top Bar")
-	TopBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local TopBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	TopBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -4527,10 +5268,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local SecondaryBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	SecondaryBarColorHeader:SetFontObject("GameFontHighlight")
+	SecondaryBarColorHeader:SetFontObject(UIFontBasic)
 	SecondaryBarColorHeader:SetPoint("TOPLEFT", TopBarColorHeader, "BOTTOMLEFT", 0, -25)
 	SecondaryBarColorHeader:SetText("Secondary Bars")
-	SecondaryBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local SecondaryBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	SecondaryBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -4632,10 +5372,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local MainWindowBackgroundHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	MainWindowBackgroundHeader:SetFontObject("GameFontHighlight")
+	MainWindowBackgroundHeader:SetFontObject(UIFontBasic)
 	MainWindowBackgroundHeader:SetPoint("TOPLEFT", SecondaryBarColorHeader, "BOTTOMLEFT", 0, -25)
 	MainWindowBackgroundHeader:SetText("Main Windows Backgrounds")
-	MainWindowBackgroundHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local MainWindowBackgroundRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	MainWindowBackgroundRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -4737,10 +5476,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local BottomBarColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	BottomBarColorHeader:SetFontObject("GameFontHighlight")
+	BottomBarColorHeader:SetFontObject(UIFontBasic)
 	BottomBarColorHeader:SetPoint("TOPLEFT", MainWindowBackgroundHeader, "BOTTOMLEFT", 0, -25)
 	BottomBarColorHeader:SetText("Bottom Bar")
-	BottomBarColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local BottomBarColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	BottomBarColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -4842,10 +5580,10 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local EnchantsButtonColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	EnchantsButtonColorHeader:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorHeader:SetFontObject(UIFontBasic)
 	EnchantsButtonColorHeader:SetPoint("TOPLEFT", BottomBarColorHeader, "BOTTOMLEFT", 0, -25)
 	EnchantsButtonColorHeader:SetText("Enchant Buttons")
-	EnchantsButtonColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+
 
 	local EnchantsButtonColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	EnchantsButtonColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -4947,10 +5685,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local EnchantsButtonColorInactiveHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	EnchantsButtonColorInactiveHeader:SetFontObject("GameFontHighlight")
+	EnchantsButtonColorInactiveHeader:SetFontObject(UIFontBasic)
 	EnchantsButtonColorInactiveHeader:SetPoint("TOPLEFT", EnchantsButtonColorHeader, "BOTTOMLEFT", 0, -25)
 	EnchantsButtonColorInactiveHeader:SetText("Disabled Enchant Buttons")
-	EnchantsButtonColorInactiveHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local EnchantsButtonColorInactiveRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	EnchantsButtonColorInactiveRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5052,10 +5789,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local BorderColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	BorderColorHeader:SetFontObject("GameFontHighlight")
+	BorderColorHeader:SetFontObject(UIFontBasic)
 	BorderColorHeader:SetPoint("TOPLEFT", EnchantsButtonColorInactiveHeader, "BOTTOMLEFT", 0, -25)
 	BorderColorHeader:SetText("Border Colors")
-	BorderColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local BorderColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	BorderColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5157,10 +5893,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local MainButtonColorHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	MainButtonColorHeader:SetFontObject("GameFontHighlight")
+	MainButtonColorHeader:SetFontObject(UIFontBasic)
 	MainButtonColorHeader:SetPoint("TOPLEFT", BorderColorHeader, "BOTTOMLEFT", 0, -25)
 	MainButtonColorHeader:SetText("Main Buttons")
-	MainButtonColorHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local MainButtonColorRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	MainButtonColorRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5262,10 +5997,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local SettingsWindowBackgroundHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	SettingsWindowBackgroundHeader:SetFontObject("GameFontHighlight")
+	SettingsWindowBackgroundHeader:SetFontObject(UIFontBasic)
 	SettingsWindowBackgroundHeader:SetPoint("TOPLEFT", MainButtonColorHeader, "BOTTOMLEFT", 0, -25)
 	SettingsWindowBackgroundHeader:SetText("Settings Window Background")
-	SettingsWindowBackgroundHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local SettingsWindowBackgroundRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	SettingsWindowBackgroundRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5367,10 +6101,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local ScrollBarColorsHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	ScrollBarColorsHeader:SetFontObject("GameFontHighlight")
+	ScrollBarColorsHeader:SetFontObject(UIFontBasic)
 	ScrollBarColorsHeader:SetPoint("TOPLEFT", SettingsWindowBackgroundHeader, "BOTTOMLEFT", 0, -25)
 	ScrollBarColorsHeader:SetText("Scroll Bar Buttons")
-	ScrollBarColorsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local ScrollBarColorsRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	ScrollBarColorsRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5472,10 +6205,9 @@ function ProEnchantersCreateColorsFrame()
 	end)
 
     local OpacityAmountHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	OpacityAmountHeader:SetFontObject("GameFontHighlight")
+	OpacityAmountHeader:SetFontObject(UIFontBasic)
 	OpacityAmountHeader:SetPoint("TOPLEFT", ScrollBarColorsHeader, "BOTTOMLEFT", 0, -25)
 	OpacityAmountHeader:SetText("Opacity Amount for Transparent Colors")
-	OpacityAmountHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local OpacityAmountRBg = ColorsFrame:CreateTexture(nil, "OVERLAY")
 	OpacityAmountRBg:SetColorTexture(unpack(MainWindowBackgroundTrans))  -- Set RGBA values for your preferred color and alpha
@@ -5858,12 +6590,197 @@ function ProEnchantersCreateColorsFrame()
 
 	-- Help Reminder
 	local helpReminderHeader = ColorsFrame:CreateFontString(nil, "OVERLAY")
-	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetFontObject(UIFontBasic)
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 6)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	return ColorsFrame
+end
+
+function ProEnchantersCreateSoundsFrame()
+    local SoundsFrame = CreateFrame("Frame", "ProEnchantersSoundsFrame", UIParent, "BackdropTemplate")
+    SoundsFrame:SetFrameStrata("FULLSCREEN")
+    SoundsFrame:SetSize(800, 350)  -- Adjust height as needed
+    SoundsFrame:SetPoint("TOP", 0, -300)
+    SoundsFrame:SetMovable(true)
+    SoundsFrame:EnableMouse(true)
+    SoundsFrame:RegisterForDrag("LeftButton")
+    SoundsFrame:SetScript("OnDragStart", SoundsFrame.StartMoving)
+	SoundsFrame:SetScript("OnDragStop", function()
+		SoundsFrame:StopMovingOrSizing()
+	end)
+
+	local backdrop = {
+        edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+        edgeSize = 1, -- Border thickness
+    }
+
+	-- Apply the backdrop to the WorkOrderFrame
+    SoundsFrame:SetBackdrop(backdrop)
+    SoundsFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+    SoundsFrame:Hide()
+
+    -- Create a full background texture
+    local bgTexture = SoundsFrame:CreateTexture(nil, "BACKGROUND")
+    bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque))  -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(800, 325)
+    bgTexture:SetPoint("TOP", SoundsFrame, "TOP", 0, -25)
+
+    -- Create a title background
+    local titleBg = SoundsFrame:CreateTexture(nil, "BACKGROUND")
+    titleBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+    titleBg:SetSize(800, 25)  -- Adjust size as needed
+    titleBg:SetPoint("TOP", SoundsFrame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader:SetFontObject(UIFontBasic)
+	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader:SetText("Pro Enchanters Sound Settings")
+
+	local InstructionsHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	InstructionsHeader:SetFontObject(UIFontBasic)
+	InstructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -10)
+	InstructionsHeader:SetText(DARKORANGE .. "All sounds are played through the 'Master' channel." .. ColorClose)
+
+	local PartyJoinHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	PartyJoinHeader:SetFontObject(UIFontBasic)
+	PartyJoinHeader:SetPoint("TOPLEFT", titleBg, "BOTTOMLEFT", 85, -40)
+	PartyJoinHeader:SetText("Party Join Sound")
+
+	-- Work While Closed Checkbox
+	local EnablePartyJoinSoundCb = CreateFrame("CheckButton", nil, SoundsFrame, "ChatConfigCheckButtonTemplate")
+	EnablePartyJoinSoundCb:SetPoint("LEFT", PartyJoinHeader, "RIGHT", 10, 0)
+	EnablePartyJoinSoundCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnablePartyJoinSoundCb:SetHitRectInsets(0, 0, 0, 0)
+	EnablePartyJoinSoundCb:SetChecked(ProEnchantersOptions["EnablePartyJoinSound"])
+	EnablePartyJoinSoundCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["EnablePartyJoinSound"] = self:GetChecked()
+	end)
+
+	local PotentialCustomerHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	PotentialCustomerHeader:SetFontObject(UIFontBasic)
+	PotentialCustomerHeader:SetPoint("LEFT", PartyJoinHeader, "RIGHT", 150, 0)
+	PotentialCustomerHeader:SetText("Potential Customer Sound")
+
+	-- Work While Closed Checkbox
+	local EnablePotentialCustomerSoundCb = CreateFrame("CheckButton", nil, SoundsFrame, "ChatConfigCheckButtonTemplate")
+	EnablePotentialCustomerSoundCb:SetPoint("LEFT", PotentialCustomerHeader, "RIGHT", 10, 0)
+	EnablePotentialCustomerSoundCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnablePotentialCustomerSoundCb:SetHitRectInsets(0, 0, 0, 0)
+	EnablePotentialCustomerSoundCb:SetChecked(ProEnchantersOptions["EnablePotentialCustomerSound"])
+	EnablePotentialCustomerSoundCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["EnablePotentialCustomerSound"] = self:GetChecked()
+	end)
+
+	local NewTradeHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	NewTradeHeader:SetFontObject(UIFontBasic)
+	NewTradeHeader:SetPoint("LEFT", PotentialCustomerHeader, "RIGHT", 150, 0)
+	NewTradeHeader:SetText("New Trade Sound")
+
+	-- Work While Closed Checkbox
+	local EnableNewTradeSoundCb = CreateFrame("CheckButton", nil, SoundsFrame, "ChatConfigCheckButtonTemplate")
+	EnableNewTradeSoundCb:SetPoint("LEFT", NewTradeHeader, "RIGHT", 10, 0)
+	EnableNewTradeSoundCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnableNewTradeSoundCb:SetHitRectInsets(0, 0, 0, 0)
+	EnableNewTradeSoundCb:SetChecked(ProEnchantersOptions["EnableNewTradeSound"])
+	EnableNewTradeSoundCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["EnableNewTradeSound"] = self:GetChecked()
+	end)
+
+	-- Create drop down selector for sound
+
+	local allSounds = LSM:List('sound')
+	--[[for i, v in ipairs(allSounds) do
+	print(tostring(i) .. " index is: " .. tostring(v))
+	end]]
+
+	local defaultValPartyJoin = ProEnchantersOptions["PartyJoinSound"]
+
+	local partyjoin_opts = {
+		['name']='partyjoinsound',
+		['parent']=SoundsFrame,
+		['title']=defaultValPartyJoin,
+		['items']= allSounds,
+		['defaultVal']=defaultValPartyJoin,
+		['changeFunc']=function(dropdown_frame, dropdown_val)
+			ProEnchantersOptions["PartyJoinSound"] = dropdown_val
+			PESound(ProEnchantersOptions["PartyJoinSound"])
+		end
+	}
+
+	local PartyJoinDD = createScrollableDropdown(partyjoin_opts)
+	PartyJoinDD:SetPoint("TOP", PartyJoinHeader, "BOTTOM", -20, -5)
+
+	local defaultValPotentialCustomer = ProEnchantersOptions["PotentialCustomerSound"]
+
+	local potentialcustomer_opts = {
+		['name']='partyjoinsound',
+		['parent']=SoundsFrame,
+		['title']=defaultValPotentialCustomer,
+		['items']= allSounds,
+		['defaultVal']=defaultValPotentialCustomer,
+		['changeFunc']=function(dropdown_frame, dropdown_val)
+			ProEnchantersOptions["PotentialCustomerSound"] = dropdown_val
+			PESound(ProEnchantersOptions["PotentialCustomerSound"])
+		end
+	}
+
+	local PotentialCustomerDD = createScrollableDropdown(potentialcustomer_opts)
+	PotentialCustomerDD:SetPoint("TOP", PotentialCustomerHeader, "BOTTOM", -20, -5)
+
+	local defaultValNewTrade = ProEnchantersOptions["NewTradeSound"]
+
+	local newtrade_opts = {
+		['name']='newtradesound',
+		['parent']=SoundsFrame,
+		['title']=defaultValNewTrade,
+		['items']= allSounds,
+		['defaultVal']=defaultValNewTrade,
+		['changeFunc']=function(dropdown_frame, dropdown_val)
+			ProEnchantersOptions["NewTradeSound"] = dropdown_val
+			PESound(ProEnchantersOptions["NewTradeSound"])
+		end
+	}
+
+	local NewTradeDD = createScrollableDropdown(newtrade_opts)
+	NewTradeDD:SetPoint("TOP", NewTradeHeader, "BOTTOM", -20, -5)
+
+
+	-- Create a close button background
+	local closeBg = SoundsFrame:CreateTexture(nil, "OVERLAY")
+	closeBg:SetColorTexture(unpack(BottomBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+	closeBg:SetSize(800, 25)  -- Adjust size as needed
+	closeBg:SetPoint("BOTTOMLEFT", SoundsFrame, "BOTTOMLEFT", 0, 0)
+
+
+	local closeButton2 = CreateFrame("Button", nil, SoundsFrame)
+	closeButton2:SetSize(50, 25)  -- Adjust size as needed
+	closeButton2:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0)  -- Adjust position as needed
+	closeButton2:SetText("Close")
+	local closeButtonText2 = closeButton2:GetFontString()
+	closeButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButton2:SetNormalFontObject("GameFontHighlight")
+	closeButton2:SetHighlightFontObject("GameFontNormal")
+	closeButton2:SetScript("OnClick", function()
+		SoundsFrame:Hide()
+		ProEnchantersOptionsFrame:Show()
+	end)
+
+	-- Help Reminder
+	local helpReminderHeader = SoundsFrame:CreateFontString(nil, "OVERLAY")
+	helpReminderHeader:SetFontObject(UIFontBasic)
+	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
+	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
+
+	-- SoundsFrame On Show Script
+	SoundsFrame:SetScript("OnShow", function()
+	end)
+
+	SoundsFrame:SetScript("OnHide", function()
+	end)
+
+	return SoundsFrame
 end
 
 function SetSupportersEditBox()
@@ -5978,22 +6895,19 @@ function ProEnchantersCreateTriggersFrame()
 
 	-- Create a title for Options
 	local titleHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Triggers and Filters")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local InstructionsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	InstructionsHeader:SetFontObject("GameFontHighlight")
+	InstructionsHeader:SetFontObject(UIFontBasic)
 	InstructionsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 90, -30)
 	InstructionsHeader:SetText("Add words below separated by commas to enable new trigger words for the auto invites or words that will filter others messages.\nYou can also set players names in the Filter section to filter that player from triggering the auto invite.\nMake sure words or phrases to filter are in lower case and player names start with a Capital letter.")
-	InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local FilteredWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	FilteredWordsHeader:SetFontObject("GameFontHighlight")
+	FilteredWordsHeader:SetFontObject(UIFontBasic)
 	FilteredWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -55)
 	FilteredWordsHeader:SetText("Filtered Words:")
-	FilteredWordsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Create a close button background
 	local FilteredScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -6070,10 +6984,9 @@ function ProEnchantersCreateTriggersFrame()
 
 
 	local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	TriggerWordsHeader:SetFontObject("GameFontHighlight")
+	TriggerWordsHeader:SetFontObject(UIFontBasic)
 	TriggerWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -155)
 	TriggerWordsHeader:SetText("Trigger Words:")
-	TriggerWordsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	
 	-- Create a close button background
 	local TriggerScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -6148,10 +7061,9 @@ function ProEnchantersCreateTriggersFrame()
 	end)
 
 	local InvWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	InvWordsHeader:SetFontObject("GameFontHighlight")
+	InvWordsHeader:SetFontObject(UIFontBasic)
 	InvWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -235)
 	InvWordsHeader:SetText("Inv Words:")
-	InvWordsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	
 	-- Create a close button background
 	local InvScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -6296,10 +7208,9 @@ function ProEnchantersCreateTriggersFrame()
 
 	-- Help Reminder
 	local helpReminderHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetFontObject(UIFontBasic)
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- TriggersFrame On Show Script
 	TriggersFrame:SetScript("OnShow", function()
@@ -6383,10 +7294,9 @@ function ProEnchantersCreateWhisperTriggersFrame()
 
 	-- Create a title for Options
 	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Whisper Trigger Commands")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 
 	-- Scroll frame setup...
@@ -6464,10 +7374,9 @@ downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position
 -- Create a title for Options
 
 local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-InstructionsHeader:SetFontObject("GameFontHighlight")
+InstructionsHeader:SetFontObject(UIFontBasic)
 InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
 InstructionsHeader:SetText(DARKORANGE .. "Add !commands and their responses below, hit enter on a line to save the line.\nBoth lines must have information. Commands do have to start with a ! to work.\nResponses need to be under 256 characters to fit within WoW's character limitations, character counter is on the right beside each line.\nYou can include item links in your message by adding the items ID encased in [], example: [11083] will return as Soul Dust (max 5 item links in a message)\nLook up item ID's on wowhead, soul dust as an example: https://www.wowhead.com/classic/item=" .. ColorClose .. YELLOWGREEN .. 11083 .. ColorClose .. DARKORANGE .. "/soul-dust\nTo modify a command, change either its command box and hit enter or its response box and hit enter.\nTo delete a line, delete BOTH fields before hitting enter, blank commands with blank responses are removed.\nPlayer's can also whisper you for the required mats by whispering you the !enchant, it must match the enchant name exactly.\nExample - Player whispers: !enchant boots - stamina" .. ColorClose)
-InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 -- Create a reset button at the bottom
 local hideButton = CreateFrame("Button", nil, ScrollChild)
@@ -6493,10 +7402,9 @@ end)
 
 
 local scrollHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-scrollHeader:SetFontObject("GameFontHighlight")
+scrollHeader:SetFontObject(UIFontBasic)
 scrollHeader:SetPoint("TOP", hideButton, "BOTTOM", -230, -5)
 scrollHeader:SetText("Enter new Command name and Command response")
-scrollHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 -- Initialize the buttons table if it doesn't exist
 if not frame.fieldscmd then
@@ -6734,10 +7642,9 @@ msgBoxMain:SetScript("OnTabPressed", function() cmdBoxMain:SetFocus() end)
 cmdBoxMain:SetScript("OnTabPressed", function() msgBoxMain:SetFocus() end)
 
 local existingHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-existingHeader:SetFontObject("GameFontHighlight")
+existingHeader:SetFontObject(UIFontBasic)
 existingHeader:SetPoint("TOPLEFT", cmdBoxMain, "BOTTOMLEFT", -10, -15)
 existingHeader:SetText("Existing Commands")
-existingHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 createWhisperTriggers()
 
@@ -6796,10 +7703,9 @@ createWhisperTriggers()
 
 	-- Help Reminder
 	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
-	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetFontObject(UIFontBasic)
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- frame On Show Script
 	frame:SetScript("OnShow", function()
@@ -6852,10 +7758,9 @@ function ProEnchantersCreateImportFrame()
 
 	-- Create a title for Options
 	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Commands Import/Export")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 
 	-- Scroll frame setup...
@@ -6933,10 +7838,9 @@ function ProEnchantersCreateImportFrame()
 	-- Create a title for Options
 
 	local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	InstructionsHeader:SetFontObject("GameFontHighlight")
+	InstructionsHeader:SetFontObject(UIFontBasic)
 	InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
 	InstructionsHeader:SetText(DARKORANGE .. "Copy the text below and save it to a file for exporting.\nAdd or replace the text below and hit import to bulk change commands." .. ColorClose)
-	InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Create a reset button at the bottom
 	local hideButton = CreateFrame("Button", nil, ScrollChild)
@@ -6962,10 +7866,9 @@ function ProEnchantersCreateImportFrame()
 
 
 	local scrollHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	scrollHeader:SetFontObject("GameFontHighlight")
+	scrollHeader:SetFontObject(UIFontBasic)
 	scrollHeader:SetPoint("TOP", hideButton, "BOTTOM", -230, -5)
 	scrollHeader:SetText("Modify the text below in the same format presented")
-	scrollHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Initialize the buttons table if it doesn't exist
 	if not frame.fieldscmd then
@@ -7058,10 +7961,9 @@ function ProEnchantersCreateImportFrame()
 
 	-- Help Reminder
 	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
-	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetFontObject(UIFontBasic)
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- frame On Show Script
 	frame:SetScript("OnShow", function()
@@ -7114,10 +8016,9 @@ function ProEnchantersCreateGoldFrame()
 
 	-- Create a title for Options
 	local titleHeader = frame:CreateFontString(nil, "OVERLAY")
-	titleHeader:SetFontObject("GameFontHighlight")
+	titleHeader:SetFontObject(UIFontBasic)
 	titleHeader:SetPoint("TOP", titleBg, "TOP", 0, -8)
 	titleHeader:SetText("Pro Enchanters Gold Log")
-	titleHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 
 	-- Scroll frame setup...
@@ -7195,10 +8096,9 @@ function ProEnchantersCreateGoldFrame()
 	-- Create a title for Options
 
 	local InstructionsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
-	InstructionsHeader:SetFontObject("GameFontHighlight")
+	InstructionsHeader:SetFontObject(UIFontBasic)
 	InstructionsHeader:SetPoint("TOP", ScrollChild, "TOP", 0, -10)
 	InstructionsHeader:SetText(DARKORANGE .. "Gold traded to your by players while you have the add-on window open.\nThis number may be slightly inaccurate but should give a rough idea\nof how much gold has been made while enchanting." .. ColorClose)
-	InstructionsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- Input gold logs
 	local function GetGoldLogs()
@@ -7289,10 +8189,9 @@ function ProEnchantersCreateGoldFrame()
 
 	-- Help Reminder
 	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
-	helpReminderHeader:SetFontObject("GameFontGreen")
+	helpReminderHeader:SetFontObject(UIFontBasic)
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	-- frame On Show Script
 	frame:SetScript("OnShow", function()
@@ -7322,26 +8221,28 @@ function IsCurrentTradeSkillEnchanting()
 	end
 end
 -- Function to create a CusWorkOrder frame
-function CreateCusWorkOrder(customerName)
+function CreateCusWorkOrder(customerName, bypass)
 	local customerName = string.lower(customerName)
 	--customerName = string.utf8upper2(string.sub(customerName2, 1, 1)) .. string.sub(customerName2, 2)
 	if customerName == "" or customerName == nil then
 		print(RED .. "Invalid customer name" .. ColorClose)
 		return
 	end
-	local frameID = #WorkOrderFrames + 1
+	local frameID = #ProEnchantersWorkOrderFrames + 1
     local framename = "CusWorkOrder" .. frameID
-	for id, frameInfo in pairs(WorkOrderFrames) do
-		local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
-		local lowerCusName = string.lower(customerName)
-		if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
-			print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
-			if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-				ScrollToActiveWorkOrder(customerName)
-				UpdateTradeHistory(customerName)
+	if bypass ~= true then
+		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+			local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
+			local lowerCusName = string.lower(customerName)
+			if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
+				print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
+				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+					ScrollToActiveWorkOrder(customerName)
+					UpdateTradeHistory(customerName)
+				end
+				return frameInfo.Frame
 			end
-			return frameInfo.Frame
-        end
+		end
 	end
 
 	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "BackdropTemplate")
@@ -7445,7 +8346,7 @@ function CreateCusWorkOrder(customerName)
 				end
 			end
 		elseif IsControlKeyDown() then -- delete all requested enchants
-			for _, frameInfo in pairs(WorkOrderFrames) do
+			for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 				if not frameInfo.Completed and frameInfo.Frame.customerName == lowercusName then
 					RemoveAllRequestedEnchant(customerName)
 				end
@@ -7515,76 +8416,95 @@ function CreateCusWorkOrder(customerName)
 				end
 			end
 		end
-end)
+	end)
 
--- Create Scroll Frame for trade history
-local tradeHistoryScrollFrame = CreateFrame("ScrollFrame", framename .. "ScrollFrame", frame, "UIPanelScrollFrameTemplate")
-tradeHistoryScrollFrame:SetSize(400, 130)
-tradeHistoryScrollFrame:SetPoint("TOPLEFT", customerTextBg, "BOTTOMLEFT", 10, -5)
+	-- Create Scroll Frame for trade history
+	local tradeHistoryScrollFrame = CreateFrame("ScrollFrame", framename .. "ScrollFrame", frame, "UIPanelScrollFrameTemplate")
+	tradeHistoryScrollFrame:SetSize(400, 130)
+	tradeHistoryScrollFrame:SetPoint("TOPLEFT", customerTextBg, "BOTTOMLEFT", 10, -5)
 
--- Access the Scroll Bar
-local scrollBar = tradeHistoryScrollFrame.ScrollBar
---scrollBar:SetFrameLevel(9000)
+	-- Access the Scroll Bar
+	local scrollBar = tradeHistoryScrollFrame.ScrollBar
+	--scrollBar:SetFrameLevel(9000)
 
--- Customize Thumb Texture
-local thumbTexture = scrollBar:GetThumbTexture()
-thumbTexture:SetTexture(nil)  -- Clear existing texture
+	-- Customize Thumb Texture
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil)  -- Clear existing texture
 
--- Customize Scroll Up Button Textures
-local upButton = scrollBar.ScrollUpButton
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
 
--- Clear existing textures
-upButton:GetNormalTexture():SetTexture(nil)
-upButton:GetPushedTexture():SetTexture(nil)
-upButton:GetDisabledTexture():SetTexture(nil)
-upButton:GetHighlightTexture():SetTexture(nil)
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
 
--- Repeat for Scroll Down Button
-local downButton = scrollBar.ScrollDownButton
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
 
--- Clear existing textures
-downButton:GetNormalTexture():SetTexture(nil)
-downButton:GetPushedTexture():SetTexture(nil)
-downButton:GetDisabledTexture():SetTexture(nil)
-downButton:GetHighlightTexture():SetTexture(nil)
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
 
 
-local scrollChild = CreateFrame("Frame", nil, tradeHistoryScrollFrame)
-scrollChild:SetSize(400, 130)  -- Adjust height dynamically based on content
-tradeHistoryScrollFrame:SetScrollChild(scrollChild)
+	local scrollChild = CreateFrame("Frame", nil, tradeHistoryScrollFrame)
+	scrollChild:SetSize(400, 130)  -- Adjust height dynamically based on content
+	tradeHistoryScrollFrame:SetScrollChild(scrollChild)
 
-local tradehistoryEditBox = CreateFrame("EditBox", frameID .. "TradeHistory", scrollChild)
-tradehistoryEditBox:SetSize(380, 110)  -- Adjust size as needed
-tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
-tradehistoryEditBox:SetMultiLine(true)
-tradehistoryEditBox:SetAutoFocus(false)
-tradehistoryEditBox:SetHyperlinksEnabled(true)
-tradehistoryEditBox:EnableMouse(true)
-tradehistoryEditBox:SetFontObject("GameFontHighlight")
-tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
-tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0)  -- Anchor bottom right to scrollChild
-tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
-	customerName = string.lower(customerName)
-	customerName = CapFirstLetter(customerName)
-	ProEnchantersCustomerNameEditBox:SetText(customerName)
-end)
-tradehistoryEditBox:SetScript("OnTextChanged", function(self)
-	scrollChild:SetHeight(self:GetHeight())
-end)
-tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
-    local linkType, addon, param1, param2 = strsplit(":", linkData)
+	local tradehistoryEditBox = CreateFrame("EditBox", frameID .. "TradeHistory", scrollChild)
+	tradehistoryEditBox:SetSize(380, 110)  -- Adjust size as needed
+	tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
+	tradehistoryEditBox:SetMultiLine(true)
+	tradehistoryEditBox:SetAutoFocus(false)
+	tradehistoryEditBox:SetHyperlinksEnabled(true)
+	tradehistoryEditBox:EnableMouse(true)
+	tradehistoryEditBox:SetFontObject("GameFontHighlight")
+	tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
+	tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0)  -- Anchor bottom right to scrollChild
+	tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
+		customerName = string.lower(customerName)
+		customerName = CapFirstLetter(customerName)
+		ProEnchantersCustomerNameEditBox:SetText(customerName)
+	end)
+	tradehistoryEditBox:SetScript("OnTextChanged", function(self)
+		scrollChild:SetHeight(self:GetHeight())
+	end)
+	tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+    local linkType, addon, param1, param2, param3 = strsplit(":", linkData)
     if linkType == "addon" and addon == "ProEnchanters" then
-        local enchKey = param1
-		local customerName = param2
+        local hlType = param1 -- type
+		local hlInfo = param2 -- info
+		local customerName = param3 -- name
 			if IsControlKeyDown() then
-			RemoveRequestedEnchant(customerName, enchKey)
+				if hlType == "cusreq" then
+					RemoveRequestedTradeLine(customerName, hlInfo)
+					return
+				end
+			RemoveRequestedEnchant(customerName, hlInfo)
 			local currentTradeTarget = UnitName("NPC")
 				if customerName == currentTradeTarget then
 					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 			elseif IsShiftKeyDown() then
-				local reqEnchant = enchKey
+				if hlType == "cusreq" then
+					local msgReq = "Custom Request: " .. hlInfo
+					if ProEnchantersOptions["WhisperMats"] == true and customerName and customerName ~= "" then
+						SendChatMessage(msgReq, "WHISPER", nil, customerName)
+					elseif CheckIfPartyMember(customerName) == true then
+						local capPlayerName = CapFirstLetter(customerName)
+						SendChatMessage(capPlayerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+					elseif customerName and customerName ~= "" then
+						SendChatMessage(msgReq, "WHISPER", nil, customerName)
+					else
+						SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+					end
+					return
+				end
+				local reqEnchant = hlInfo
 				local enchName, enchStats = GetEnchantName(reqEnchant)
 				local matsReq = ProEnchants_GetReagentList(reqEnchant)
 				local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
@@ -7602,16 +8522,16 @@ tradehistoryEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link,
 				end
 			end
         end
-end)
+	end)
 
--- Make EditBox non-editable
-tradehistoryEditBox:EnableKeyboard(false)
+	-- Make EditBox non-editable
+	tradehistoryEditBox:EnableKeyboard(false)
 
--- Store the trade history EditBox in the frame
-frame.tradeHistoryEditBox = tradehistoryEditBox
+	-- Store the trade history EditBox in the frame
+	frame.tradeHistoryEditBox = tradehistoryEditBox
 
--- Initialize the customer's trade history table
-ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName] or {}
+	-- Initialize the customer's trade history table
+	ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName] or {}
 	--Input auto invite message if applicable
 	if PEPlayerInvited[customerName] then
 		local firstline = PEPlayerInvited[customerName]
@@ -7639,7 +8559,7 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
             customerBg:SetSize(410, 20)
             frame:SetSize(410, 20)
             -- Move all existing frames up if they are lower than the frame being deleted
-            for id, frameInfo in pairs(WorkOrderFrames) do
+            for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
                 if id > frameID and not frameInfo.Completed then
                     local newYOffset = frameInfo.Frame.yOffset + 140
                     frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
@@ -7658,8 +8578,9 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
             customerBg:SetSize(410, 160)
             frame:SetSize(410, 160)
 
+
         -- Move all existing frames up if they are lower than the frame being deleted
-        for id, frameInfo in pairs(WorkOrderFrames) do
+        for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
                 local newYOffset = frameInfo.Frame.yOffset - 140
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
@@ -7678,8 +8599,8 @@ ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName
 		frame.minimized = minimized
 		UpdateTradeHistory(customerName)
     end
-end)
-
+	end)
+	
 
 	-- close Button
     local closeButton = CreateFrame("Button", nil, frame)
@@ -7701,7 +8622,7 @@ end)
             frame:SetSize(410, 160)
 
         -- Move all existing frames up if they are lower than the frame being deleted
-        for id, frameInfo in pairs(WorkOrderFrames) do
+        for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
                 local newYOffset = frameInfo.Frame.yOffset - 140
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
@@ -7725,11 +8646,11 @@ end)
         frame:Hide()
 		local customerNameLower = string.lower(customerName)
 		table.insert(ProEnchantersTradeHistory[customerNameLower], tradeLine)
-        WorkOrderFrames[frameID].Completed = true
+        ProEnchantersWorkOrderFrames[frameID].Completed = true
 		PEPlayerInvited[customerName] = nil
 
         -- Move all existing frames up if they are lower than the frame being deleted
-        for id, frameInfo in pairs(WorkOrderFrames) do
+        for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if id > frameID and not frameInfo.Completed then
                 local newYOffset = frameInfo.Frame.yOffset + 162
                 frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
@@ -7748,7 +8669,7 @@ end)
     end)
 
     yOffset = yOffset - 162  -- Decrease for a new frame
-    WorkOrderFrames[frameID] = { Frame = frame, Completed = false, Enchants = {}}
+    ProEnchantersWorkOrderFrames[frameID] = { Frame = frame, Completed = false, Enchants = {}}
 	UpdateScrollChildHeight()
 	UpdateTradeHistory(customerName)
 	if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -7759,12 +8680,24 @@ end)
     return frame
 end
 
+function ShowOpenWorkOrders()
+    for i, t in ipairs(ProEnchantersWorkOrderFrames) do
+        if t.Completed == false then
+			t.Completed = true
+			AddTradeLine(t.Frame.customerName, "--Work order closed on session end--")
+            --local cusName = t.Frame.customerName  -- Use the correct case and remove :Show()
+            --local bypass = true
+            --CreateCusWorkOrder(cusName, bypass)
+        end
+    end
+end
+
 -- Create Trade Order on Trade Frame
 
 -- Function to update the height of ScrollChild based on the number of CusWorkOrder frames
 function UpdateScrollChildHeight()
     local totalHeight = 0
-    for id, frameInfo in pairs(WorkOrderFrames) do
+    for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed then
 			if frameInfo.Frame.minimized == false then
             totalHeight = totalHeight + 162 -- Add height of each frame
@@ -7833,6 +8766,24 @@ function ProEnchantersTradeWindowCreateFrame()
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
+	end)
+
+	local announceMissingButtonBg = frame:CreateTexture(nil, "BACKGROUND")
+	announceMissingButtonBg:SetColorTexture(unpack(TopBarColorOpaque))  -- Set RGBA values for your preferred color and alpha
+	announceMissingButtonBg:SetSize(tradewindowWidth, 20)  -- Adjust size as needed
+	announceMissingButtonBg:SetPoint("TOPRIGHT", customerBg, "BOTTOMRIGHT", 0, 0)
+
+	frame.announceMissingButton = CreateFrame("Button", nil, frame)
+	frame.announceMissingButton:SetPoint("TOP", announceMissingButtonBg, "TOP", 0, 0)
+	frame.announceMissingButton:SetText("Announce current missing mats")
+	local announceMissingButtonText = frame.announceMissingButton:GetFontString()
+	announceMissingButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	frame.announceMissingButton:SetNormalFontObject("GameFontHighlight")
+	frame.announceMissingButton:SetHighlightFontObject("GameFontNormal")
+	frame.announceMissingButton:SetSize(175, 20) -- Adjust the height as needed and add some padding to width
+	frame.announceMissingButton:SetScript("OnClick", function()
+		customerName = string.lower(customerName)
+		LinkAllMissingMats(customerName)
 	end)
 
 	--[[local acceptButtonBg = frame:CreateTexture(nil, "BACKGROUND")
@@ -7909,10 +8860,9 @@ local acceptmacro = [=[
 
 	-- Use Mats from Inventory Text
 	local useAllMatsHeader = frame:CreateFontString(nil, "OVERLAY")
-	useAllMatsHeader:SetFontObject("GameFontHighlight")
-	useAllMatsHeader:SetPoint("RIGHT", frame.useAllMatsCb, "LEFT", 0, 0)
+	useAllMatsHeader:SetFontObject(UIFontBasic)
+	useAllMatsHeader:SetPoint("RIGHT", frame.useAllMatsCb, "LEFT", 0, 2)
 	useAllMatsHeader:SetText("Use all mats?")
-	useAllMatsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 
 	local ScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersTradeWindowFrameScrollFrame", frame, "UIPanelScrollFrameTemplate")
 	ScrollFrame:SetSize(tradewindowWidth - 10, 155)
@@ -7961,6 +8911,7 @@ frame.tradewindowEditBox = tradewindowEditBox
 
 -- Create All Buttons
 	local enchyOffset = 0
+	local convertyOffset = -10
 	local enchxOffset = 15
 	local frame = _G["ProEnchantersTradeWindowFrame"]
 	local slotType = SlotTypeInput
@@ -8039,12 +8990,13 @@ local macro1 = [=[
    			enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
 			enchantButton:SetAttribute("type", "macro")
 			enchantButton:SetAttribute("macrotext", macro2)
-			--[[enchantButton:SetAttribute("type", "spell")
-			enchantButton:SetAttribute("spell", enchValue)
-			enchantButton:SetScript("PostClick", function(self, btn, down)
+			--enchantButton:SetAttribute("type", "spell")
+			--enchantButton:SetAttribute("spell", enchValue)
+			--[[enchantButton:SetScript("PostClick", function(self, btn, down)
 				if (down) then 
-					acceptButtonBg:Show()
-					macroButton:Show()
+					--acceptButtonBg:Show()
+					--macroButton:Show()
+				print("Down on enchant button")
 				end
 			end)]]
 			enchantButton:Hide()
@@ -8251,10 +9203,86 @@ local macro1 = [=[
 				frame.namedButtons[buttonNameBg2] = enchantMatsMissingDisplay
 				
 	end
+
+	for i, name in ipairs(PEConvertablesName) do
+
+        -- Create button background
+			local convertButtonBg = frame:CreateTexture(nil, "BACKGROUND")
+			local buttonNameBg = name .. "bg"
+			convertButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque))
+			convertButtonBg:SetSize(145, 30)
+			convertButtonBg:SetPoint("TOP", frame, "BOTTOM", -enchxOffset, convertyOffset)
+			convertButtonBg:Hide()
+        -- Create a button
+			local buttonName = name .. "button"
+			local convertButton = CreateFrame("Button", buttonName, frame, "SecureActionButtonTemplate")
+			convertButton:SetSize(145, 30)
+			convertButton:SetPoint("TOP", frame, "BOTTOM", -enchxOffset, convertyOffset)
+			convertButton:SetText("Convert \n" .. name)
+			local convertButtonText = convertButton:GetFontString()
+			convertButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+			convertButton:SetNormalFontObject("GameFontHighlight")
+			convertButton:SetHighlightFontObject("GameFontNormal")
+			convertButton:SetMouseClickEnabled(true)
+   			convertButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+			convertButton:SetAttribute("type", "item")
+			convertButton:SetAttribute("item", name)
+			convertButton:Hide()
+	
+			-- Increase yOffset for the next button
+			convertyOffset = convertyOffset - 35
+	
+			frame.namedButtons[buttonName] = convertButton
+			frame.namedButtons[buttonNameBg] = convertButtonBg
+			--table.insert(frame.buttons, convertButton)
+			--table.insert(frame.buttonBgs, convertButtonBg)
+	end
+
+
 	frame:SetScript("OnHide", function()
 		--acceptButtonBg:Hide()
 		--macroButton:Hide()
 	end)
+
+
+
+	local minButton = CreateFrame("Button", nil, frame)
+    minButton:SetSize(80, 25)
+    minButton:SetPoint("TOPLEFT", customerTextBg, "TOPLEFT", 5, 2)
+	minButton:SetText("Minimize")
+	local minButtonText = minButton:GetFontString()
+	minButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	minButton:SetNormalFontObject("GameFontHighlight")
+	minButton:SetHighlightFontObject("GameFontNormal")
+	local minimized = false
+	frame.minimized = minimized
+	minButton:SetScript("OnClick", function()
+        if frame.minimized == false then
+		ScrollFrame:Hide()
+		--ScrollFrame:SetSize(tradewindowWidth - 10, 155)
+		announceMissingButtonBg:Hide()
+		frame.announceMissingButton:Hide()
+		customerBg:SetSize(tradewindowWidth, 20)
+		lowerframe:SetSize(tradewindowWidth, 20)
+		minButton:SetText("Maximize")
+		minimized = true
+		frame.minimized = minimized
+		--UpdateTradeHistory(customerName)
+        elseif frame.minimized == true then
+		ScrollFrame:Show()
+		--ScrollFrame:SetSize(tradewindowWidth - 10, 155)
+		announceMissingButtonBg:Show()
+		frame.announceMissingButton:Show()
+		customerBg:SetSize(tradewindowWidth, 180)
+		lowerframe:SetSize(tradewindowWidth, 180)		
+		minButton:SetText("Minimize")
+		minimized = false
+		frame.minimized = minimized
+		--UpdateTradeHistory(customerName)
+    end
+	end)
+
+
 	return frame
 end
 
@@ -8275,22 +9303,38 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	frame.customerTitleButton:SetScript("OnClick", function()
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
+		if not ProEnchantersTradeHistory[customerName] then
+			ProEnchantersTradeHistory[customerName] = {}
+			CreateCusWorkOrder(customerName)
+			if ProEnchantersTradeHistory[customerName] then
+				ProEnchantersLoadTradeWindowFrame(customerName)
+			end
+		end
 		ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
- end)
- 	frame.useAllMatsCb:SetScript("OnClick", function(self)
-	ProEnchantersOptions["UseAllMats"] = self:GetChecked()
-	useAllMats = ProEnchantersOptions["UseAllMats"]
-	ProEnchantersUpdateTradeWindowText(customerName)
-	ProEnchantersUpdateTradeWindowButtons(customerName)
-end)
+	end)
+
+	frame.announceMissingButton:SetScript("OnClick", function()
+		local customerName = PEtradeWho
+		customerName = string.lower(customerName)
+		ProEnchantersUpdateTradeWindowButtons(customerName)
+		ProEnchantersUpdateTradeWindowText(customerName)
+		LinkAllMissingMats(customerName)
+	end)
+
+	frame.useAllMatsCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["UseAllMats"] = self:GetChecked()
+		useAllMats = ProEnchantersOptions["UseAllMats"]
+		ProEnchantersUpdateTradeWindowText(customerName)
+		ProEnchantersUpdateTradeWindowButtons(customerName)
+	end)
 
 	ProEnchantersUpdateTradeWindowText(customerName)
 
 		if customerName then
-			for _, frameInfo in pairs(WorkOrderFrames) do
+			for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 				if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 					local function alphanumericSort(a, b)
 						-- Extract number from the string
@@ -8499,6 +9543,26 @@ end)
 						end
 					end
 				end
+
+				for i, id in ipairs(PEConvertablesId) do
+					local name = PEConvertablesName[i]
+					local buttonName = name .. "button"
+					local buttonNameBg = name .. "bg"
+					frame.namedButtons[buttonName]:SetScript("PostClick", function(self, btn, down)
+						if (down) then
+							frame.namedButtons[buttonName]:Hide() -- Bookmark, need to test this delay of disable/enable button
+							frame.namedButtons[buttonNameBg]:Hide()
+							local customerName = PEtradeWho
+							customerName = string.lower(customerName)
+							print("Pressed: " .. name)
+							C_Timer.After(1.2, function()
+							ProEnchantersConvertMats(customerName, i)
+							ProEnchantersUpdateTradeWindowButtons(customerName)
+							ProEnchantersUpdateTradeWindowText(customerName)
+							end)
+						end
+					end)
+				end
 			end
 		end
 	end
@@ -8508,6 +9572,7 @@ end
 -- Forwarded Scan to Parse entire area (like AH, but more frequent in idle)
 function PESearchInventoryForItems()
     local availableMats = {}
+	local availableMatsIds = {}
     for bag = 0, NUM_BAG_SLOTS do -- Start from 0 to include the backpack
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemID = C_Container.GetContainerItemID(bag, slot)
@@ -8520,8 +9585,10 @@ function PESearchInventoryForItems()
                             local itemName = select(2, GetItemInfo(itemID)) or "Unknown Item"
                             if availableMats[itemName] then
                                 availableMats[itemName] = availableMats[itemName] + quantity
+								availableMatsIds[itemID] = availableMatsIds[itemID] + quantity
                             else
                                 availableMats[itemName] = quantity
+								availableMatsIds[itemID] = quantity
                             end
                         end
                     end
@@ -8529,7 +9596,7 @@ function PESearchInventoryForItems()
             end
         end
     end
-    return availableMats
+    return availableMats, availableMatsIds
 end
 
 function ProEnchantersGetMatsDiff(customerName)
@@ -8548,7 +9615,7 @@ function ProEnchantersGetMatsDiff(customerName)
 			return matsDiff
     end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 				frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
 
@@ -8564,6 +9631,32 @@ function ProEnchantersGetMatsDiff(customerName)
             	    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
             	    matsRemaining[itemName] = quantity
             	end
+			end
+
+			-- For each slot 1,6 in trade window, get item and itemcount
+			-- 
+			--[[local tradetargetName = UnitName("NPC")
+			if PEtradeWho == nil then
+				return {"No info to display"}
+			end
+			local tradetargetloweredName = string.lower(tradetargetName)
+			local SlotTypeInput = ""]]
+
+			for slot = 1, 6 do
+				local _, _, targetQuantity = GetTradeTargetItemInfo(slot)
+				local targetItemLink = GetTradeTargetItemLink(slot)
+				
+				if targetItemLink ~= nil then
+					local itemId = targetItemLink:match(":(%d+):")
+					local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+					if matsRemaining[itemName] then
+						local currentAmount = tonumber(matsRemaining[itemName])
+						local newAmount = currentAmount + targetQuantity
+						matsRemaining[itemName] = newAmount
+					else
+						matsRemaining[itemName] = targetQuantity
+					end
+				end
 			end
 
 			-- Check if the Enchants table is empty
@@ -8649,6 +9742,9 @@ function ProEnchantersGetMatsDiff(customerName)
 			return matsDiff
 		end
 	end
+	if matsDiff == nil then
+		return {"No info to display"}
+	end
 end
 
 function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
@@ -8663,7 +9759,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
         return {}, false  -- Return an empty table and false if no trade history exists
     end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 				frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
 
@@ -8680,6 +9776,25 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
             	    matsRemaining[itemName] = quantity
             	end
 			end
+
+			for slot = 1, 6 do
+				local _, _, targetQuantity = GetTradeTargetItemInfo(slot)
+				local targetItemLink = GetTradeTargetItemLink(slot)
+				
+				if targetItemLink ~= nil then
+					local itemId = targetItemLink:match(":(%d+):")
+					local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+					if matsRemaining[itemId] then
+						local currentAmount = tonumber(matsRemaining[itemId])
+						local newAmount = currentAmount + targetQuantity
+						matsRemaining[itemId] = newAmount
+					else
+						matsRemaining[itemId] = targetQuantity
+					end
+				end
+			end
+
+
 
    		local totalMaterials = {}
 		local count = 1
@@ -8703,7 +9818,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 			local matsRemainingQuantity = matsRemaining[mat] or 0
 			if matsRemainingQuantity < quantity then
 				local missingAmt = quantity - matsRemainingQuantity
-				matsDiff[mat] = missingAmt
+				matsDiff[mat] = {q = missingAmt, r = matsRemainingQuantity}
 				matsMissingCheck = true
 			end
 		end
@@ -8730,7 +9845,7 @@ function LinkMissingMats(enchantID, customerName)
     for material, quantity in pairs(missingMats) do
 		local itemId = material:match(":(%d+):")
 		local material = select(2, GetItemInfo(itemId))
-		local addition = quantity .. "x " .. material
+		local addition = quantity.q .. "x " .. material .. "(" .. quantity.r .. " received)"
 			if itemcount == 6 then
 				table.insert(AllMatsMissing, currentString)
 				currentString = addition
@@ -8798,6 +9913,368 @@ function LinkMissingMats(enchantID, customerName)
 	end
 end
 
+function ProEnchantersGetAnnounceMatsDiff(customerName)
+	local customerName = string.lower(customerName)
+	local matsNeeded = {}
+    local matsNeededQuantity = 0
+    local matsRemaining = {}
+	local matsRemainingQuantity = 1
+    local matsDiff = {}
+	local matsMissingCheck = 0
+    local enchantCounts = {}
+    -- Assuming ProEnchantersTradeHistory[customerName] is a list (table in Lua) of items
+    if ProEnchantersTradeHistory[customerName] == nil then
+       			local line = "No customer name found"
+				matsMissingCheck = 1
+				table.insert(matsDiff, line)
+			return matsDiff, matsMissingCheck
+    end
+
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+        if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+				frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
+
+			-- Create Mats Remaining table
+			if useAllMats == true then
+				local _, allMatsAvailable = PESearchInventoryForItems()
+				for itemID, quantity in pairs(allMatsAvailable) do -- change this to check inventory
+            	    matsRemaining[itemID] = quantity
+            	end
+			else
+           		for material, quantity in pairs(frameInfo.ItemsTradedIn) do
+            	    local itemId = material:match(":(%d+):")
+            	    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+            	    matsRemaining[itemId] = quantity
+            	end
+			end
+
+			-- For each slot 1,6 in trade window, get item and itemcount
+			-- 
+			--[[local tradetargetName = UnitName("NPC")
+			if PEtradeWho == nil then
+				return {"No info to display"}
+			end
+			local tradetargetloweredName = string.lower(tradetargetName)
+			local SlotTypeInput = ""]]
+
+			for slot = 1, 6 do
+				local _, _, targetQuantity = GetTradeTargetItemInfo(slot)
+				local targetItemLink = GetTradeTargetItemLink(slot)
+				
+				if targetItemLink ~= nil then
+					local itemId = targetItemLink:match(":(%d+):")
+					local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+					if matsRemaining[itemId] then
+						local currentAmount = tonumber(matsRemaining[itemId])
+						local newAmount = currentAmount + targetQuantity
+						matsRemaining[itemId] = newAmount
+					else
+						matsRemaining[itemId] = targetQuantity
+					end
+				end
+			end
+
+			-- Check if the Enchants table is empty
+			if next(frameInfo.Enchants) == nil then
+				-- The Enchants table is empty, return or break as needed
+				local line = "No requested enchants detected"
+				matsMissingCheck = 2
+				table.insert(matsDiff, line)
+				return matsDiff, matsMissingCheck
+			end
+	
+    local totalMaterials = {}
+
+	-- Get the total materials required for each enchantment
+	for _, enchantID in ipairs(frameInfo.Enchants) do
+		enchantCounts[enchantID] = (enchantCounts[enchantID] or 0) + 1
+ 	end
+
+    for enchantID, count in pairs(enchantCounts) do
+        local materials = ProEnchants_GetReagentList(enchantID, count)
+        -- Split materials string into individual materials and sum up
+        for quantity, material in string.gmatch(materials, "(%d+)x ([^,]+)") do
+            quantity = tonumber(quantity)
+            totalMaterials[material] = (totalMaterials[material] or 0) + quantity
+        end
+    end
+    
+    -- Convert the totalMaterials table back into a string and add to matsNeeded table
+            for material, quantity in pairs(totalMaterials) do
+                local itemId = material:match(":(%d+):")
+                local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                matsNeeded[itemId] = quantity
+            end
+
+    -- Do Math for Mats Diff
+            for mat, quantity in pairs(matsNeeded) do
+                local matReqName = mat
+                matsNeededQuantity = quantity
+				matsRemainingQuantity = 0
+                if matsRemaining[mat] then
+                    matsRemainingQuantity = tonumber(matsRemaining[mat])
+                end
+                    if matsRemainingQuantity < matsNeededQuantity then
+						local missingAmount = matsNeededQuantity - matsRemainingQuantity
+                        matsDiff[mat] = {q = missingAmount, r = matsRemainingQuantity}
+                    end
+
+		   	end
+				if next(matsDiff) == nil then
+					matsMissingCheck = 1
+					return {"No missing mats found"}, matsMissingCheck
+				end
+			return matsDiff, matsMissingCheck
+		end
+	end
+	if matsDiff == nil then
+		matsMissingCheck = 1
+		return {"No info to display"}, matsMissingCheck
+	end
+end
+
+function LinkAllMissingMats(customerName)
+	local customerName = string.lower(customerName)
+	local missingMats = {}
+	local currentString = ""
+	local AllMatsMissing = {}
+	local itemcount = 1
+	local check = 0
+
+	-- For each in missingMats do the 1-5 max per line then new line etc before whispering or sending message, also figure out a way to include a button or hook last pressed secureaction button and if enchant click failed generate the linkmissingmats based on the enchantID of the spell button?
+	missingMats, check = ProEnchantersGetAnnounceMatsDiff(customerName)
+	missingMats = missingMats or {}
+
+	if check >= 1 then
+		print(missingMats[1])
+		return
+	end
+
+	-- Convert table into line for sending
+
+    for itemId, quantity in pairs(missingMats) do
+		--local itemId = material:match(":(%d+):")
+		local material = select(2, GetItemInfo(itemId))
+		local addition = quantity.q .. "x " .. material .. "(" .. quantity.r .. " received)"
+			if itemcount == 6 then
+				table.insert(AllMatsMissing, currentString)
+				currentString = addition
+				itemcount = 2
+			else
+				if itemcount >= 2 then
+					currentString = currentString .. ", "
+				end
+				currentString = currentString .. addition
+				itemcount = itemcount + 1
+			end
+		end
+
+		if itemcount > 0 then
+				table.insert(AllMatsMissing, currentString)
+		end
+
+	if customerName then
+		if ProEnchantersOptions["WhisperMats"] == true and customerName and customerName ~= "" then
+			for i, matsString in ipairs(AllMatsMissing) do
+				if i == 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage(msgReq, "WHISPER", nil, customerName)
+				elseif i > 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage("Cont'd " .. msgReq, "WHISPER", nil, customerName)
+				end
+			end
+		elseif CheckIfPartyMember(customerName) == true then
+			local capPlayerName = CapFirstLetter(customerName)
+			for i, matsString in ipairs(AllMatsMissing) do
+				if i == 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage(capPlayerName .. " " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+				elseif i > 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage(capPlayerName .. " cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+				end
+			end
+		elseif customerName and customerName ~= "" then
+			for i, matsString in ipairs(AllMatsMissing) do
+				if i == 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage(msgReq, "WHISPER", nil, customerName)
+				elseif i > 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage("Cont'd " .. msgReq, "WHISPER", nil, customerName)
+				end
+			end
+		else
+			for i, matsString in ipairs(AllMatsMissing) do
+				if i == 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+				elseif i > 1 then
+					local msgReq = "Mat's still missing: " .. matsString
+					SendChatMessage("Cont'd " .. msgReq, IsInRaid() and "RAID" or "PARTY")
+				end
+			end
+		end
+	else
+		print("No Customer Name found")
+		--Whisper/say trade target Missing Mats
+	end
+end
+
+
+
+function ProEnchantersGetConvertableMats(customerName)
+	local customerName = string.lower(customerName)
+	local matsConvertable = {}
+    local matsRemaining = {}
+    -- Assuming ProEnchantersTradeHistory[customerName] is a list (table in Lua) of items
+    if ProEnchantersTradeHistory[customerName] == nil then
+        --print("No trade history for customer:", customerName)
+        return {}, false  -- Return an empty table and false if no trade history exists
+    end
+
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+        if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+				frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
+
+			-- Create Mats Remaining table
+			if useAllMats == true then
+				local _, allMatsAvailable = PESearchInventoryForItems()
+				for itemID, quantity in pairs(allMatsAvailable) do -- change this to check inventory
+            	    matsRemaining[itemID] = quantity
+					--print(itemID .. " added to matsRemaining table with quantity " .. quantity)
+            	end
+			else
+           		for material, quantity in pairs(frameInfo.ItemsTradedIn) do
+            	    local itemId = material:match(":(%d+):")
+            	    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+            	    matsRemaining[itemId] = quantity
+					--print(itemId .. " added to matsRemaining table with quantity " .. quantity)
+            	end
+			end
+
+            for index, cId in ipairs(PEConvertablesId) do
+                for id, quantity in pairs(matsRemaining) do
+					--print("comparing " .. id .. " to " .. cId)
+                    if string.find(id, cId, 1, true) then
+						--print("id matches cId in GetConvertableMats")
+                        matsConvertable[cId] = {name = PEConvertablesName[index], quantity = quantity, id = id}
+						--print("adding " .. cId .. " to table with values: name- " .. PEConvertablesName[index] .. " quantity- " .. quantity)
+						break
+                    end
+                end
+            end
+        return matsConvertable, true
+        end
+    end
+    return {}, false
+end
+
+function ProEnchantersConvertMats(customerName, index)
+	local customerName = string.lower(customerName)
+    local matsRemaining = {}
+    -- Assuming ProEnchantersTradeHistory[customerName] is a list (table in Lua) of items
+    if ProEnchantersTradeHistory[customerName] == nil then
+        --print("No trade history for customer:", customerName)
+        return {}, false  -- Return an empty table and false if no trade history exists
+    end
+
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+        if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+				frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
+
+			-- Create Mats Remaining table
+			if useAllMats == true then
+				return
+			else
+           		for material, quantity in pairs(frameInfo.ItemsTradedIn) do
+            	    local itemId = material:match(":(%d+):")
+            	    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+            	    matsRemaining[itemId] = quantity
+            	end
+			end
+
+            local itemConvertedName = PEConvertablesName[index]
+            local itemConvertedId = PEConvertablesId[index]
+			--print("itemConverted set to name/id: " .. itemConvertedName .. "/" .. itemConvertedId)
+
+			local _, itemsAvailable = PESearchInventoryForItems()
+			local currentQuantity = 0
+			for itemID, quantity in pairs(itemsAvailable) do -- change this to check inventory
+				if string.find(itemID, itemConvertedId, 1, true) then
+					currentQuantity = quantity
+				--print(itemID .. " added to matsRemaining table with quantity " .. quantity)
+				break
+				end
+			end
+			--print("current quantity set to " .. currentQuantity)
+
+            for id, quantityRemaining in pairs(matsRemaining) do
+                if string.find(itemConvertedId, id, 1, true) then
+					--print("essence found in matsRemaining")
+                    if string.find(itemConvertedName, "Lesser", 1, true) then
+						--print("Lesser essence found")
+                        for link, quantity in pairs(frameInfo.ItemsTradedIn) do
+                            if string.find(link, itemConvertedId, 1, true) then
+								--print("found lesser in ItemsTradedIn, comparing quantities initial / current: " .. currentQuantity .. " / " .. quantity)
+                                if currentQuantity == quantity then
+                                    --print("Item not converted, either not enough to convert or bag is full")
+                                elseif quantityRemaining < 3 then
+                                    --print("Not enough to convert")
+                                else
+                                    local _, converted = GetItemInfo(PEConvertablesId[index+1])
+									--print("converting to " .. converted)
+                                    frameInfo.ItemsTradedIn[link] = quantityRemaining - 3
+									local newQuantity = frameInfo.ItemsTradedIn[link]
+									if newQuantity < 1 then
+										frameInfo.ItemsTradedIn[link] = nil
+									end
+                                    if frameInfo.ItemsTradedIn[converted] then
+                                        local quant = frameInfo.ItemsTradedIn[converted]
+                                        frameInfo.ItemsTradedIn[converted] = quant + 1 or 1
+                                    else
+                                        frameInfo.ItemsTradedIn[converted] = 1
+                                    end
+                                    AddTradeLine(customerName, TAN .. "Converted 3 " .. itemConvertedName .. " to 1 " .. PEConvertablesName[index+1] .. ColorClose)
+                                end
+                            end
+                        end
+                    elseif string.find(itemConvertedName, "Greater", 1, true) then
+                        for link, quantity in pairs(frameInfo.ItemsTradedIn) do
+                            if string.find(link, itemConvertedId, 1, true) then
+								--print("found greater in ItemsTradedIn")
+                                if currentQuantity == quantity then
+                                    --print("Item not converted, either not enough to convert or bag is full")
+								elseif quantityRemaining < 1 then
+									--print("Not enough to convert")
+                                else
+                                    local _, converted = GetItemInfo(PEConvertablesId[index-1])
+									--print("converting to " .. converted)
+                                    frameInfo.ItemsTradedIn[link] = quantityRemaining - 1
+									local newQuantity = frameInfo.ItemsTradedIn[link]
+									if newQuantity < 1 then
+										frameInfo.ItemsTradedIn[link] = nil
+									end
+                                    if frameInfo.ItemsTradedIn[converted] then
+                                        local quant = frameInfo.ItemsTradedIn[converted]
+                                        frameInfo.ItemsTradedIn[converted] = quant + 3 or 3
+                                    else
+                                        frameInfo.ItemsTradedIn[converted] = 3
+                                    end
+                                    AddTradeLine(customerName, TAN .. "Converted 1 " .. itemConvertedName .. " to 3 " .. PEConvertablesName[index-1] .. ColorClose)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+
+
 function ProEnchantersUpdateTradeWindowButtons(customerName)
 	local customerName = string.lower(customerName)
 	ProEnchantersUpdateTradeWindowText(customerName)
@@ -8834,6 +10311,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
 	RemoveTradeWindowInfo()
 	local enchyOffset = 0
+	local convertyOffset = -30
 	local enchxOffset = 15
 	local frame = _G["ProEnchantersTradeWindowFrame"]
 	local slotType = SlotTypeInput
@@ -8842,7 +10320,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 	local buttoncount = 0
 
 	if customerName then
-		for _, frameInfo in pairs(WorkOrderFrames) do
+		for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 			if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 			local function alphanumericSort(a, b)
 				-- Extract number from the string
@@ -9029,41 +10507,68 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 						end
 			
 							for _, key in ipairs(keys) do
-								if buttoncount >= 10 then
-									break
-								end
-								if ProEnchantersOptions.filters[key] == true then
-									local enchantName = EnchantsName[key]
-											if string.find(enchantName, slotType, 1, true) then
-									-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
-									local matsDiff = {}
-									local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
-									local buttonName = key .. "buttondisabled"
-									local buttonNameBg1 = key .. "buttondisabledbg1"
-									local buttonNameBg2 = key .. "buttondisabledbg2"
-									if matsMissingCheck ~= true then
-										if frame.namedButtons[buttonName] then
-											frame.namedButtons[buttonName]:Hide()
-											frame.namedButtons[buttonNameBg1]:Hide()
-											frame.namedButtons[buttonNameBg2]:Hide()
-										end
-									elseif matsMissingCheck == true then
-										if frame.namedButtons[buttonName] then
-										frame.namedButtons[buttonName]:Show()
-										frame.namedButtons[buttonNameBg1]:Show()
-										frame.namedButtons[buttonNameBg2]:Show()
-										frame.namedButtons[buttonName]:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
-										frame.namedButtons[buttonNameBg1]:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
-										frame.namedButtons[buttonNameBg2]:SetPoint("TOPRIGHT", frame.namedButtons[buttonName], "TOPRIGHT", 10, 5)
-										enchyOffset = enchyOffset + 50
-										buttoncount = buttoncount + 1
-										else
-											print("button not found")
+									if buttoncount >= 10 then
+										break
+									end
+									if ProEnchantersOptions.filters[key] == true then
+										local enchantName = EnchantsName[key]
+												if string.find(enchantName, slotType, 1, true) then
+										-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
+										local matsDiff = {}
+										local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
+										local buttonName = key .. "buttondisabled"
+										local buttonNameBg1 = key .. "buttondisabledbg1"
+										local buttonNameBg2 = key .. "buttondisabledbg2"
+										if matsMissingCheck ~= true then
+											if frame.namedButtons[buttonName] then
+												frame.namedButtons[buttonName]:Hide()
+												frame.namedButtons[buttonNameBg1]:Hide()
+												frame.namedButtons[buttonNameBg2]:Hide()
+											end
+										elseif matsMissingCheck == true then
+											if frame.namedButtons[buttonName] then
+											frame.namedButtons[buttonName]:Show()
+											frame.namedButtons[buttonNameBg1]:Show()
+											frame.namedButtons[buttonNameBg2]:Show()
+											frame.namedButtons[buttonName]:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
+											frame.namedButtons[buttonNameBg1]:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
+											frame.namedButtons[buttonNameBg2]:SetPoint("TOPRIGHT", frame.namedButtons[buttonName], "TOPRIGHT", 10, 5)
+											enchyOffset = enchyOffset + 50
+											buttoncount = buttoncount + 1
+											else
+												print("button not found")
+											end
 										end
 									end
 								end
 							end
-						end
+
+							local matsConvertable, check = ProEnchantersGetConvertableMats(customerName)
+							for i, id in ipairs(PEConvertablesId) do 
+								local name = PEConvertablesName[i]
+								local buttonName = name .. "button"
+								local buttonNameBg = name .. "bg"
+								--print("hiding " .. buttonName)
+								frame.namedButtons[buttonNameBg]:Hide()
+								frame.namedButtons[buttonName]:Hide()
+							end
+
+							for i, id in ipairs(PEConvertablesId) do
+								for index, cid in pairs(matsConvertable) do
+									--print("comparing " .. id .. " to " .. cid.id .. " for showing buttons")
+									if string.find(id, cid.id, 1, true) then
+										local name = PEConvertablesName[i]
+										local buttonName = name .. "button"
+										--print("match found, showing button " .. buttonName)
+										local buttonNameBg = name .. "bg"
+										frame.namedButtons[buttonNameBg]:Show()
+										frame.namedButtons[buttonName]:Show()
+										frame.namedButtons[buttonName]:SetPoint("TOP", frame, "BOTTOM", -enchxOffset, convertyOffset)
+										frame.namedButtons[buttonNameBg]:SetPoint("TOP", frame, "BOTTOM", -enchxOffset, convertyOffset)
+										convertyOffset = convertyOffset - 35
+									end
+								end
+							end
 					end
 				end
 			end
@@ -9078,11 +10583,19 @@ function ProEnchantersUpdateTradeWindowText(customerName)
 	local currentTradeTarget = UnitName("NPC")
 
 	matsDiff = ProEnchantersGetMatsDiff(currentTradeTarget)
+	if type(matsDiff) ~= "table" then
+		frame.tradewindowEditBox:SetText("No information found to display")
+		return
+	end
+	if next(matsDiff) == nil then
+		frame.tradewindowEditBox:SetText("No information found to display")
+		return
+	end
+
 		for _, line in ipairs(matsDiff) do
 			tradewindowline = tradewindowline .. line .. "\n"
 		end
 	frame.tradewindowEditBox:SetText(tradewindowline)
-
 end
 
 function RemoveWhisperTriggers()
@@ -9247,6 +10760,7 @@ local function OnAddonLoaded()
 	-- Ensure the ProEnchantersOptions and its filters sub-table are properly initialized
     ProEnchantersOptions = ProEnchantersOptions or {}
     ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
+	ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
 	ProEnchantersOptions.whispertriggers = ProEnchantersOptions.whispertriggers or {}
 
 	LoadColorTables()
@@ -9258,6 +10772,11 @@ local function OnAddonLoaded()
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_SAY")
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_YELL")
     ProEnchanters.frame:RegisterEvent("CHAT_MSG_CHANNEL")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_GUILD")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_PARTY")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_RAID")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_PARTY_LEADER")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_RAID_LEADER")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_SYSTEM")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_WHISPER")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
@@ -9275,10 +10794,17 @@ local function OnAddonLoaded()
 
 	-- Create Filter Enchants Options Table
 	for key, _ in pairs(EnchantsName) do
+		-- Create Filters table
 		if ProEnchantersOptions.filters[key] == nil or ProEnchantersOptions.filters[key] == "" then
 			ProEnchantersOptions.filters[key] = true
 		else
 			ProEnchantersOptions.filters[key] = ProEnchantersOptions.filters[key]
+		end
+		-- Create Favorites table
+		if ProEnchantersOptions.favorites[key] == nil or ProEnchantersOptions.favorites[key] == "" then
+			ProEnchantersOptions.favorites[key] = false
+		else
+			ProEnchantersOptions.favorites[key] = ProEnchantersOptions.favorites[key] 
 		end
 	end
 
@@ -9376,6 +10902,16 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["MaxPartySize"] = 40
 	end
 
+	-- Setting Invite Delays
+	if ProEnchantersOptions["DelayInviteTime"] == nil or ProEnchantersOptions["DelayInviteTime"] == "" then
+		ProEnchantersOptions["DelayInviteTime"] = 0
+	end
+
+	if ProEnchantersOptions["DelayInviteMsgTime"] == nil or ProEnchantersOptions["DelayInviteMsgTime"] == "" then
+		ProEnchantersOptions["DelayInviteMsgTime"] = 0
+	end
+
+
 	-- Setting AutoInviteOptions
 	if ProEnchantersOptions["RaidIcon"] == nil or ProEnchantersOptions["RaidIcon"] == "" then
 		ProEnchantersOptions["RaidIcon"] = 0
@@ -9385,8 +10921,37 @@ local function OnAddonLoaded()
 		PESetRaidIcon = ProEnchantersOptions["RaidIcon"]
 	end
 
+
 	if ProEnchantersOptions["AcceptGoldPopups"] ~= true then
 		ProEnchantersOptions["AcceptGoldPopups"] = false
+	end
+
+	if ProEnchantersOptions["PartyJoinSound"] == nil then
+		ProEnchantersOptions["PartyJoinSound"] = workwork
+	end
+
+	if ProEnchantersOptions["PotentialCustomerSound"] == nil then
+		ProEnchantersOptions["PotentialCustomerSound"] = somethingneeddoing
+	end
+
+	if ProEnchantersOptions["NewTradeSound"] == nil then
+		ProEnchantersOptions["NewTradeSound"] = whatyouwant
+	end
+
+	if ProEnchantersOptions["EnableSounds"] == nil then
+		ProEnchantersOptions["EnableSounds"] = true
+	end
+
+	if ProEnchantersOptions["EnablePartyJoinSound"] == nil then
+		ProEnchantersOptions["EnablePartyJoinSound"] = true
+	end
+
+	if ProEnchantersOptions["EnablePotentialCustomerSound"] == nil then
+		ProEnchantersOptions["EnablePotentialCustomerSound"] = true
+	end
+
+	if ProEnchantersOptions["EnableNewTradeSound"] == nil then
+		ProEnchantersOptions["EnableNewTradeSound"] = false
 	end
 
 	if ProEnchantersOptions["WorkWhileClosed"] ~= true then
@@ -9485,6 +11050,10 @@ local function OnAddonLoaded()
 		TipMsg = ProEnchantersOptions["TipMsg"]
 	end
 
+	if ProEnchantersOptions["TipEmote"] == nil then
+		ProEnchantersOptions["TipEmote"] = "thank"
+	end
+
 	-- Ensure ProEnchantersOptions["AllChannels"] is a table
 	if type(ProEnchantersOptions["AllChannels"]) ~= "table" then
 		ProEnchantersOptions["AllChannels"] = {}
@@ -9506,6 +11075,10 @@ local function OnAddonLoaded()
 		ProEnchantersOptions.AllChannels["LocalDefense"] = true
 	end
 
+	if ProEnchantersOptions["SortBy"] == nil then
+		ProEnchantersOptions["SortBy"] = "Default"
+	end
+
 
 	-- Now safe to create the frames
     ProEnchantersWorkOrderFrame = ProEnchantersCreateWorkOrderFrame()
@@ -9518,11 +11091,13 @@ local function OnAddonLoaded()
 	ProEnchantersColorsFrame = ProEnchantersCreateColorsFrame()
 	ProEnchantersGoldFrame = ProEnchantersCreateGoldFrame()
     ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
+	ProEnchantersSoundsFrame = ProEnchantersCreateSoundsFrame()
 
 
     print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
 	--CreatePEMacros()
 	--FullResetFrames()
+	ShowOpenWorkOrders()
 end
 
 -- Move the ADDON_LOADED event registration to the top
@@ -9532,7 +11107,7 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and select(1, ...) == "ProEnchanters" then
 		print("ProEnchanters Addon Loaded Event Registered")
         OnAddonLoaded()
-	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
+	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
@@ -9554,6 +11129,8 @@ SLASH_PROENCHANTERSDBG2 = "/proenchantersdebug"
 SlashCmdList["PROENCHANTERS"] = function(msg)
 	if msg == "reset" then
 		FullResetFrames()
+	elseif msg == "goldreset" then
+		ResetGoldTraded()
 	else
     	if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
    		    ProEnchantersWorkOrderFrame:Hide()
@@ -9606,6 +11183,7 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 		print(ORANGE .. "Use /pe or /proenchanters to open the main window" .. ColorClose)
 		print(ORANGE .. "You can also make a macro with the command as /pe to bind it to a key" .. ColorClose)
 		print(ORANGE .. "Use /pe reset if you manage to get the main window completely off screen and need to reset its position" .. ColorClose)
+		print(ORANGE .. "Use /pe goldreset if you want to reset the current sessions displayed gold traded in the main window to 0" .. ColorClose)
 		print(ORANGE .. "Available help sections: main, enchants, trade, settings, credits" .. ColorClose)
 		print(ORANGE .. "use '/pehelp section' for more specific information" .. ColorClose)
 		print(ORANGE .. "If this is your first time loading the addon it is recommended to do a recipe sync, check out the setings section for more info " .. ColorClose)
@@ -9710,22 +11288,42 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if autoInvMsg2 == "" then
 								print("Inviting " .. playerName)
 							else
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
+									C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
+										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									end)
+								else
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 							if autoInvMsg2 == "" then
 								print("Inviting " .. playerName)
 							else
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
+									C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
+										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									end)
+								else
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 					end
 			end
 		elseif string.find(text, localPlayerJoinsParty, 1, true) then
-			local matchString = "(.+) " .. localPlayerJoinsParty
+			local matchString = ""
+			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
+				matchString = "(.+)" .. localPlayerJoinsParty
+			else
+				matchString = "(.+) " .. localPlayerJoinsParty
+			end
 			local playerName = string.match(text, matchString)
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
+				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
+					PESound(ProEnchantersOptions["PartyJoinSound"])
+				end
 				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
 						NonAddonInvite = false
 						WorkOrderPopup(playerName)
@@ -9755,6 +11353,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
+				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
+					PESound(ProEnchantersOptions["PartyJoinSound"])
+				end
 				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
 					NonAddonInvite = false
 					WorkOrderPopup(playerName)
@@ -9784,11 +11385,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			NonAddonInvite = false
 		elseif string.find(text, localPlayerJoinsRaid, 1, true) then
-			local matchString = "(.+) " .. localPlayerJoinsRaid
+			local matchString = ""
+			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
+				matchString = "(.+)" .. localPlayerJoinsRaid
+			else
+				matchString = "(.+) " .. localPlayerJoinsRaid
+			end
 			local playerName = string.match(text, matchString)
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
+				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
+					PESound(ProEnchantersOptions["PartyJoinSound"])
+				end
 				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
 						NonAddonInvite = false
 						WorkOrderPopup(playerName)
@@ -9818,6 +11427,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
+				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
+					PESound(ProEnchantersOptions["PartyJoinSound"])
+				end
 				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
 					NonAddonInvite = false
 					WorkOrderPopup(playerName)
@@ -9852,7 +11464,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			if AddonInvite == true then
 			AddonInvite = false
-			local matchString = "(.+) " .. localPlayerInGroup
+			local matchString = ""
+			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
+				matchString = "(.+)" .. localPlayerInGroup
+			else
+				matchString = "(.+) " .. localPlayerInGroup
+			end
 			local playerName = string.match(text, matchString)
 			local FailInvMsg = ProEnchantersOptions["FailInvMsg"]
 			local FailInvMsg2 = string.gsub(FailInvMsg, "CUSTOMER", playerName)
@@ -9860,13 +11477,25 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						if FailInvMsg2 == "" then
 							print("Invite failed for " .. playerName)
 						else
-							SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
+								C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end)
+							else
+								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if FailInvMsg2 == "" then
 							print("Invite failed for " .. playerName)
 						else
-							SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
+								C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end)
+							else
+								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 				end
 			end
@@ -9957,9 +11586,15 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
 							end
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							PlaySound(SOUNDKIT.MAP_PING)
 							elseif AutoInviteFlag == false then
 							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
@@ -9968,9 +11603,15 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
 							end
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 						PlaySound(SOUNDKIT.MAP_PING)
 						elseif AutoInviteFlag == false then
 						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+						if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+							PESound(ProEnchantersOptions["PotentialCustomerSound"])
+						end
 						end
 					end
 				end
@@ -10042,8 +11683,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									PEPlayerInvited[playerName] = msg
 								end
 								PlaySound(SOUNDKIT.MAP_PING)
+								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+									PESound(ProEnchantersOptions["PotentialCustomerSound"])
+								end
 								elseif AutoInviteFlag == false then
 								StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+									PESound(ProEnchantersOptions["PotentialCustomerSound"])
+								end
 								end
 						elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 							if AutoInviteFlag == true then
@@ -10053,8 +11700,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									PEPlayerInvited[playerName] = msg
 								end
 							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							elseif AutoInviteFlag == false then
 							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							end
 						end
 					end
@@ -10126,8 +11779,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								PEPlayerInvited[playerName] = msg
 							end
 							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							elseif AutoInviteFlag == false then
 							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
@@ -10137,8 +11796,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								PEPlayerInvited[playerName] = msg
 							end
 						PlaySound(SOUNDKIT.MAP_PING)
+						if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+							PESound(ProEnchantersOptions["PotentialCustomerSound"])
+						end
 						elseif AutoInviteFlag == false then
 						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+						if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+							PESound(ProEnchantersOptions["PotentialCustomerSound"])
+						end
 						end
 					end
 				end
@@ -10210,8 +11875,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									PEPlayerInvited[playerName] = msg
 								end
 								PlaySound(SOUNDKIT.MAP_PING)
+								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+									PESound(ProEnchantersOptions["PotentialCustomerSound"])
+								end
 								elseif AutoInviteFlag == false then
 								StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+									PESound(ProEnchantersOptions["PotentialCustomerSound"])
+								end
 								end
 						elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 							if AutoInviteFlag == true then
@@ -10221,8 +11892,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									PEPlayerInvited[playerName] = msg
 								end
 							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							elseif AutoInviteFlag == false then
 							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 						end
 					end
 				end
@@ -10295,8 +11972,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								PEPlayerInvited[playerName] = msg
 							end
 							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							elseif AutoInviteFlag == false then
 							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
 							end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
@@ -10306,14 +11989,255 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								PEPlayerInvited[playerName] = msg
 							end
 						PlaySound(SOUNDKIT.MAP_PING)
+						if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+							PESound(ProEnchantersOptions["PotentialCustomerSound"])
+						end
 						elseif AutoInviteFlag == false then
 						StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
+						if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+							PESound(ProEnchantersOptions["PotentialCustomerSound"])
+						end
 						end
 					end
 				end
 			end
 			end
 		end
+	elseif event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+		local msg, author2 = ...
+		local msgLower = string.lower(msg)
+		local author = string.gsub(author2, "%-.*", "")
+		local author3 = string.lower(author)
+		cmdFound = false
+		local startPos, endPos = string.find(msg, "!")
+		local enchantKey = ""
+		local languageId = ""
+			if string.find(msg, "!", 1, true) then
+				if debugLevel >= 1 then
+					print("Possible !command found from " .. author2 .. ": ! found within " .. msg)
+				end
+
+				if startPos then
+					if debugLevel >= 3 then
+					print("startPos listed as: " .. tostring(startPos))
+					end
+					if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
+						if debugLevel >= 1 then
+							print("found at start of message, setting cmdFound to true")
+						end
+						cmdFound = true
+					else
+						if debugLevel >= 1 then
+							print("! is not at the start of the sentence, ignoring")
+						end	
+					end
+				end
+			end
+			local customcmdFound = 0
+			if cmdFound == true then
+				if ProEnchantersOptions["DisableWhisperCommands"] == true then
+					if debugLevel >= 1 then
+						print("!commands currently disabled, ending checks")
+					end	
+					return
+				end
+				customcmdFound = 1
+				for i, v in ipairs(ProEnchantersOptions.whispertriggers) do
+					for cmd, rmsg in pairs(v) do
+						local cmd = string.lower(cmd)
+						local wmsg = tostring(rmsg)
+						if debugLevel >= 1 then
+						print("comparing: " .. msgLower .. " to " .. cmd)
+						end
+							if tostring(msgLower) == tostring(cmd) then
+								if debugLevel >= 1 then
+									print("Found matching !command")
+								end	
+								for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
+									if debugLevel >= 1 then
+										print("itemID returned as " .. itemID)
+									end
+									local newitemLink = select(2, GetItemInfo(itemID))
+									if debugLevel >= 1 then
+										print(newitemLink)
+									end
+									-- Escape the square brackets in the replacement pattern
+									wmsg = string.gsub(wmsg, "%[" .. itemID .. "%]", newitemLink)
+								end
+								if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+									SendChatMessage(wmsg, IsInRaid() and "RAID" or "PARTY")
+									customcmdFound = 2
+									return
+								elseif event == "CHAT_MSG_GUILD" then
+									SendChatMessage(wmsg, "GUILD")
+									customcmdFound = 2
+									return
+								end
+							end
+						end
+					end
+				end
+
+			if debugLevel >= 1 then
+				print("No matching command found, continuing to possible enchant lookup")
+			end
+
+			if customcmdFound == 1 then
+				enchantKey, languageId = findEnchantByKeyAndLanguage(msg)
+			end
+		
+		if cmdFound == true and customcmdFound == 1 then
+			if ProEnchantersOptions["DisableWhisperCommands"] == true then
+				if debugLevel >= 1 then
+					print("!commands currently disabled, ending checks")
+				end	
+				return
+			end
+			if enchantKey then
+						--enchantKey, languageId
+							if ProEnchantersOptions.filters[enchantKey] == true then
+								local enchName, enchStats = GetEnchantName(enchantKey, languageId)
+								local matsReq = ProEnchants_GetReagentList(enchantKey)
+								local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+								if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+									SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+									customcmdFound = 2
+									return
+								elseif event == "CHAT_MSG_GUILD" then
+									SendChatMessage(msgReq, "GUILD")
+									customcmdFound = 2
+									return
+								end
+							elseif ProEnchantersOptions.filters[enchantKey] == false then
+								local enchName, enchStats = GetEnchantName(enchantKey)
+								local enchNameLocalized, _ = GetEnchantName(enchantKey)
+								local enchType = string.match(enchName, "%-%s*(.+)")
+								local enchTypeSpecific = string.match(enchType, ".+%s(%w+)$")
+								local enchSlot = string.match(enchName, "^Enchant%s+([%w%s-]-)%s-%s")
+								local recommendations = {} -- Use a table to store unique recommendations
+								
+									for k, v in pairs(EnchantsName) do
+										if string.find(v, enchSlot, 1, true) then
+											if string.find(v, enchTypeSpecific, 1, true) then
+											local eName, eStats = GetEnchantName(k)
+											local enchKey = k
+											local eType = string.match(eName, "%-%s*(.+)")
+											local recommendation = eType .. eStats -- Create a unique identifier for the recommendation
+												if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+												-- Only add if not already in the table and filter is true
+													recommendations[k] = eStats
+												end
+											end
+										end
+									end
+									
+									local sortableRecommendations = {}
+									for rec, k in pairs(recommendations) do
+										local numPart = tonumber(k:match("(%d+)"))
+										if numPart then
+											table.insert(sortableRecommendations, {key = numPart, rec = rec})
+										end
+									end
+
+									-- Sort the table based on the numerical part of the enchKey
+									table.sort(sortableRecommendations, function(a, b) return a.key > b.key end)
+
+									-- Now, build your enchRecommends string in sorted order
+									local enchRecommends = ""
+									for _, t in ipairs(sortableRecommendations) do
+										local enchKey = t.rec  -- This should be t.rec based on your table structure
+										local numPart = t.key  -- This is not directly used below but corrected for clarity
+										local enchName, enchStats = GetEnchantName(enchKey, languageId)  -- Assuming GetEnchantName function uses enchKey correctly
+										if enchRecommends == "" then
+											enchRecommends = enchName .. enchStats
+										else
+											enchRecommends = enchRecommends .. ", " .. enchName .. enchStats
+										end
+									end
+
+									if enchRecommends ~= "" then
+										local msgReq = enchNameLocalized .. enchStats .. " not available, here's some similar enchants for " .. enchSlot .. "'s:"
+										local msgRecs = enchRecommends
+										if string.len(msgRecs) <= 255 then
+											if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+												SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs, IsInRaid() and "RAID" or "PARTY")
+												customcmdFound = 2
+												return
+											elseif event == "CHAT_MSG_GUILD" then
+												SendChatMessage(msgReq, "GUILD")
+												SendChatMessage(msgRecs, "GUILD")
+												customcmdFound = 2
+												return
+											end
+										elseif string.len(msgRecs) >= 256 and string.len(msgRecs) <= 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+												SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs1, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs2, IsInRaid() and "RAID" or "PARTY")
+												customcmdFound = 2
+												return
+											elseif event == "CHAT_MSG_GUILD" then
+												SendChatMessage(msgReq, "GUILD")
+												SendChatMessage(msgRecs1, "GUILD")
+												SendChatMessage(msgRecs2, "GUILD")
+												customcmdFound = 2
+												return
+											end
+										elseif string.len(msgRecs) > 510 then
+											local msgRecs1 = string.sub(msgRecs, 1, 255)
+											local msgRecs2 = string.sub(msgRecs, 256, 510)
+											local msgRecs3 = string.sub(msgRecs, 511, 765)
+											if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+												SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs1, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs2, IsInRaid() and "RAID" or "PARTY")
+												SendChatMessage(msgRecs3, IsInRaid() and "RAID" or "PARTY")
+												customcmdFound = 2
+												return
+											elseif event == "CHAT_MSG_GUILD" then
+												SendChatMessage(msgReq, "GUILD")
+												SendChatMessage(msgRecs1, "GUILD")
+												SendChatMessage(msgRecs2, "GUILD")
+												SendChatMessage(msgRecs3, "GUILD")
+												customcmdFound = 2
+												return
+											end
+										end
+									else
+										local msgReq = enchNameLocalized .. enchStats .. " not available and I couldn't find anything similar, would you like something else?"
+											if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+												SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+												customcmdFound = 2
+												return
+											elseif event == "CHAT_MSG_GUILD" then
+												SendChatMessage(msgReq, "GUILD")
+												customcmdFound = 2
+												return
+											end
+									end
+								else
+									local msgReq = "No Enchant with that name found, please make sure you're using the specific enchant name such as !enchant chest - lesser stats"
+									if event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" then
+										SendChatMessage(msgReq, IsInRaid() and "RAID" or "PARTY")
+										customcmdFound = 2
+										return
+									elseif event == "CHAT_MSG_GUILD" then
+										SendChatMessage(msgReq, "GUILD")
+										customcmdFound = 2
+										return
+									end
+								end
+					cmdFound = true
+					return
+				end
+				cmdFound = false
+				if debugLevel >= 1 then
+					print("cmdFound is false, end of check")
+				end
+			end
 	elseif event == "CHAT_MSG_WHISPER" then
         local msg, author2 = ...
 		local msgLower = string.lower(msg)
@@ -10740,7 +12664,6 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 	cmdFound = false
 end
 
-
 -- Add a new line to the trade history for a specific customer
 function AddTradeLine(customerName, tradeLine)
 	local customerName = string.lower(customerName)
@@ -10761,10 +12684,10 @@ function AddRequestedEnchant(customerName, reqEnchant)
         CreateCusWorkOrder(customerName)
     end
     local reqEnchantName = EnchantsName[reqEnchant]
-    reqEnchantName = LIGHTSEAGREEN .. "REQ ENCH: " .. ColorClose .. "|cFFDA70D6|Haddon:ProEnchanters:" .. reqEnchant .. ":" .. customerName .. ":1234|h[" .. reqEnchantName .. "]|h|r"
+    reqEnchantName = LIGHTSEAGREEN .. "REQ ENCH: " .. ColorClose .. "|cFFDA70D6|Haddon:ProEnchanters:" .. "reqench" .. ":" .. reqEnchant .. ":" .. customerName .. ":1234|h[" .. reqEnchantName .. "]|h|r"
     table.insert(ProEnchantersTradeHistory[customerName], reqEnchantName)
 	
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             -- Ensure that Enchants is initialized as a table
             frameInfo.Enchants = frameInfo.Enchants or {}
@@ -10774,8 +12697,29 @@ function AddRequestedEnchant(customerName, reqEnchant)
             break
         end
     end
-
     UpdateTradeHistory(customerName)
+end
+
+function RemoveRequestedTradeLine(customerName, linetext)
+	local customerName = string.lower(customerName)
+    if not ProEnchantersTradeHistory[customerName] then
+        ProEnchantersTradeHistory[customerName] = {}
+        CreateCusWorkOrder(customerName)
+    end
+    --[[local reqEnchantName = EnchantsName[reqEnchant]
+    reqEnchantName = TOMATO .. "REMOVE REQ ENCH: " .. ColorClose .. ORCHID .. reqEnchantName .. ColorClose
+    table.insert(ProEnchantersTradeHistory[customerName], reqEnchantName)]]
+
+	local count = #ProEnchantersTradeHistory[customerName]
+
+	for i = count, 1, -1 do -- Iterate backwards to safely remove items
+		local entry = ProEnchantersTradeHistory[customerName][i]
+		if string.find(entry, linetext, 1, true) then
+			table.remove(ProEnchantersTradeHistory[customerName], i)
+			break
+		end
+	end
+	UpdateTradeHistory(customerName)
 end
 
 function RemoveRequestedEnchant(customerName, reqEnchant)
@@ -10802,7 +12746,7 @@ for i = count, 1, -1 do -- Iterate backwards to safely remove items
     end
 end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             -- Ensure that Enchants is initialized as a table
             frameInfo.Enchants = frameInfo.Enchants or {}
@@ -10831,7 +12775,7 @@ function FinishedEnchant(customerName, reqEnchant)
         CreateCusWorkOrder(customerName)
     end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             -- Ensure that tables are initialized
             frameInfo.Enchants = frameInfo.Enchants or {}
@@ -10936,7 +12880,7 @@ function RemoveAllRequestedEnchant(customerName)
         CreateCusWorkOrder(customerName)
     end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             -- Ensure that Enchants is initialized as a table
             frameInfo.Enchants = frameInfo.Enchants or {}
@@ -10972,7 +12916,7 @@ end
         CreateCusWorkOrder(customerName)
     end
 
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
             -- Ensure that Enchants is initialized as a table
             frameInfo.Enchants = frameInfo.Enchants or {}
@@ -11007,7 +12951,7 @@ end
 -- Function to get the trade history edit box for a given customer
 function GetTradeHistoryEditBox(customerName)
 	local customerName = string.lower(customerName)
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if not frameInfo.Completed then
             local frameCustomerName = frameInfo.Frame.customerName -- Assuming each frame has a 'customerName' property
             if frameCustomerName == customerName then
@@ -11023,7 +12967,7 @@ end
 function UpdateTradeHistory(customerName)
 	local customerName = string.lower(customerName)
     local tradeHistoryText = ""
-    for _, frameInfo in pairs(WorkOrderFrames) do
+    for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
         if frameInfo.Frame.customerName == customerName and not frameInfo.Completed then
 			if ProEnchantersTradeHistory[customerName] then
 				-- Iterate from the end to the start of the history
@@ -11035,6 +12979,9 @@ function UpdateTradeHistory(customerName)
 						tradeHistoryText = tradeHistoryText .. "\n" .. line  -- Prepend each line
 					end
 				end
+			end
+			if tradeHistoryText == nil then
+				tradeHistoryText = "No trade history to display"
 			end
 			frameInfo.Frame.tradeHistoryEditBox:SetText(tradeHistoryText)
             break  -- Exit the loop once the correct frame is updated
@@ -11054,6 +13001,13 @@ function UpdateGoldTraded()
 		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25)  -- Adjust size as needed
 		ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg, "BOTTOMRIGHT", -15, 0)
 	end
+end
+
+function ResetGoldTraded()
+	GoldTraded = 0
+	ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+	ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25)  -- Adjust size as needed
+	ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg, "BOTTOMRIGHT", -15, 0)
 end
 
 function PEgetItemIDFromLink(itemLink)
@@ -11085,7 +13039,34 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		LastTradedPlayer = UnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
-		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+		-- AddTradeLine() to generate a work order for all trades? Optional
+		if ProEnchantersOptions["WorkWhileClosed"] == true then
+			if ProEnchantersOptions["EnableNewTradeSound"] == true then
+				PESound(ProEnchantersOptions["NewTradeSound"])
+			end
+			if not ProEnchantersTradeHistory[customerName] then
+				CreateCusWorkOrder(customerName)
+					if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+					local capCustomerName = CapFirstLetter(customerName)
+					ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
+					end
+				elseif ProEnchantersTradeHistory[customerName] then
+					for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+						local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
+						local lowerCusName = string.lower(customerName)
+							if lowerFrameCheck == lowerCusName and frameInfo.Completed then
+								CreateCusWorkOrder(customerName)
+								if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
+									local capCustomerName = CapFirstLetter(customerName)
+									ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
+								end
+							end
+					end
+				end
+		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+			if ProEnchantersOptions["EnableNewTradeSound"] == true then
+				PESound(ProEnchantersOptions["NewTradeSound"])
+			end
 			if not ProEnchantersTradeHistory[customerName] then
             CreateCusWorkOrder(customerName)
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -11093,7 +13074,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
 				end
 			elseif ProEnchantersTradeHistory[customerName] then
-				for id, frameInfo in pairs(WorkOrderFrames) do
+				for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 					local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 					local lowerCusName = string.lower(customerName)
 						if lowerFrameCheck == lowerCusName and frameInfo.Completed then
@@ -11290,11 +13271,11 @@ function PEdoTrade()
 					local capPlayerName = CapFirstLetter(PEtradeWho)
 					local newTipMsg1 = string.gsub(tipMsg, "CUSTOMER", capPlayerName)
 					local newTipMsg2 = string.gsub(newTipMsg1, "MONEY", tip)
+					DoEmote(ProEnchantersOptions["TipEmote"], PEtradeWho)
 					--string.gsub(meResponseSender, "PLAYER", function(mePlayer2) table.insert(mePlayer, mePlayer2) return sender end)
 					if tipMsg == "" then
 						print(PEtradeWho .. " tipped " .. tip)
 					else
-						DoEmote("THANK", PEtradeWho)
 						if CheckIfPartyMember(PEtradeWho) == true then
 							SendChatMessage(newTipMsg2, IsInRaid() and "RAID" or "PARTY")
 						else
@@ -11302,7 +13283,7 @@ function PEdoTrade()
 						end
 					end
 				else
-					DoEmote("THANK", PEtradeWho)
+					DoEmote(ProEnchantersOptions["TipEmote"], PEtradeWho)
 					local tip = tostring(GetCoinText(TargetMoney))
 					local capPlayerName = CapFirstLetter(PEtradeWho)
 					if CheckIfPartyMember(PEtradeWho) == true then
@@ -11325,7 +13306,7 @@ function PEdoTrade()
 						AddTradeLine(customerName, MAGENTA .. "On My: " .. ColorClose .. item.link)
 					elseif item.link then
 						AddTradeLine(customerName, LIGHTYELLOW .. "OUT: " .. item.quantity .. "x " .. ColorClose .. item.link)
-						for _, frameInfo in pairs(WorkOrderFrames) do
+						for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 							if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 								frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
 								frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}
@@ -11366,7 +13347,7 @@ function PEdoTrade()
 			for slot, item in pairs(PEtradeWhoItems.target) do
 				if item and item.link then
 					if item.enchant then
-						--[[for id, frameInfo in pairs(WorkOrderFrames) do
+						--[[for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 							local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 							local lowerCusName = string.lower(customerName)
 								if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
@@ -11389,7 +13370,7 @@ function PEdoTrade()
 						--AddTradeLine(customerName, MAGENTA .. "ON: " .. ColorClose .. item.link)
 					else
 						AddTradeLine(customerName, LIGHTYELLOW .. "IN: " .. item.quantity .. "x " .. ColorClose .. item.link)
-						for _, frameInfo in pairs(WorkOrderFrames) do
+						for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 							if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
 								frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
 								frameInfo.ItemsTradedIn = frameInfo.ItemsTradedIn or {}

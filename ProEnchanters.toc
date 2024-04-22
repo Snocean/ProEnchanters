@@ -1,12 +1,16 @@
-## Interface: 11501
+## Interface: 11502
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 5.0
-## SavedVariables: ProEnchantersOptions, ProEnchantersLog
+## Version: 6.5.2
+## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames
 
+# External code
 libs\utf8data.lua
 libs\utf8.lua
+libs\LibSharedMedia-3.0\lib.xml
+
+# Main
 PELocalization.lua
 #ProEnchantersDE.lua
 #ProEnchantersFR.lua
