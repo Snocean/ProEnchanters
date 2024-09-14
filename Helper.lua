@@ -132,7 +132,7 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
             -- Extract quantity and material name
             local quantity, material = matsReq:match("(%d+)x (.+)")
             local itemId = material:match(":(%d+):")
-            local material = select(2, GetItemInfo(itemId))
+            local material = select(2, C_Item.GetItemInfo(itemId))
             quantity = tonumber(quantity) * reqQuantity
 
             -- Append to the AllMatsReq string
@@ -200,7 +200,7 @@ function GetAllReqMats(customerName)
             currentString = ""
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local material = select(2, GetItemInfo(itemId))
+                local material = select(2, C_Item.GetItemInfo(itemId))
                 local addition = quantity .. "x " .. material
                 if itemcount == 6 then
                     table.insert(AllMatsReq, currentString)
@@ -340,7 +340,7 @@ function PEItemCache()
     local NoneCachedItems = ""
     local CachedItems = ""
     for _, itemID in pairs(ItemCacheTable) do
-        local itemLink = select(2, GetItemInfo(itemID))
+        local itemLink = select(2, C_Item.GetItemInfoInstant(itemID))
         if not itemLink then
             NoneCachedItems = NoneCachedItems .. itemID .. ", "
         elseif itemLink then
@@ -363,7 +363,7 @@ function PESearchInventoryForItems()
                         local info = C_Container.GetContainerItemInfo(bag, slot)
                         if info and info.stackCount then
                             local quantity = info.stackCount
-                            local itemName = select(2, GetItemInfo(itemID)) or "Unknown Item"
+                            local itemName = select(2, C_Item.GetItemInfo(itemID)) or "Unknown Item"
                             if availableMats[itemName] then
                                 availableMats[itemName] = availableMats[itemName] + quantity
                                 availableMatsIds[itemID] = availableMatsIds[itemID] + quantity
@@ -409,7 +409,7 @@ function ProEnchantersGetMatsDiff(customerName)
             else
                 for material, quantity in pairs(frameInfo.ItemsTradedIn) do
                     local itemId = material:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     matsRemaining[itemName] = quantity
                 end
             end
@@ -429,7 +429,7 @@ function ProEnchantersGetMatsDiff(customerName)
 
                 if targetItemLink ~= nil then
                     local itemId = targetItemLink:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     if matsRemaining[itemName] then
                         local currentAmount = tonumber(matsRemaining[itemName])
                         local newAmount = currentAmount + targetQuantity
@@ -478,7 +478,7 @@ function ProEnchantersGetMatsDiff(customerName)
             -- Convert the totalMaterials table back into a string and add to matsNeeded table
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                 matsNeeded[itemName] = quantity
             end
 
@@ -556,7 +556,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
             else
                 for material, quantity in pairs(frameInfo.ItemsTradedIn) do
                     local itemId = material:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     matsRemaining[itemName] = quantity
                 end
             end
@@ -567,7 +567,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 
                 if targetItemLink ~= nil then
                     local itemId = targetItemLink:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     if matsRemaining[itemId] then
                         local currentAmount = tonumber(matsRemaining[itemId])
                         local newAmount = currentAmount + targetQuantity
@@ -593,7 +593,7 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
             -- Convert the totalMaterials table back into a string and add to matsNeeded table
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                 matsNeeded[itemName] = quantity
             end
 
@@ -628,7 +628,7 @@ function LinkMissingMats(enchantID, customerName)
     currentString = ""
     for material, quantity in pairs(missingMats) do
         local itemId = material:match(":(%d+):")
-        local material = select(2, GetItemInfo(itemId))
+        local material = select(2, C_Item.GetItemInfo(itemId))
         local addition = quantity.q .. "x " .. material .. "(" .. quantity.r .. " received)"
         if itemcount == 6 then
             table.insert(AllMatsMissing, currentString)
@@ -727,7 +727,7 @@ function ProEnchantersGetAnnounceMatsDiff(customerName)
             else
                 for material, quantity in pairs(frameInfo.ItemsTradedIn) do
                     local itemId = material:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     matsRemaining[itemId] = quantity
                 end
             end
@@ -747,7 +747,7 @@ function ProEnchantersGetAnnounceMatsDiff(customerName)
 
                 if targetItemLink ~= nil then
                     local itemId = targetItemLink:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     if matsRemaining[itemId] then
                         local currentAmount = tonumber(matsRemaining[itemId])
                         local newAmount = currentAmount + targetQuantity
@@ -786,7 +786,7 @@ function ProEnchantersGetAnnounceMatsDiff(customerName)
             -- Convert the totalMaterials table back into a string and add to matsNeeded table
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                 matsNeeded[itemId] = quantity
             end
 
@@ -837,7 +837,7 @@ function LinkAllMissingMats(customerName)
 
     for itemId, quantity in pairs(missingMats) do
         --local itemId = material:match(":(%d+):")
-        local material = select(2, GetItemInfo(itemId))
+        local material = select(2, C_Item.GetItemInfo(itemId))
         local addition = quantity.q .. "x " .. material .. "(" .. quantity.r .. " received)"
         if itemcount == 6 then
             table.insert(AllMatsMissing, currentString)
@@ -929,7 +929,7 @@ function ProEnchantersGetConvertableMats(customerName)
             else
                 for material, quantity in pairs(frameInfo.ItemsTradedIn) do
                     local itemId = material:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     matsRemaining[itemId] = quantity
                     --print(itemId .. " added to matsRemaining table with quantity " .. quantity)
                 end
@@ -971,7 +971,7 @@ function ProEnchantersConvertMats(customerName, index)
             else
                 for material, quantity in pairs(frameInfo.ItemsTradedIn) do
                     local itemId = material:match(":(%d+):")
-                    local itemName = select(2, GetItemInfo(itemId)) or "Unknown Item"
+                    local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
                     matsRemaining[itemId] = quantity
                 end
             end
@@ -1004,7 +1004,7 @@ function ProEnchantersConvertMats(customerName, index)
                                 elseif quantityRemaining < 3 then
                                     --print("Not enough to convert")
                                 else
-                                    local _, converted = GetItemInfo(PEConvertablesId[index + 1])
+                                    local _, converted = C_Item.GetItemInfo(PEConvertablesId[index + 1])
                                     --print("converting to " .. converted)
                                     frameInfo.ItemsTradedIn[link] = quantityRemaining - 3
                                     local newQuantity = frameInfo.ItemsTradedIn[link]
@@ -1033,7 +1033,7 @@ function ProEnchantersConvertMats(customerName, index)
                                 elseif quantityRemaining < 1 then
                                     --print("Not enough to convert")
                                 else
-                                    local _, converted = GetItemInfo(PEConvertablesId[index - 1])
+                                    local _, converted = C_Item.GetItemInfo(PEConvertablesId[index - 1])
                                     --print("converting to " .. converted)
                                     frameInfo.ItemsTradedIn[link] = quantityRemaining - 1
                                     local newQuantity = frameInfo.ItemsTradedIn[link]
@@ -1071,7 +1071,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     end
 
     if tItemLink then
-        local _, _, _, _, _, _, _, _, itemEquipLoc = GetItemInfo(tItemLink)
+        local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
 
         local tEQLoc = {
             ['INVTYPE_CHEST'] = "Chest",
@@ -1139,8 +1139,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                             local matsDiff = {}
@@ -1194,8 +1192,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                             local matsDiff = {}
@@ -1265,8 +1261,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
 
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
@@ -1558,7 +1552,7 @@ function FinishedEnchant(customerName, reqEnchant)
                 for quantity, material in string.gmatch(matsUsed, "(%d+)x ([^,]+)") do
                     quantity = tonumber(quantity)
                     local itemId = material:match(":(%d+):")
-                    local material = select(2, GetItemInfo(itemId))
+                    local material = select(2, C_Item.GetItemInfo(itemId))
                     if frameInfo.ItemsTradedIn[material] ~= nil then
                         local tradedQuantity = frameInfo.ItemsTradedIn[material]
                         local newQuantity = tradedQuantity - quantity
@@ -1593,7 +1587,7 @@ function FinishedEnchant(customerName, reqEnchant)
                 for quantity, material in string.gmatch(matsUsed, "(%d+)x ([^,]+)") do
                     quantity = tonumber(quantity)
                     local itemId = material:match(":(%d+):")
-                    local material = select(2, GetItemInfo(itemId))
+                    local material = select(2, C_Item.GetItemInfo(itemId))
                     if frameInfo.ItemsTradedIn[material] ~= nil then
                         local tradedQuantity = frameInfo.ItemsTradedIn[material]
                         local newQuantity = tradedQuantity - quantity
@@ -1649,15 +1643,17 @@ function RemoveAllRequestedEnchant(customerName)
             local enchInfo = ""
             for i = count1, 1, -1 do -- Iterate backwards to safely remove items
                 enchInfo = frameInfo.Enchants[count2]
-                entry = ProEnchantersTradeHistory[customerName][i]
-                reqEnchantName = CombinedEnchants[enchInfo].name
-                if count2 < 1 then
-                    break
-                end
-                count2 = count2 - 1
-                if string.find(entry, reqEnchantName, 1, true) then
-                    if string.find(entry, "REQ ENCH:", 1, true) then
-                        table.remove(ProEnchantersTradeHistory[customerName], i)
+                if enchInfo then     -- Ensure enchInfo is not nil
+                    entry = ProEnchantersTradeHistory[customerName][i]
+                    reqEnchantName = CombinedEnchants[enchInfo].name
+                    if count2 < 1 then
+                        break
+                    end
+                    count2 = count2 - 1
+                    if string.find(entry, reqEnchantName, 1, true) then
+                        if string.find(entry, "REQ ENCH:", 1, true) then
+                            table.remove(ProEnchantersTradeHistory[customerName], i)
+                        end
                     end
                 end
             end
