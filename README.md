@@ -1,4 +1,4 @@
-# ProEncahters
+# ProEnchanters
 
 Enchanting Assistance Add-On for players running enchanting services for other players.
 
