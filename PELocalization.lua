@@ -460,6 +460,18 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: aguante menor",
 			["Taiwanese"] = "附魔盾牌 - 初級耐力",
 		},
+		["ENCH135"] = {
+			["Chinese"] = "附魔盾牌 - Law of Nature",
+			["English"] = "Enchant Shield - Law of Nature",
+			["French"] = "Ench. de bouclier (Law of Nature)",
+			["German"] = "Schild - Law of Nature",
+			["Korean"] = "방패 마법부여 - Law of Nature",
+			["Mexican"] = "Encantar escudo: Law of Nature",
+			["Portuguese"] = "Encantamento Menor de Law of Nature - Escudo",
+			["Russian"] = "Чары для щита: Law of Nature",
+			["Spanish"] = "Encantar escudo: Law of Nature",
+			["Taiwanese"] = "附魔盾牌 - Law of Nature",
+		},
 		["ENCH92"] = {
 			["Chinese"] = "附魔双手武器 - 次级精神",
 			["English"] = "Enchant 2H Weapon - Lesser Spirit",

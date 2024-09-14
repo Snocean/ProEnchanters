@@ -4,6 +4,9 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 6.5.21
+-Added: Law of Nature shield enchant for SoD phase 4
+
 ## Update 6.5.1 & 6.5.2
 -Changed: Version update for new wow interface and added new supporters to credits
 
