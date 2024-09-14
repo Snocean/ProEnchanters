@@ -2002,7 +2002,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 						ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
 					end
 					local confirmTradeTarget = UnitName("NPC")
-					if confirmTradeTarget == currentTradeTarget then
+					if confirmTradeTarget and confirmTradeTarget ~= "Player" and confirmTradeTarget == currentTradeTarget then
 						ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
 						ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
 					end
@@ -7193,7 +7193,6 @@ function ProEnchantersTradeWindowCreateFrame()
 		local enchantStats3 = string.gsub(enchantStats2, "%)", "")
 		local enchantStats = string.gsub(enchantStats3, "%+", "")
 		local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-		local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
 
 		-- Create button background
 		local enchantButtonBg = frame:CreateTexture(nil, "BACKGROUND")
@@ -7332,7 +7331,7 @@ function ProEnchantersTradeWindowCreateFrame()
 		local enchantStats3 = string.gsub(enchantStats2, "%)", "")
 		local enchantStats = string.gsub(enchantStats3, "%+", "")
 		local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-		local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
+
 
 		-- Create button background
 		local enchantButtonBg = frame:CreateTexture(nil, "BACKGROUND")
@@ -7533,8 +7532,6 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					local enchantStats3 = string.gsub(enchantStats2, "%)", "")
 					local enchantStats = string.gsub(enchantStats3, "%+", "")
 					local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-					local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-					local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
 
 
@@ -7546,9 +7543,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 							if buttoncount >= 10 then
 								break
 							end
-							-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
-							local matsDiff = {}
-							local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
+
 							local buttonName = key .. "cusbuttonactive"
 							local buttonNameBg = key .. "cusbuttonactivebg"
 							if matsMissingCheck ~= true then
@@ -7584,22 +7579,14 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					local enchantStats1 = CombinedEnchants[enchantID].stats
 					local enchantStats2 = string.gsub(enchantStats1, "%(", "")
 					local enchantStats3 = string.gsub(enchantStats2, "%)", "")
-					local enchantStats = string.gsub(enchantStats3, "%+", "")
-					local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-					local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-					local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
 					-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
-					local matsDiff = {}
-					local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 					if matsMissingCheck == true then
 						if ProEnchantersOptions.filters[key] == true then
 							if buttoncount >= 10 then
 								break
 							end
-							-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
-							local matsDiff = {}
-							local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
+
 							local buttonName = key .. "cusbuttondisabled"
 							local buttonNameBg1 = key .. "cusbuttondisabledbg1"
 							local buttonNameBg2 = key .. "cusbuttondisabledbg2"
@@ -10137,6 +10124,36 @@ end
 
 -- Enable close on Escape pressed
 tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
+
+-- Function to hide all frames
+local function HideAllFrames()
+	ProEnchantersWorkOrderFrame:Hide()
+	ProEnchantersWorkOrderEnchantsFrame:Hide()
+	ProEnchantersOptionsFrame:Hide()
+	ProEnchantersTriggersFrame:Hide()
+	ProEnchantersWhisperTriggersFrame:Hide()
+	ProEnchantersImportFrame:Hide()
+	ProEnchantersGoldFrame:Hide()
+	ProEnchantersCreditsFrame:Hide()
+	ProEnchantersColorsFrame:Hide()
+end
+
+-- Register the PLAYER_REGEN_DISABLED event
+ProEnchanters.frame:RegisterEvent("PLAYER_REGEN_DISABLED")
+
+-- Add the event handler
+ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
+	if event == "PLAYER_REGEN_DISABLED" then
+		HideAllFrames()
+	elseif event == "ADDON_LOADED" and select(1, ...) == "ProEnchanters" then
+		print("ProEnchanters Addon Loaded Event Registered")
+		OnAddonLoaded()
+	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
+		ProEnchanters_OnChatEvent(self, event, ...)
+	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
+		ProEnchanters_OnTradeEvent(self, event, ...)
+	end
+end)
 
 --NEW MINIMAP ICON
 -- Create a minimap button

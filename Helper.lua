@@ -1139,8 +1139,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                             local matsDiff = {}
@@ -1194,8 +1192,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][enchantID][LocalLanguage]
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                             local matsDiff = {}
@@ -1265,8 +1261,6 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
                             local enchantStats = string.gsub(enchantStats3, "%+", "")
                             local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
-                            local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-                            local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
 
 
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
