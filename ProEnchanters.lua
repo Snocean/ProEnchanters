@@ -819,9 +819,6 @@ for key, enchant in pairs(CombinedEnchants) do
 	EnchantsName[key] = enchant.name
 end
 
-
-
-
 -- Function to extract stat value and type from enchant stats
 local function extractStatValue(stats)
 	local value = tonumber(stats:match("(%d+)"))
@@ -6922,7 +6919,6 @@ function ShowOpenWorkOrders()
 end
 
 -- Create Trade Order on Trade Frame
-
 -- Function to update the height of ScrollChild based on the number of CusWorkOrder frames
 function UpdateScrollChildHeight()
 	local totalHeight = 0
@@ -6946,7 +6942,6 @@ function OnCreateWorkorderButtonClick()
 end
 
 -- Trade Window Frame Stuff
-
 function ProEnchantersTradeWindowCreateFrame()
 	local customerName = "temp"
 	local tradeFrame = TradeFrame
@@ -7807,8 +7802,6 @@ local function LoadColorTables()
 	end
 end
 
-
-
 local function LoadColorVariables1()
 	--Color for Frames
 	OpacityAmount = ProEnchantersOptions.Colors.OpacityAmount or 0.5
@@ -8459,9 +8452,6 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 		print(ORANGE .. "Available help sections: main, enchants, trade, settings, credits" .. ColorClose)
 	end
 end
-
-
-
 
 -- Event handler function for chat and TRADES
 function ProEnchanters_OnChatEvent(self, event, ...)
@@ -10200,7 +10190,6 @@ end)
 
 UpdateMinimapButtonPosition()
 
-
 minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 minimapButton:SetScript("OnClick", function(self, button)
 	if button == "LeftButton" then
@@ -10237,12 +10226,8 @@ minimapButton:SetScript("OnLeave", function(self)
 	GameTooltip:Hide()
 end)
 
-
-
--- Ensure the icon is visible by setting its draw layer above the border
 icon:SetDrawLayer("ARTWORK")
 
--- Remove the border texture to make sure it's not covering the icon
 if minimapButton.border then
 	minimapButton.border:SetTexture(nil)
 end
