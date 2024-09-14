@@ -10217,7 +10217,8 @@ minimapButton:SetScript("OnEnter", function(self)
 	GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 	GameTooltip:AddLine(" ");
 	GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r |cFFFFFF00Toggle: Work Closed|r")
+	local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
 	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
 	GameTooltip:Show()
 end)
