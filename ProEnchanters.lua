@@ -29,42 +29,47 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local version = "v6.5"
 
 -- Sound Register
-LSM:Register("sound", "Orc Work work", "Interface\\AddOns\\ProEnchanters\\Media\\workwork.ogg")
-LSM:Register("sound", "Orc I can do that", "Interface\\AddOns\\ProEnchanters\\Media\\icandothat.ogg")
-LSM:Register("sound", "Orc Be happy to", "Interface\\AddOns\\ProEnchanters\\Media\\behappyto.ogg")
-LSM:Register("sound", "Orc Me busy", "Interface\\AddOns\\ProEnchanters\\Media\\mebusyleavemealone.ogg")
-LSM:Register("sound", "Orc Ready to work", "Interface\\AddOns\\ProEnchanters\\Media\\readytowork.ogg")
-LSM:Register("sound", "Orc Something need doing", "Interface\\AddOns\\ProEnchanters\\Media\\somethingneeddoing.ogg")
-LSM:Register("sound", "Orc What you want", "Interface\\AddOns\\ProEnchanters\\Media\\whatyouwant.ogg")
-LSM:Register("sound", "Cyberpunk Alert", "Interface\\AddOns\\ProEnchanters\\Media\\cyberpunkalert.ogg")
-LSM:Register("sound", "Druid At once", "Interface\\AddOns\\ProEnchanters\\Media\\druidatonce.ogg")
-LSM:Register("sound", "Druid Ill make short work",
-	"Interface\\AddOns\\ProEnchanters\\Media\\druidillmakeshortworkofthem.ogg")
-LSM:Register("sound", "Druid Im awake", "Interface\\AddOns\\ProEnchanters\\Media\\druidimawake.ogg")
-LSM:Register("sound", "Dwarf Who wants some", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfalrightwhowantssome.ogg")
-LSM:Register("sound", "Dwarf Aye sir", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfayesir.ogg")
-LSM:Register("sound", "Dwarf For Ironforge", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfforironforge.ogg")
-LSM:Register("sound", "Dwarf Give me something", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfgjvemesomethingtodo.ogg")
-LSM:Register("sound", "Dwarf Ill take care of it", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfilltakecareofit.ogg")
-LSM:Register("sound", "Dwarf What do you need", "Interface\\AddOns\\ProEnchanters\\Media\\dwarftwhatdoyouneed.ogg")
-LSM:Register("sound", "Dwarf Whats this", "Interface\\AddOns\\ProEnchanters\\Media\\dwarfwhatsthis.ogg")
-LSM:Register("sound", "Human I guess I can", "Interface\\AddOns\\ProEnchanters\\Media\\humaniguessican.ogg")
-LSM:Register("sound", "Human More work", "Interface\\AddOns\\ProEnchanters\\Media\\humanmorework.ogg")
-LSM:Register("sound", "Human Ready for action", "Interface\\AddOns\\ProEnchanters\\Media\\humanreadyforaction.ogg")
-LSM:Register("sound", "Human Ready to work", "Interface\\AddOns\\ProEnchanters\\Media\\humanreadytowork.ogg")
-LSM:Register("sound", "Human What do you need", "Interface\\AddOns\\ProEnchanters\\Media\\humanwhatdoyouneed.ogg")
-LSM:Register("sound", "Human What is it", "Interface\\AddOns\\ProEnchanters\\Media\\humanwhatisit.ogg")
-LSM:Register("sound", "Human Yes mi lord", "Interface\\AddOns\\ProEnchanters\\Media\\humanyesmilord.ogg")
-LSM:Register("sound", "Human Yes my liege", "Interface\\AddOns\\ProEnchanters\\Media\\humanyesmyliege.ogg")
-LSM:Register("sound", "Tauren Bring it on", "Interface\\AddOns\\ProEnchanters\\Media\\taurenbringiton.ogg")
-LSM:Register("sound", "Tauren For the tribes", "Interface\\AddOns\\ProEnchanters\\Media\\taurenforthetribes.ogg")
-LSM:Register("sound", "Tauren I am able to help", "Interface\\AddOns\\ProEnchanters\\Media\\taureniamabletohelp.ogg")
-LSM:Register("sound", "Troll How may I serve", "Interface\\AddOns\\ProEnchanters\\Media\\trollhowmayiserve.ogg")
-LSM:Register("sound", "Troll I do it now", "Interface\\AddOns\\ProEnchanters\\Media\\trollidoitnow.ogg")
-LSM:Register("sound", "Troll I hear the summons", "Interface\\AddOns\\ProEnchanters\\Media\\trollihearthesummons.ogg")
-LSM:Register("sound", "Troll I may have something",
-	"Interface\\AddOns\\ProEnchanters\\Media\\trollimayhavesomethingforya.ogg")
-LSM:Register("sound", "Troll you need me help", "Interface\\AddOns\\ProEnchanters\\Media\\trollyouneedmehelp.ogg")
+local sounds = {
+	{ "Orc Work work",              "workwork.ogg" },
+	{ "Orc I can do that",          "icandothat.ogg" },
+	{ "Orc Be happy to",            "behappyto.ogg" },
+	{ "Orc Me busy",                "mebusyleavemealone.ogg" },
+	{ "Orc Ready to work",          "readytowork.ogg" },
+	{ "Orc Something need doing",   "somethingneeddoing.ogg" },
+	{ "Orc What you want",          "whatyouwant.ogg" },
+	{ "Cyberpunk Alert",            "cyberpunkalert.ogg" },
+	{ "Druid At once",              "druidatonce.ogg" },
+	{ "Druid Ill make short work",  "druidillmakeshortworkofthem.ogg" },
+	{ "Druid Im awake",             "druidimawake.ogg" },
+	{ "Dwarf Who wants some",       "dwarfalrightwhowantssome.ogg" },
+	{ "Dwarf Aye sir",              "dwarfayesir.ogg" },
+	{ "Dwarf For Ironforge",        "dwarfforironforge.ogg" },
+	{ "Dwarf Give me something",    "dwarfgjvemesomethingtodo.ogg" },
+	{ "Dwarf Ill take care of it",  "dwarfilltakecareofit.ogg" },
+	{ "Dwarf What do you need",     "dwarftwhatdoyouneed.ogg" },
+	{ "Dwarf Whats this",           "dwarfwhatsthis.ogg" },
+	{ "Human I guess I can",        "humaniguessican.ogg" },
+	{ "Human More work",            "humanmorework.ogg" },
+	{ "Human Ready for action",     "humanreadyforaction.ogg" },
+	{ "Human Ready to work",        "humanreadytowork.ogg" },
+	{ "Human What do you need",     "humanwhatdoyouneed.ogg" },
+	{ "Human What is it",           "humanwhatisit.ogg" },
+	{ "Human Yes mi lord",          "humanyesmilord.ogg" },
+	{ "Human Yes my liege",         "humanyesmyliege.ogg" },
+	{ "Tauren Bring it on",         "taurenbringiton.ogg" },
+	{ "Tauren For the tribes",      "taurenforthetribes.ogg" },
+	{ "Tauren I am able to help",   "taureniamabletohelp.ogg" },
+	{ "Troll How may I serve",      "trollhowmayiserve.ogg" },
+	{ "Troll I do it now",          "trollidoitnow.ogg" },
+	{ "Troll I hear the summons",   "trollihearthesummons.ogg" },
+	{ "Troll I may have something", "trollimayhavesomethingforya.ogg" },
+	{ "Troll you need me help",     "trollyouneedmehelp.ogg" }
+}
+
+for _, sound in ipairs(sounds) do
+	LSM:Register("sound", sound[1], "Interface\\AddOns\\ProEnchanters\\Media\\" .. sound[2])
+end
+
 local workwork = "Orc Work work"
 local icandothat = "Orc I can do that"
 local behappyto = "Orc Be happy to"
