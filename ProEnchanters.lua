@@ -10207,12 +10207,28 @@ minimapButton:SetScript("OnClick", function(self, button)
 			ResetFrames()
 		end
 	elseif button == "RightButton" then
-		ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
-		print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
-			(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-		-- Update the checkbox state
-		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-			ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		if IsShiftKeyDown() then
+			-- Reset frame position and size
+			if ProEnchantersWorkOrderFrame then
+				ProEnchantersWorkOrderFrame:ClearAllPoints()
+				ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
+				ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
+			end
+			if ProEnchantersWorkOrderEnchantsFrame then
+				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					0)
+			end
+			print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
+		else
+			ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+			print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
+				(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+			-- Update the checkbox state
+			if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+				ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+			end
 		end
 	end
 end)
