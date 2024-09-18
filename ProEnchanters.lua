@@ -1685,7 +1685,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	SortByDD:SetPoint("LEFT", filterHeader, "RIGHT", -25, -2)
 
 	-- Create an EditBox for the customer name
-	local filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
+	filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
 		"InputBoxTemplate")
 	filterEditBox:SetSize(50, 20)
 	filterEditBox:SetPoint("LEFT", SortByDD, "RIGHT", -8, 3)
