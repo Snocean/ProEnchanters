@@ -1467,6 +1467,9 @@ function ProEnchantersCreateWorkOrderFrame()
 		end
 		ProEnchantersCustomerNameEditBox:SetText("")
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
+		filterEditBox:SetText("")
+		FilterEnchantButtons()
+		filterEditBox.ClearFocus(filterEditBox)
 		yOffset = -5
 	end)
 
