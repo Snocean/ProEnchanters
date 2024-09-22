@@ -18,7 +18,7 @@ local NonAddonInvite = true
 local LocalLanguage = PELocales[GetLocale()]
 local FontSize = 12
 PEPlayerInvited = {}
-local useAllMats = false
+useAllMats = false
 local maxPartySizeReached = false
 local debugLevel = 0
 local normHeight = 630
@@ -1467,6 +1467,9 @@ function ProEnchantersCreateWorkOrderFrame()
 		end
 		ProEnchantersCustomerNameEditBox:SetText("")
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
+		filterEditBox:SetText("")
+		FilterEnchantButtons()
+		filterEditBox.ClearFocus(filterEditBox)
 		yOffset = -5
 	end)
 
@@ -1546,16 +1549,10 @@ function ProEnchantersCreateWorkOrderFrame()
 		local distanceFromCenter = (frameCenter * uiScale)
 		CheckIfConnected()
 		if currentHeight < 240 then
-			if isConnected then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
-					0)
-			end
+			-- Maximizing WorkOrderFrame
 			WorkOrderFrame:ClearAllPoints()
 			WorkOrderFrame:SetSize(455, normHeight)
 			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
-			local isVisible = ScrollChild:IsVisible()
 			bgTexture:Show()
 			ScrollChild:Show()
 			closeBg:Show()
@@ -1565,19 +1562,22 @@ function ProEnchantersCreateWorkOrderFrame()
 			settingsButton:Show()
 			GoldTradedDisplay:Show()
 			scrollBg:Show()
-			local isVisible2 = WorkOrderScrollFrame:IsVisible()
 			WorkOrderScrollFrame:Show()
-			--ProEnchantersWorkOrderEnchantsFrame:Show()
-		else
+
 			if isConnected then
 				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
 				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					0)
+				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 630) -- Ensure it's maximized
+				ProEnchantersWorkOrderEnchantsFrame:Show()
 			end
+		else
+			-- Minimizing WorkOrderFrame
 			_, normHeight = WorkOrderFrame:GetSize()
 			WorkOrderFrame:ClearAllPoints()
 			WorkOrderFrame:SetSize(455, 60)
 			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
-			local isVisible = ScrollChild:IsVisible()
 			bgTexture:Hide()
 			ScrollChild:Hide()
 			closeBg:Hide()
@@ -1587,11 +1587,14 @@ function ProEnchantersCreateWorkOrderFrame()
 			settingsButton:Hide()
 			GoldTradedDisplay:Hide()
 			scrollBg:Hide()
-			local isVisible2 = WorkOrderScrollFrame:IsVisible()
 			WorkOrderScrollFrame:Hide()
-			--WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", 0, 0)
-			--enchantsShowButton:Hide()
-			--ProEnchantersWorkOrderEnchantsFrame:Hide()
+
+			if isConnected then
+				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 60) -- Minimize to match WorkOrderFrame
+				ProEnchantersWorkOrderEnchantsFrame:Hide()
+			end
 		end
 	end)
 
@@ -1682,7 +1685,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	SortByDD:SetPoint("LEFT", filterHeader, "RIGHT", -25, -2)
 
 	-- Create an EditBox for the customer name
-	local filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
+	filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
 		"InputBoxTemplate")
 	filterEditBox:SetSize(50, 20)
 	filterEditBox:SetPoint("LEFT", SortByDD, "RIGHT", -8, 3)
@@ -6425,6 +6428,21 @@ function ProEnchantersCreateGoldFrame()
 		frame:Hide()
 	end)
 
+	---- Reset Button
+	local resetButton = CreateFrame("Button", nil, frame)
+	resetButton:SetSize(80, 25)                                      -- Adjust size as needed
+	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
+	resetButton:SetText("Reset")
+	local resetButtonText = resetButton:GetFontString()
+	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButton:SetNormalFontObject("GameFontHighlight")
+	resetButton:SetHighlightFontObject("GameFontNormal")
+	resetButton:SetScript("OnClick", function()
+		ProEnchantersLog = {}
+		goldLogEditBox:SetText(GoldLogText())
+		print(YELLOWGREEN .. "Trade history has been reset." .. ColorClose)
+	end)
+
 	-- Help Reminder
 	local helpReminderHeader = frame:CreateFontString(nil, "OVERLAY")
 	helpReminderHeader:SetFontObject(UIFontBasic)
@@ -7743,7 +7761,7 @@ function PESearchInventoryForItems()
 		for slot = 1, C_Container.GetContainerNumSlots(bag) do
 			local itemID = C_Container.GetContainerItemID(bag, slot)
 			if itemID then
-				for nickname, idString in pairs(ItemCacheTable) do
+				for nickname, idString in pairs(ProEnchantersItemCacheTable) do
 					if tostring(itemID) == idString then
 						local info = C_Container.GetContainerItemInfo(bag, slot)
 						if info and info.stackCount then
@@ -10207,12 +10225,28 @@ minimapButton:SetScript("OnClick", function(self, button)
 			ResetFrames()
 		end
 	elseif button == "RightButton" then
-		ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
-		print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
-			(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-		-- Update the checkbox state
-		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-			ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		if IsShiftKeyDown() then
+			-- Reset frame position and size
+			if ProEnchantersWorkOrderFrame then
+				ProEnchantersWorkOrderFrame:ClearAllPoints()
+				ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
+				ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
+			end
+			if ProEnchantersWorkOrderEnchantsFrame then
+				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					0)
+			end
+			print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
+		else
+			ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+			print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
+				(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+			-- Update the checkbox state
+			if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+				ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+			end
 		end
 	end
 end)
