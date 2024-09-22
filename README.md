@@ -4,6 +4,17 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 6.6.2
+
+- **Changed:** When frames are minimized and get hidden, they will be maximized when unhidden.
+- **Bugfix:** fixed an issue where the minimize function would not properly work when the work order frame was hidden minimized and shown again.
+
+## Update 6.6.1
+
+- **Changed:** added a reset button for the gold history display.
+- **Bugfix** fixed an issue where the Enchants frame would not minimize properly.
+- **Bugfix** fixed an issue where the Use All Mats button would not work properly. Due to variables moved to another file.
+
 ## Update 6.5.22
 
 - **New:** Added a minimap button to open the main window (left click). You can right-click to toggle the "Work While Closed" option and Shift+Right click to reset the frame position and size.
