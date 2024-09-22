@@ -1,4 +1,4 @@
-local ItemCacheTable = {
+ProEnchantersItemCacheTable = {
     -- Dust
     strangedust = "10940",
     souldust = "11083",
@@ -15,6 +15,7 @@ local ItemCacheTable = {
     largebrilliantshard = "14344",
     smallradiantshard = "11177",
     largeradiantshard = "11178",
+    S
 
     -- Essence
     lessermagicessence = "10938",
@@ -339,7 +340,7 @@ end
 function PEItemCache()
     local NoneCachedItems = ""
     local CachedItems = ""
-    for _, itemID in pairs(ItemCacheTable) do
+    for _, itemID in pairs(ProEnchantersItemCacheTable) do
         local itemLink = select(2, C_Item.GetItemInfoInstant(itemID))
         if not itemLink then
             NoneCachedItems = NoneCachedItems .. itemID .. ", "
@@ -358,7 +359,7 @@ function PESearchInventoryForItems()
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemID = C_Container.GetContainerItemID(bag, slot)
             if itemID then
-                for nickname, idString in pairs(ItemCacheTable) do
+                for nickname, idString in pairs(ProEnchantersItemCacheTable) do
                     if tostring(itemID) == idString then
                         local info = C_Container.GetContainerItemInfo(bag, slot)
                         if info and info.stackCount then

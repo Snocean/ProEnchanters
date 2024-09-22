@@ -18,7 +18,7 @@ local NonAddonInvite = true
 local LocalLanguage = PELocales[GetLocale()]
 local FontSize = 12
 PEPlayerInvited = {}
-local useAllMats = false
+useAllMats = false
 local maxPartySizeReached = false
 local debugLevel = 0
 local normHeight = 630
@@ -30,21 +30,21 @@ local version = "v6.5"
 
 -- Sound Register
 local sounds = {
-	{ "Orc Work work",              "workwork.ogg" },
-	{ "Orc I can do that",          "icandothat.ogg" },
-	{ "Orc Be happy to",            "behappyto.ogg" },
-	{ "Orc Me busy",                "mebusyleavemealone.ogg" },
-	{ "Orc Ready to work",          "readytowork.ogg" },
-	{ "Orc Something need doing",   "somethingneeddoing.ogg" },
-	{ "Orc What you want",          "whatyouwant.ogg" },
-	{ "Cyberpunk Alert",            "cyberpunkalert.ogg" },
-	{ "Druid At once",              "druidatonce.ogg" },
-	{ "Druid Ill make short work",  "druidillmakeshortworkofthem.ogg" },
-	{ "Druid Im awake",             "druidimawake.ogg" },
-	{ "Dwarf Who wants some",       "dwarfalrightwhowantssome.ogg" },
-	{ "Dwarf Aye sir",              "dwarfayesir.ogg" },
-	{ "Dwarf For Ironforge",        "dwarfforironforge.ogg" },
-	{ "Dwarf Give me something",    "dwarfgjvemesomethingtodo.ogg" },
+	{ "Orc Work work",             "workwork.ogg" },
+	{ "Orc I can do that",         "icandothat.ogg" },
+	{ "Orc Be happy to",           "behappyto.ogg" },
+	{ "Orc Me busy",               "mebusyleavemealone.ogg" },
+	{ "Orc Ready to work",         "readytowork.ogg" },
+	{ "Orc Something need doing",  "somethingneeddoing.ogg" },
+	{ "Orc What you want",         "whatyouwant.ogg" },
+	{ "Cyberpunk Alert",           "cyberpunkalert.ogg" },
+	{ "Druid At once",             "druidatonce.ogg" },
+	{ "Druid Ill make short work", "druidillmakeshortworkofthem.ogg" },
+	{ "Druid Im awake",            "druidimawake.ogg" },
+	{ "Dwarf Who wants some",      "dwarfalrightwhowantssome.ogg" },
+	{ "Dwarf Aye sir",             "dwarfayesir.ogg" },
+	{ "Dwarf For Ironforge",       "dwarfforironforge.ogg" }, S
+{ "Dwarf Give me something", "dwarfgjvemesomethingtodo.ogg" },
 	{ "Dwarf Ill take care of it",  "dwarfilltakecareofit.ogg" },
 	{ "Dwarf What do you need",     "dwarftwhatdoyouneed.ogg" },
 	{ "Dwarf Whats this",           "dwarfwhatsthis.ogg" },
@@ -1549,16 +1549,10 @@ function ProEnchantersCreateWorkOrderFrame()
 		local distanceFromCenter = (frameCenter * uiScale)
 		CheckIfConnected()
 		if currentHeight < 240 then
-			if isConnected then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
-					0)
-			end
+			-- Maximizing WorkOrderFrame
 			WorkOrderFrame:ClearAllPoints()
 			WorkOrderFrame:SetSize(455, normHeight)
 			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
-			local isVisible = ScrollChild:IsVisible()
 			bgTexture:Show()
 			ScrollChild:Show()
 			closeBg:Show()
@@ -1568,19 +1562,22 @@ function ProEnchantersCreateWorkOrderFrame()
 			settingsButton:Show()
 			GoldTradedDisplay:Show()
 			scrollBg:Show()
-			local isVisible2 = WorkOrderScrollFrame:IsVisible()
 			WorkOrderScrollFrame:Show()
-			--ProEnchantersWorkOrderEnchantsFrame:Show()
-		else
+
 			if isConnected then
 				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
 				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					0)
+				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 630) -- Ensure it's maximized
+				ProEnchantersWorkOrderEnchantsFrame:Show()
 			end
+		else
+			-- Minimizing WorkOrderFrame
 			_, normHeight = WorkOrderFrame:GetSize()
 			WorkOrderFrame:ClearAllPoints()
 			WorkOrderFrame:SetSize(455, 60)
 			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
-			local isVisible = ScrollChild:IsVisible()
 			bgTexture:Hide()
 			ScrollChild:Hide()
 			closeBg:Hide()
@@ -1590,11 +1587,14 @@ function ProEnchantersCreateWorkOrderFrame()
 			settingsButton:Hide()
 			GoldTradedDisplay:Hide()
 			scrollBg:Hide()
-			local isVisible2 = WorkOrderScrollFrame:IsVisible()
 			WorkOrderScrollFrame:Hide()
-			--WorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", 0, 0)
-			--enchantsShowButton:Hide()
-			--ProEnchantersWorkOrderEnchantsFrame:Hide()
+
+			if isConnected then
+				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 60) -- Minimize to match WorkOrderFrame
+				ProEnchantersWorkOrderEnchantsFrame:Hide()
+			end
 		end
 	end)
 
@@ -7746,7 +7746,7 @@ function PESearchInventoryForItems()
 		for slot = 1, C_Container.GetContainerNumSlots(bag) do
 			local itemID = C_Container.GetContainerItemID(bag, slot)
 			if itemID then
-				for nickname, idString in pairs(ItemCacheTable) do
+				for nickname, idString in pairs(ProEnchantersItemCacheTable) do
 					if tostring(itemID) == idString then
 						local info = C_Container.GetContainerItemInfo(bag, slot)
 						if info and info.stackCount then
