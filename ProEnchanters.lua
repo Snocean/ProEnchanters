@@ -1501,10 +1501,6 @@ function ProEnchantersCreateWorkOrderFrame()
 		ProEnchantersColorsFrame:Hide()
 	end)
 
-	WorkOrderFrame:SetScript("OnShow", function()
-		--nothing
-	end)
-
 	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
 	resizeButton:SetSize(16, 16)
 	resizeButton:SetPoint("BOTTOMRIGHT")
@@ -1523,36 +1519,12 @@ function ProEnchantersCreateWorkOrderFrame()
 		WorkOrderFrame:StopMovingOrSizing()
 	end)
 
-	-- Top Title Minimizes Frame
-	local titleButton = CreateFrame("Button", nil, WorkOrderFrame)
-	titleButton:SetSize(150, 25)                   -- Adjust size as needed
-	--titleButton:SetFrameLevel(9001)
-	titleButton:SetPoint("TOP", titleBg, "TOP", 0, 0) -- Adjust position as needed
-	titleButton:SetText("Pro Enchanters - Work Orders")
-	local titleButtonText = titleButton:GetFontString()
-	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
-	titleButton:SetNormalFontObject("GameFontHighlight")
-	titleButton:SetHighlightFontObject("GameFontNormal")
-	titleButton:SetScript("OnClick", function()
-		local currentWidth, currentHeight = WorkOrderFrame:GetSize()
-		local point, relativeTo, relativePoint, xOfs, yOfs = WorkOrderFrame:GetPoint()
-		local x, y = GetCursorPosition()
-		local scale = UIParent:GetEffectiveScale()
-		x, y = x / scale, y / scale
-		-- Assuming 'yourFrame' is your frame object
-		local frameTop = WorkOrderFrame:GetTop()
-		local frameCenter = WorkOrderFrame:GetCenter()
-		-- UI scale correction
-		local uiScale = UIParent:GetEffectiveScale()
-		-- Calculate the distance from the top of the screen to the top of the frame, corrected for UI scale
-		local distanceFromTop = (frameTop * uiScale)
-		local distanceFromCenter = (frameCenter * uiScale)
+	function toggleWorkOrderFrameMinimize()
+		local currentHeight = WorkOrderFrame:GetHeight()
+		local isMinimized = currentHeight < 240
 		CheckIfConnected()
-		if currentHeight < 240 then
-			-- Maximizing WorkOrderFrame
-			WorkOrderFrame:ClearAllPoints()
+		local function maximizeFrame()
 			WorkOrderFrame:SetSize(455, normHeight)
-			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
 			bgTexture:Show()
 			ScrollChild:Show()
 			closeBg:Show()
@@ -1565,19 +1537,13 @@ function ProEnchantersCreateWorkOrderFrame()
 			WorkOrderScrollFrame:Show()
 
 			if isConnected then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
-					0)
-				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 630) -- Ensure it's maximized
 				ProEnchantersWorkOrderEnchantsFrame:Show()
 			end
-		else
-			-- Minimizing WorkOrderFrame
+		end
+
+		local function minimizeFrame()
 			_, normHeight = WorkOrderFrame:GetSize()
-			WorkOrderFrame:ClearAllPoints()
 			WorkOrderFrame:SetSize(455, 60)
-			WorkOrderFrame:SetPoint("TOP", relativeTo, "BOTTOMLEFT", frameCenter, frameTop)
 			bgTexture:Hide()
 			ScrollChild:Hide()
 			closeBg:Hide()
@@ -1590,12 +1556,37 @@ function ProEnchantersCreateWorkOrderFrame()
 			WorkOrderScrollFrame:Hide()
 
 			if isConnected then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetSize(230, 60) -- Minimize to match WorkOrderFrame
 				ProEnchantersWorkOrderEnchantsFrame:Hide()
 			end
 		end
+
+		if isMinimized then
+			maximizeFrame()
+		else
+			minimizeFrame()
+		end
+	end
+
+	-- Top Title Minimizes Frame
+	local titleButton = CreateFrame("Button", nil, WorkOrderFrame)
+	titleButton:SetSize(150, 25)                   -- Adjust size as needed
+	--titleButton:SetFrameLevel(9001)
+	titleButton:SetPoint("TOP", titleBg, "TOP", 0, 0) -- Adjust position as needed
+	titleButton:SetText("Pro Enchanters - Work Orders")
+	local titleButtonText = titleButton:GetFontString()
+	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	titleButton:SetNormalFontObject("GameFontHighlight")
+	titleButton:SetHighlightFontObject("GameFontNormal")
+
+	WorkOrderFrame:SetScript("OnShow", function()
+		local currentHeight = WorkOrderFrame:GetHeight()
+		if currentHeight < 240 then -- If the work order frame is minimized, show it maximized
+			toggleWorkOrderFrameMinimize()
+		end
+	end)
+
+	titleButton:SetScript("OnClick", function()
+		toggleWorkOrderFrameMinimize()
 	end)
 
 	ScrollChild.bgTexture = bgTexture
