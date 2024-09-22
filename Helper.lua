@@ -15,7 +15,6 @@ ProEnchantersItemCacheTable = {
     largebrilliantshard = "14344",
     smallradiantshard = "11177",
     largeradiantshard = "11178",
-    S
 
     -- Essence
     lessermagicessence = "10938",

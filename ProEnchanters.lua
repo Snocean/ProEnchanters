@@ -30,21 +30,21 @@ local version = "v6.5"
 
 -- Sound Register
 local sounds = {
-	{ "Orc Work work",             "workwork.ogg" },
-	{ "Orc I can do that",         "icandothat.ogg" },
-	{ "Orc Be happy to",           "behappyto.ogg" },
-	{ "Orc Me busy",               "mebusyleavemealone.ogg" },
-	{ "Orc Ready to work",         "readytowork.ogg" },
-	{ "Orc Something need doing",  "somethingneeddoing.ogg" },
-	{ "Orc What you want",         "whatyouwant.ogg" },
-	{ "Cyberpunk Alert",           "cyberpunkalert.ogg" },
-	{ "Druid At once",             "druidatonce.ogg" },
-	{ "Druid Ill make short work", "druidillmakeshortworkofthem.ogg" },
-	{ "Druid Im awake",            "druidimawake.ogg" },
-	{ "Dwarf Who wants some",      "dwarfalrightwhowantssome.ogg" },
-	{ "Dwarf Aye sir",             "dwarfayesir.ogg" },
-	{ "Dwarf For Ironforge",       "dwarfforironforge.ogg" }, S
-{ "Dwarf Give me something", "dwarfgjvemesomethingtodo.ogg" },
+	{ "Orc Work work",              "workwork.ogg" },
+	{ "Orc I can do that",          "icandothat.ogg" },
+	{ "Orc Be happy to",            "behappyto.ogg" },
+	{ "Orc Me busy",                "mebusyleavemealone.ogg" },
+	{ "Orc Ready to work",          "readytowork.ogg" },
+	{ "Orc Something need doing",   "somethingneeddoing.ogg" },
+	{ "Orc What you want",          "whatyouwant.ogg" },
+	{ "Cyberpunk Alert",            "cyberpunkalert.ogg" },
+	{ "Druid At once",              "druidatonce.ogg" },
+	{ "Druid Ill make short work",  "druidillmakeshortworkofthem.ogg" },
+	{ "Druid Im awake",             "druidimawake.ogg" },
+	{ "Dwarf Who wants some",       "dwarfalrightwhowantssome.ogg" },
+	{ "Dwarf Aye sir",              "dwarfayesir.ogg" },
+	{ "Dwarf For Ironforge",        "dwarfforironforge.ogg" },
+	{ "Dwarf Give me something",    "dwarfgjvemesomethingtodo.ogg" },
 	{ "Dwarf Ill take care of it",  "dwarfilltakecareofit.ogg" },
 	{ "Dwarf What do you need",     "dwarftwhatdoyouneed.ogg" },
 	{ "Dwarf Whats this",           "dwarfwhatsthis.ogg" },
@@ -6426,6 +6426,21 @@ function ProEnchantersCreateGoldFrame()
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
 		frame:Hide()
+	end)
+
+	---- Reset Button
+	local resetButton = CreateFrame("Button", nil, frame)
+	resetButton:SetSize(80, 25)                                      -- Adjust size as needed
+	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
+	resetButton:SetText("Reset")
+	local resetButtonText = resetButton:GetFontString()
+	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButton:SetNormalFontObject("GameFontHighlight")
+	resetButton:SetHighlightFontObject("GameFontNormal")
+	resetButton:SetScript("OnClick", function()
+		ProEnchantersLog = {}
+		goldLogEditBox:SetText(GoldLogText())
+		print(YELLOWGREEN .. "Trade history has been reset." .. ColorClose)
 	end)
 
 	-- Help Reminder
