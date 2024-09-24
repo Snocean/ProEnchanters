@@ -319,7 +319,7 @@ local function FullResetFrames()
 	RepositionEnchantsFrame(ProEnchantersWorkOrderEnchantsFrame)
 end
 
--- PopUp Menu to create work order
+--[[ PopUp Menu to create work order
 local function WorkOrderButton(self)
 	if self.value == "WorkOrderButton" then
 		local dropdownMenu = _G["UIDROPDOWNMENU_INIT_MENU"]
@@ -335,7 +335,43 @@ local function WorkOrderButton(self)
 	else
 	end
 end
+]]
 
+
+-- New menu buttons - potentially working?
+local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
+	menuButton:CreateDivider()
+	menuButton:CreateTitle("Pro Enchanters")
+	menuButton:CreateButton("Create Work Order", function()
+		local target = contextData.name
+		CreateCusWorkOrder(target)
+		ProEnchantersCustomerNameEditBox:SetText(target)
+		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+			ProEnchantersWorkOrderFrame:Show()
+			ProEnchantersWorkOrderEnchantsFrame:Show()
+			ResetFrames()
+		end
+	end)
+end)
+
+local menuButton2 = Menu.ModifyMenu("MENU_CHAT_ROSTER", function(_, menuButton, contextData)
+	menuButton:CreateDivider()
+	menuButton:CreateTitle("Pro Enchanters")
+	menuButton:CreateButton("Create Work Order", function()
+		local target = contextData.name
+		CreateCusWorkOrder(target)
+		ProEnchantersCustomerNameEditBox:SetText(target)
+		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+			ProEnchantersWorkOrderFrame:Show()
+			ProEnchantersWorkOrderEnchantsFrame:Show()
+			ResetFrames()
+		end
+	end)
+end)
+
+--[[ Temporarily removed due to UnitPopup_ShowMenu being removed, WoW now uses UnitPopup_OpenMenu and no longer allows hooking the secure function to add menu items but now lets you add menu items through menu.modifymenu
+
+-- Old Function
 hooksecurefunc("UnitPopup_ShowMenu", function()
 	if (UIDROPDOWNMENU_MENU_LEVEL > 1) then
 		return
@@ -349,7 +385,71 @@ hooksecurefunc("UnitPopup_ShowMenu", function()
 	info.value = "WorkOrderButton"
 	UIDropDownMenu_AddButton(info)
 end)
---yOffset's for frame generation
+
+-- Potential New Function for "target" only
+local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
+        menuButton:CreateButton("Create Work Order", function()
+            local target = UnitName("target")
+            CreateCusWorkOrder(target)
+            ProEnchantersCustomerNameEditBox:SetText(target)
+            if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+                ProEnchantersWorkOrderFrame:Show()
+                ProEnchantersWorkOrderEnchantsFrame:Show()
+                ResetFrames()
+            end
+        end)
+end)
+
+-- Need to figure out the MENU_ for chat based context menus, not sure if it uses UNIT_TARGET or something else, putting CHAT_SENDER in-place of it for now
+local menuButton = Menu.ModifyMenu("MENU_CHAT_SENDER", function(_, menuButton)
+        menuButton:CreateButton("Create Work Order", function()
+            local target = CHAT_SENDER?
+            CreateCusWorkOrder(target)
+            ProEnchantersCustomerNameEditBox:SetText(target)
+            if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+                ProEnchantersWorkOrderFrame:Show()
+                ProEnchantersWorkOrderEnchantsFrame:Show()
+                ResetFrames()
+            end
+        end)
+end)
+
+
+-- This is the WoW UI MENU_UNIT_ section:
+local menuParent = nil;
+	MenuUtil.CreateContextMenu(menuParent, function(owner, rootDescription)
+		rootDescription:SetTag("MENU_UNIT_"..which, contextData);
+
+		-- Create a class colored title atop every menu.
+		local elementDescription = rootDescription:CreateTitle();
+		elementDescription:AddInitializer(function(frame, description, menu)
+			local title, class = GetNameAndClass(contextData.unit, contextData.name);
+			frame.fontString:SetText(title);
+
+			if class and not IsOnGlueScreen() then
+				local colorCode = select(4, GetClassColor(class));
+				local color = CreateColorFromHexString(colorCode);
+				frame.fontString:SetTextColor(color:GetRGBA());
+			end
+		end);
+
+		-- Section data for state relevant to each menu.
+		local sectionData = {};
+		local menu = self:GetMenu(which);
+		for index, entry in ipairs(menu:AssembleMenuEntries(contextData)) do
+			CreateEntries(entry, rootDescription, sectionData, contextData);
+		end
+	end);
+
+Based on the 'swarm' addon on curseforge and based on this thread that seemed to have ran into a similar issue, here are relevant links:
+https://www.wowinterface.com/forums/showthread.php?p=344204
+https://www.curseforge.com/wow/addons/swarm
+https://warcraft.wiki.gg/wiki/Patch_11.0.0/API_changes#New_menu_system
+
+I attempted to use the same formatting as the Swarm addon for adding the context menu but having someone test in-game for me since I do not have WoW anymore did not produce favorable results, needs more testing to get it working
+Should be something similar to above though to get it working, in the swarm addon I do not see any call to the local menuButton to activate it so it seemed like just being a local variable was enough but I'm not sure, might have to add menuButton to somewhere else
+
+]]
 
 local yOffset = -5
 local yOffsetoriginal = -80
