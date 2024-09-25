@@ -337,13 +337,10 @@ local function WorkOrderButton(self)
 end
 ]]
 
-
--- New menu buttons - potentially working?
-local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
-	menuButton:CreateDivider()
-	menuButton:CreateTitle("Pro Enchanters")
+--[[ this one was confirmed working
+local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
 	menuButton:CreateButton("Create Work Order", function()
-		local target = contextData.name
+		local target = UnitName("target")
 		CreateCusWorkOrder(target)
 		ProEnchantersCustomerNameEditBox:SetText(target)
 		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
@@ -353,14 +350,15 @@ local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, 
 		end
 	end)
 end)
+]]
 
-local menuButton2 = Menu.ModifyMenu("MENU_CHAT_ROSTER", function(_, menuButton, contextData)
+-- New menu buttons - this one works
+local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(menuButton, contextData)
 	menuButton:CreateDivider()
 	menuButton:CreateTitle("Pro Enchanters")
 	menuButton:CreateButton("Create Work Order", function()
-		local target = contextData.name
-		CreateCusWorkOrder(target)
-		ProEnchantersCustomerNameEditBox:SetText(target)
+		CreateCusWorkOrder(contextData.name)
+		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
 		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
 			ProEnchantersWorkOrderFrame:Show()
 			ProEnchantersWorkOrderEnchantsFrame:Show()
@@ -368,6 +366,21 @@ local menuButton2 = Menu.ModifyMenu("MENU_CHAT_ROSTER", function(_, menuButton, 
 		end
 	end)
 end)
+
+--[[ this one doesn't
+local menuButton2 = Menu.ModifyMenu("MENU_UNIT_CHAT_ROSTER", function(menuButton, contextData)
+	menuButton:CreateDivider()
+	menuButton:CreateTitle("Pro Enchanters")
+	menuButton:CreateButton("Create Work Order", function()
+		CreateCusWorkOrder(contextData.name)
+		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
+		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+			ProEnchantersWorkOrderFrame:Show()
+			ProEnchantersWorkOrderEnchantsFrame:Show()
+			ResetFrames()
+		end
+	end)
+end)]]
 
 --[[ Temporarily removed due to UnitPopup_ShowMenu being removed, WoW now uses UnitPopup_OpenMenu and no longer allows hooking the secure function to add menu items but now lets you add menu items through menu.modifymenu
 
@@ -8361,6 +8374,12 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		FullResetFrames()
 	elseif msg == "goldreset" then
 		ResetGoldTraded()
+	elseif msg == "minimap" then
+		if ProEnchantersMinimapButton:IsShown() then
+			ProEnchantersMinimapButton:Hide()
+		else
+			ProEnchantersMinimapButton:Show()
+		end
 	else
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
 			ProEnchantersWorkOrderFrame:Hide()
@@ -10307,7 +10326,10 @@ UpdateMinimapButtonPosition()
 minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 minimapButton:SetScript("OnClick", function(self, button)
 	if button == "LeftButton" then
-		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
+		if IsCtrlKeyDown() then
+			--hide minimap button
+			minimapButton:Hide()
+		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
 			ProEnchantersWorkOrderFrame:Hide()
 			ProEnchantersWorkOrderEnchantsFrame:Hide()
 		elseif ProEnchantersWorkOrderFrame then
@@ -10350,6 +10372,7 @@ minimapButton:SetScript("OnEnter", function(self)
 	local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
 	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
 	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+	GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
 	GameTooltip:Show()
 end)
 
