@@ -4,6 +4,15 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 6.7.1
+- **New** Added a SavedVariable for the minimap button to persist between sessions
+
+## Update 6.7
+- **New** Ability to hide/show the minimap button by ctrl+leftclicking the button (hide only)
+- **Fixed(Potentially)** Spell power Weapon and Heal power Weapon enchants not displaying the finished enchant within work orders
+- **New** Can now "shift+control" click on Enchants within the enchants add-on window to force whisper to your current active work order instead of only having shift+click for linking and the add-on auto determining whether to whisper or not
+- **Changed** Debug levels changed from 1/2/3 to 7/8/9 for the defaults for major debugging, free'd up 1-6 as a way to add temporary debugging specific things without having to enable the other more major debugging options at the same time
+
 ## Update 6.6.3.2
 - **New** Ability to hide/show the minimap button with '/pe minimap' or by ctrl+leftclicking the button (hide only)
 
