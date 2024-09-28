@@ -126,7 +126,9 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
         reqQuantity = 1
     end
     local reqQuantity = reqQuantity
-
+    if debugLevel >= 1 then
+        print("Spell ID set to " .. id)
+    end
     if CombinedEnchants[id].materials then
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
             -- Extract quantity and material name
