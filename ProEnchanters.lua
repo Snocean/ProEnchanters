@@ -100,29 +100,29 @@ end
 
 local function findEnchantByKeyAndLanguage(msg)
 	local msglower = string.lower(msg)
-	if debugLevel >= 3 then
+	if debuglevel >= 9 then
 		print("msglower set to " .. msglower)
 	end
 	local msgNoExclamation = msglower:sub(2) -- Remove '!' from the start
-	if debugLevel >= 3 then
+	if debuglevel >= 9 then
 		print("msgNoExclamation set to " .. msgNoExclamation)
 	end
 	local msgProcessed = string.gsub(msgNoExclamation, " ", "") -- Remove spaces
-	if debugLevel >= 3 then
+	if debuglevel >= 9 then
 		print("msgProcessed set to " .. msgProcessed)
 	end
 
 	for enchID, langs in pairs(PEenchantingLocales["Enchants"]) do
 		-- Improved print statement to avoid attempting to concatenate the 'langs' table
-		if debugLevel >= 3 then
+		if debuglevel >= 9 then
 			print("checking enchant ID: " .. enchID)
 		end
 		for langID, name in pairs(langs) do
-			if debugLevel >= 3 then
+			if debuglevel >= 9 then
 				print("checking language " .. langID .. " for enchID " .. enchID)
 			end
 			local nameProcessed = string.gsub(string.lower(name), " ", "")
-			if debugLevel >= 3 then
+			if debuglevel >= 9 then
 				print("Comparing enchant names: " .. nameProcessed .. " with " .. msgProcessed)
 			end
 			if nameProcessed == msgProcessed then
@@ -458,6 +458,7 @@ Based on the 'swarm' addon on curseforge and based on this thread that seemed to
 https://www.wowinterface.com/forums/showthread.php?p=344204
 https://www.curseforge.com/wow/addons/swarm
 https://warcraft.wiki.gg/wiki/Patch_11.0.0/API_changes#New_menu_system
+https://www.townlong-yak.com/framexml/latest/Blizzard_Menu/11_0_0_MenuImplementationGuide.lua
 
 I attempted to use the same formatting as the Swarm addon for adding the context menu but having someone test in-game for me since I do not have WoW anymore did not produce favorable results, needs more testing to get it working
 Should be something similar to above though to get it working, in the swarm addon I do not see any call to the local menuButton to activate it so it seemed like just being a local variable was enough but I'm not sure, might have to add menuButton to somewhere else
@@ -864,7 +865,8 @@ PESupporters = {
 	"Chenice",
 	"Ath",
 	"Paulallen",
-	"Artyrus"
+	"Artyrus",
+	"Grrgg"
 }
 
 -- Filtered Words Table
@@ -2068,6 +2070,15 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					enchantButtonBg:Hide()
 					FilterEnchantButtons()
 					UpdateCheckboxesBasedOnFilters()
+				elseif IsShiftKeyDown() and IsControlKeyDown() then -- force whisper link
+					local matsReq = ProEnchants_GetReagentList(reqEnchant)
+					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
+					local cusName = tostring(customerName)
+						if cusName and cusName ~= "" then
+							SendChatMessage(msgReq, "WHISPER", nil, cusName)
+						else
+							print("no whisper target for enchant link")
+						end
 				elseif IsShiftKeyDown() then -- Link to player via party or whisper
 					--local matsReq = ProEnchants_GetReagentListNoLink(reqEnchant)
 					local matsReq = ProEnchants_GetReagentList(reqEnchant)
@@ -2103,7 +2114,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 						ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 						ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 					end
-				elseif IsAltKeyDown() then -- Add to favorites
+				elseif IsAltKeyDown() then -- Add to current trade target
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 					local currentTradeTarget = UnitName("NPC")
 					if currentTradeTarget ~= nil then
@@ -7889,6 +7900,120 @@ end
 
 -- End trade order on trade frame
 
+--NEW MINIMAP ICON
+-- For Leatrix and other addons that modify the minimap button it eventually should be changed to https://www.wowace.com/projects/libdbicon-1-0
+-- Create a minimap button
+local minimapButton = CreateFrame("Button", "ProEnchantersMinimapButton", Minimap)
+minimapButton:SetFrameStrata("MEDIUM")
+minimapButton:SetSize(32, 32)
+minimapButton:SetFrameLevel(8)
+minimapButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+
+-- Set the button's icon
+local icon = minimapButton:CreateTexture(nil, "BACKGROUND")
+icon:SetTexture("Interface\\AddOns\\ProEnchanters\\custom_icon")
+icon:SetSize(20, 20)
+icon:SetPoint("CENTER")
+
+-- Set the button's border
+local border = minimapButton:CreateTexture(nil, "OVERLAY")
+border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+border:SetSize(54, 54)
+border:SetPoint("TOPLEFT")
+
+-- Position the button around the minimap
+local function UpdateMinimapButtonPosition()
+	local x = ProEnchantersOptions.minimapX or (Minimap:GetRight() - minimapButton:GetWidth() / 2)
+	local y = ProEnchantersOptions.minimapY or (Minimap:GetTop() - minimapButton:GetHeight() / 2)
+	minimapButton:ClearAllPoints()
+	minimapButton:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
+end
+
+minimapButton:RegisterForDrag("LeftButton")
+minimapButton:SetMovable(true)
+
+minimapButton:SetScript("OnDragStart", function(self)
+	self:StartMoving()
+end)
+
+minimapButton:SetScript("OnDragStop", function(self)
+	self:StopMovingOrSizing()
+	local x, y = self:GetLeft(), self:GetTop()
+	ProEnchantersOptions.minimapX = x
+	ProEnchantersOptions.minimapY = y
+	UpdateMinimapButtonPosition()
+end)
+
+UpdateMinimapButtonPosition()
+
+minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+minimapButton:SetScript("OnClick", function(self, button)
+	if button == "LeftButton" then
+		if IsControlKeyDown() then
+			--hide minimap button
+			minimapButton:Hide()
+		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
+			ProEnchantersWorkOrderFrame:Hide()
+			ProEnchantersWorkOrderEnchantsFrame:Hide()
+		elseif ProEnchantersWorkOrderFrame then
+			ProEnchantersWorkOrderFrame:Show()
+			ProEnchantersWorkOrderEnchantsFrame:Show()
+			ResetFrames()
+		end
+	elseif button == "RightButton" then
+		if IsShiftKeyDown() then
+			-- Reset frame position and size
+			if ProEnchantersWorkOrderFrame then
+				ProEnchantersWorkOrderFrame:ClearAllPoints()
+				ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
+				ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
+			end
+			if ProEnchantersWorkOrderEnchantsFrame then
+				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					0)
+			end
+			print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
+		else
+			ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+			print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
+				(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+			-- Update the checkbox state
+			if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+				ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+			end
+		end
+	end
+end)
+
+minimapButton:SetScript("OnEnter", function(self)
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+	GameTooltip:AddLine(" ");
+	GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+	local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
+	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+	GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
+	GameTooltip:Show()
+end)
+
+minimapButton:SetScript("OnLeave", function(self)
+	GameTooltip:Hide()
+end)
+
+icon:SetDrawLayer("ARTWORK")
+
+if minimapButton.border then
+	minimapButton.border:SetTexture(nil)
+end
+
+if not ProEnchantersOptions.minimapAngle then
+	ProEnchantersOptions.minimapAngle = 45
+end
+
+
 local function LoadColorTables()
 	-- Initialize ProEnchantersOptions as a table if it's nil
 	if not ProEnchantersOptions then
@@ -8198,6 +8323,10 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["EnableNewTradeSound"] = false
 	end
 
+	if ProEnchantersOptions["DisplayMinimapButton"] == nil then
+		ProEnchantersOptions["DisplayMinimapButton"] = true
+	end
+
 	if ProEnchantersOptions["WorkWhileClosed"] ~= true then
 		WorkWhileClosed = false
 		ProEnchantersOptions["WorkWhileClosed"] = WorkWhileClosed
@@ -8336,6 +8465,12 @@ local function OnAddonLoaded()
 	ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	ProEnchantersSoundsFrame = ProEnchantersCreateSoundsFrame()
 
+	--Show or Hide minimap button
+	if ProEnchantersOptions["DisplayMinimapButton"] == true then
+		ProEnchantersMinimapButton:Show()
+	elseif ProEnchantersOptions["DisplayMinimapButton"] == false then
+		ProEnchantersMinimapButton:Hide()
+	end
 
 	print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
 	--CreatePEMacros()
@@ -8410,19 +8545,22 @@ SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 	if type(convertedNumber) == "number" then
 		debugLevel = convertedNumber
 		if convertedNumber == 0 then
-			print(GREENYELLOW .. "Debugging turned onto 0, either /reload or do /pedebug 0 to disable." .. ColorClose)
-		elseif convertedNumber == 1 then
+			print(GREENYELLOW .. "Debugging disabled. Set to 1 or higher to re-enable." .. ColorClose)
+		elseif convertedNumber == 7 then
 			print(ORANGE ..
-				"Debugging turned onto 1 (mainly for whisper debugging), either /reload or do /pedebug 0 to disable." ..
+				"Debugging set to 7 (mainly for whisper debugging), either /reload or do /pedebug 0 to disable." ..
 				ColorClose)
-		elseif convertedNumber == 2 then
+		elseif convertedNumber == 8 then
 			print(ORANGERED ..
-				"Debugging turned onto 2 (mainly for potential customer debugging), either /reload or do /pedebug 0 to disable." ..
+				"Debugging set to 8 (mainly for potential customer debugging), either /reload or do /pedebug 0 to disable." ..
 				ColorClose)
-		elseif convertedNumber >= 3 then
+		elseif convertedNumber >= 9 then
 			print(RED ..
-				"Debugging turned onto max, all debugging commands will flow, either /reload or do /pedebug 0 to disable." ..
+				"Debugging set to max, all debugging commands will flow, either /reload or do /pedebug 0 to disable." ..
 				ColorClose)
+		else
+			print(ORANGE ..
+				"Debugging set to " .. ColorClose .. debugLevel)
 		end
 	elseif debugLevel >= 0 then
 		print(ORANGE .. "Current debugging set to " .. ColorClose .. debugLevel)
@@ -8850,12 +8988,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local channelCheck = "General - " .. city
 		local defenseCheck = "LocalDefense - " .. city
 		local guildrecruitCheck = "GuildRecruitment - City"
-		if debugLevel >= 3 then
+		if debuglevel >= 9 then
 			print("channelName/channelNumber/channelNameWithNumber from " ..
 				author2 .. ": " .. channelName .. "/" .. channelNumber .. "/" .. channelNameWithNumber)
 		end
 		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and string.find(channelName, localTradeChannel, 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Message found in Trade Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -8866,7 +9004,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -8876,11 +9014,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -8890,7 +9028,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -8902,7 +9040,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -8911,7 +9049,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -8954,7 +9092,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -8965,7 +9103,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -8975,11 +9113,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -8989,7 +9127,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9001,7 +9139,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9010,7 +9148,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9053,7 +9191,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9064,7 +9202,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9074,11 +9212,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9088,7 +9226,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9100,7 +9238,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9109,7 +9247,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9152,7 +9290,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Message found in local city channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9163,7 +9301,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9173,11 +9311,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9187,7 +9325,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9199,7 +9337,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9208,7 +9346,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debugLevel >= 2 then
+					if debuglevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9252,7 +9390,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
 			if channelName == "" or channelName == nil then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("Message found in local say/yell chat")
 				end
 				for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9263,7 +9401,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local startPos, endPos = string.find(msg2, tword)
 					if string.find(msg2, tword, 1, true) then
 						check1 = true
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 						end
@@ -9274,11 +9412,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						-- Check if "ench" is at the start of the string or preceded by a space
 						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 							check2 = true
-							if debugLevel >= 2 then
+							if debuglevel >= 8 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
 							end
 						else
-							if debugLevel >= 2 then
+							if debuglevel >= 8 then
 								print(tword .. " is contained within a word, check2 returned as false")
 							end
 						end
@@ -9288,7 +9426,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local filteredWord = word
 						if string.find(msg2, filteredWord, 1, true) then
 							check3 = true
-							if debugLevel >= 2 then
+							if debuglevel >= 8 then
 								print("Potential Customer " ..
 									author2 ..
 									" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9300,7 +9438,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local filteredWord = word
 						if string.find(author, filteredWord, 1, true) then
 							check4 = true
-							if debugLevel >= 2 then
+							if debuglevel >= 8 then
 								print("Potential Customer " ..
 									author2 .. " name found in filter list, check 3 returning false")
 							end
@@ -9309,7 +9447,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 
 					if check1 == true and check2 == true and check3 == false and check4 == false then
-						if debugLevel >= 2 then
+						if debuglevel >= 8 then
 							print("All checks passed, continuing with potential customer invite or pop-up")
 						end
 						local playerName = author3
@@ -9365,21 +9503,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local enchantKey = ""
 		local languageId = ""
 		if string.find(msg, "!", 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Possible !command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debugLevel >= 3 then
+				if debuglevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -9388,7 +9526,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!commands currently disabled, ending checks")
 				end
 				return
@@ -9398,19 +9536,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debugLevel >= 1 then
+						if debuglevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -9430,7 +9568,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debugLevel >= 1 then
+		if debuglevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -9440,7 +9578,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!commands currently disabled, ending checks")
 				end
 				return
@@ -9593,7 +9731,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				return
 			end
 			cmdFound = false
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
@@ -9608,25 +9746,25 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local isPartyFull = MaxPartySizeCheck()
 		local enchantKey = ""
 		local languageId = ""
-		if debugLevel >= 1 then
+		if debuglevel >= 7 then
 			print("Whisper received")
 		end
 		if string.find(msg, "!", 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debugLevel >= 3 then
+				if debuglevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -9635,7 +9773,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -9645,19 +9783,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debugLevel >= 1 then
+						if debuglevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -9671,7 +9809,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debugLevel >= 1 then
+		if debuglevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -9681,7 +9819,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -9782,7 +9920,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			cmdFound = false
 
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
@@ -9793,7 +9931,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local check2 = false
 				local startPos, endPos = string.find(msgLower, tword)
 				if string.find(msgLower, tword, 1, true) then
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print(tword .. " found in msg: " .. msgLower)
 					end
 					check1 = true
@@ -9854,25 +9992,25 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local isPartyFull = MaxPartySizeCheck()
 		local enchantKey = ""
 		local languageId = ""
-		if debugLevel >= 1 then
+		if debuglevel >= 7 then
 			print("Whisper received")
 		end
 		if string.find(msg, "!", 1, true) then
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debugLevel >= 3 then
+				if debuglevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -9881,7 +10019,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -9891,19 +10029,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debugLevel >= 1 then
+					if debuglevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debugLevel >= 1 then
+						if debuglevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debugLevel >= 1 then
+							if debuglevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -9917,7 +10055,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debugLevel >= 1 then
+		if debuglevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -9927,7 +10065,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debugLevel >= 1 then
+				if debuglevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -10028,7 +10166,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			cmdFound = false
 
-			if debugLevel >= 1 then
+			if debuglevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
@@ -10277,115 +10415,3 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 		ProEnchanters_OnTradeEvent(self, event, ...)
 	end
 end)
-
---NEW MINIMAP ICON
--- Create a minimap button
-local minimapButton = CreateFrame("Button", "ProEnchantersMinimapButton", Minimap)
-minimapButton:SetFrameStrata("MEDIUM")
-minimapButton:SetSize(32, 32)
-minimapButton:SetFrameLevel(8)
-minimapButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-
--- Set the button's icon
-local icon = minimapButton:CreateTexture(nil, "BACKGROUND")
-icon:SetTexture("Interface\\AddOns\\ProEnchanters\\custom_icon")
-icon:SetSize(20, 20)
-icon:SetPoint("CENTER")
-
--- Set the button's border
-local border = minimapButton:CreateTexture(nil, "OVERLAY")
-border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-border:SetSize(54, 54)
-border:SetPoint("TOPLEFT")
-
--- Position the button around the minimap
-local function UpdateMinimapButtonPosition()
-	local x = ProEnchantersOptions.minimapX or (Minimap:GetRight() - minimapButton:GetWidth() / 2)
-	local y = ProEnchantersOptions.minimapY or (Minimap:GetTop() - minimapButton:GetHeight() / 2)
-	minimapButton:ClearAllPoints()
-	minimapButton:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
-end
-
-minimapButton:RegisterForDrag("LeftButton")
-minimapButton:SetMovable(true)
-
-minimapButton:SetScript("OnDragStart", function(self)
-	self:StartMoving()
-end)
-
-minimapButton:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	local x, y = self:GetLeft(), self:GetTop()
-	ProEnchantersOptions.minimapX = x
-	ProEnchantersOptions.minimapY = y
-	UpdateMinimapButtonPosition()
-end)
-
-UpdateMinimapButtonPosition()
-
-minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-minimapButton:SetScript("OnClick", function(self, button)
-	if button == "LeftButton" then
-		if IsCtrlKeyDown() then
-			--hide minimap button
-			minimapButton:Hide()
-		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
-			ProEnchantersWorkOrderFrame:Hide()
-			ProEnchantersWorkOrderEnchantsFrame:Hide()
-		elseif ProEnchantersWorkOrderFrame then
-			ProEnchantersWorkOrderFrame:Show()
-			ProEnchantersWorkOrderEnchantsFrame:Show()
-			ResetFrames()
-		end
-	elseif button == "RightButton" then
-		if IsShiftKeyDown() then
-			-- Reset frame position and size
-			if ProEnchantersWorkOrderFrame then
-				ProEnchantersWorkOrderFrame:ClearAllPoints()
-				ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
-				ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
-			end
-			if ProEnchantersWorkOrderEnchantsFrame then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
-					0)
-			end
-			print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
-		else
-			ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
-			print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
-				(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-			-- Update the checkbox state
-			if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-				ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
-			end
-		end
-	end
-end)
-
-minimapButton:SetScript("OnEnter", function(self)
-	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-	GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-	GameTooltip:AddLine(" ");
-	GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-	local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
-	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-	GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
-	GameTooltip:Show()
-end)
-
-minimapButton:SetScript("OnLeave", function(self)
-	GameTooltip:Hide()
-end)
-
-icon:SetDrawLayer("ARTWORK")
-
-if minimapButton.border then
-	minimapButton.border:SetTexture(nil)
-end
-
-if not ProEnchantersOptions.minimapAngle then
-	ProEnchantersOptions.minimapAngle = 45
-end
