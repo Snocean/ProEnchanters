@@ -100,29 +100,29 @@ end
 
 local function findEnchantByKeyAndLanguage(msg)
 	local msglower = string.lower(msg)
-	if debuglevel >= 9 then
+	if debugLevel >= 9 then
 		print("msglower set to " .. msglower)
 	end
 	local msgNoExclamation = msglower:sub(2) -- Remove '!' from the start
-	if debuglevel >= 9 then
+	if debugLevel >= 9 then
 		print("msgNoExclamation set to " .. msgNoExclamation)
 	end
 	local msgProcessed = string.gsub(msgNoExclamation, " ", "") -- Remove spaces
-	if debuglevel >= 9 then
+	if debugLevel >= 9 then
 		print("msgProcessed set to " .. msgProcessed)
 	end
 
 	for enchID, langs in pairs(PEenchantingLocales["Enchants"]) do
 		-- Improved print statement to avoid attempting to concatenate the 'langs' table
-		if debuglevel >= 9 then
+		if debugLevel >= 9 then
 			print("checking enchant ID: " .. enchID)
 		end
 		for langID, name in pairs(langs) do
-			if debuglevel >= 9 then
+			if debugLevel >= 9 then
 				print("checking language " .. langID .. " for enchID " .. enchID)
 			end
 			local nameProcessed = string.gsub(string.lower(name), " ", "")
-			if debuglevel >= 9 then
+			if debugLevel >= 9 then
 				print("Comparing enchant names: " .. nameProcessed .. " with " .. msgProcessed)
 			end
 			if nameProcessed == msgProcessed then
@@ -8988,12 +8988,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local channelCheck = "General - " .. city
 		local defenseCheck = "LocalDefense - " .. city
 		local guildrecruitCheck = "GuildRecruitment - City"
-		if debuglevel >= 9 then
+		if debugLevel >= 9 then
 			print("channelName/channelNumber/channelNameWithNumber from " ..
 				author2 .. ": " .. channelName .. "/" .. channelNumber .. "/" .. channelNameWithNumber)
 		end
 		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and string.find(channelName, localTradeChannel, 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Message found in Trade Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9004,7 +9004,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9014,11 +9014,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9028,7 +9028,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9040,7 +9040,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9049,7 +9049,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9092,7 +9092,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9103,7 +9103,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9113,11 +9113,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9127,7 +9127,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9139,7 +9139,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9148,7 +9148,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9191,7 +9191,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9202,7 +9202,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9212,11 +9212,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9226,7 +9226,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9238,7 +9238,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9247,7 +9247,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9290,7 +9290,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Message found in local city channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9301,7 +9301,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local startPos, endPos = string.find(msg2, tword)
 				if string.find(msg2, tword, 1, true) then
 					check1 = true
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 					end
 				end
@@ -9311,11 +9311,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					-- Check if "ench" is at the start of the string or preceded by a space
 					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 						check2 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " does not have any leading characters, returning check2 as true")
 						end
 					else
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print(tword .. " is contained within a word, check2 returned as false")
 						end
 					end
@@ -9325,7 +9325,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(msg2, filteredWord, 1, true) then
 						check3 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 ..
 								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9337,7 +9337,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local filteredWord = word
 					if string.find(author, filteredWord, 1, true) then
 						check4 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " name found in filter list, check 3 returning false")
 						end
@@ -9346,7 +9346,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 
 				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if debuglevel >= 8 then
+					if debugLevel >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
 					local playerName = author3
@@ -9390,7 +9390,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
 			if channelName == "" or channelName == nil then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("Message found in local say/yell chat")
 				end
 				for _, tword in pairs(ProEnchantersOptions.triggerwords) do
@@ -9401,7 +9401,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local startPos, endPos = string.find(msg2, tword)
 					if string.find(msg2, tword, 1, true) then
 						check1 = true
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("Potential Customer " ..
 								author2 .. " trigger found: " .. tword .. " found within " .. msg2)
 						end
@@ -9412,11 +9412,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						-- Check if "ench" is at the start of the string or preceded by a space
 						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
 							check2 = true
-							if debuglevel >= 8 then
+							if debugLevel >= 8 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
 							end
 						else
-							if debuglevel >= 8 then
+							if debugLevel >= 8 then
 								print(tword .. " is contained within a word, check2 returned as false")
 							end
 						end
@@ -9426,7 +9426,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local filteredWord = word
 						if string.find(msg2, filteredWord, 1, true) then
 							check3 = true
-							if debuglevel >= 8 then
+							if debugLevel >= 8 then
 								print("Potential Customer " ..
 									author2 ..
 									" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
@@ -9438,7 +9438,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local filteredWord = word
 						if string.find(author, filteredWord, 1, true) then
 							check4 = true
-							if debuglevel >= 8 then
+							if debugLevel >= 8 then
 								print("Potential Customer " ..
 									author2 .. " name found in filter list, check 3 returning false")
 							end
@@ -9447,7 +9447,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 
 					if check1 == true and check2 == true and check3 == false and check4 == false then
-						if debuglevel >= 8 then
+						if debugLevel >= 8 then
 							print("All checks passed, continuing with potential customer invite or pop-up")
 						end
 						local playerName = author3
@@ -9503,21 +9503,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local enchantKey = ""
 		local languageId = ""
 		if string.find(msg, "!", 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Possible !command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debuglevel >= 9 then
+				if debugLevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -9526,7 +9526,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!commands currently disabled, ending checks")
 				end
 				return
@@ -9536,19 +9536,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debuglevel >= 7 then
+						if debugLevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -9568,7 +9568,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debuglevel >= 7 then
+		if debugLevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -9578,7 +9578,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!commands currently disabled, ending checks")
 				end
 				return
@@ -9731,7 +9731,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				return
 			end
 			cmdFound = false
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
@@ -9746,25 +9746,25 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local isPartyFull = MaxPartySizeCheck()
 		local enchantKey = ""
 		local languageId = ""
-		if debuglevel >= 7 then
+		if debugLevel >= 7 then
 			print("Whisper received")
 		end
 		if string.find(msg, "!", 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debuglevel >= 9 then
+				if debugLevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -9773,7 +9773,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -9783,19 +9783,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debuglevel >= 7 then
+						if debugLevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -9809,7 +9809,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debuglevel >= 7 then
+		if debugLevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -9819,7 +9819,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -9920,7 +9920,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			cmdFound = false
 
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
@@ -9931,7 +9931,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local check2 = false
 				local startPos, endPos = string.find(msgLower, tword)
 				if string.find(msgLower, tword, 1, true) then
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print(tword .. " found in msg: " .. msgLower)
 					end
 					check1 = true
@@ -9992,25 +9992,25 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local isPartyFull = MaxPartySizeCheck()
 		local enchantKey = ""
 		local languageId = ""
-		if debuglevel >= 7 then
+		if debugLevel >= 7 then
 			print("Whisper received")
 		end
 		if string.find(msg, "!", 1, true) then
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("Possible whisper command found from " .. author2 .. ": ! found within " .. msg)
 			end
 
 			if startPos then
-				if debuglevel >= 9 then
+				if debugLevel >= 9 then
 					print("startPos listed as: " .. tostring(startPos))
 				end
 				if startPos == 1 or string.sub(msg, startPos - 1, startPos - 1) == " " then
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("found at start of message, setting cmdFound to true")
 					end
 					cmdFound = true
 				else
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("! is not at the start of the sentence, ignoring")
 					end
 				end
@@ -10019,7 +10019,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local customcmdFound = 0
 		if cmdFound == true then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -10029,19 +10029,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				for cmd, rmsg in pairs(v) do
 					local cmd = string.lower(cmd)
 					local wmsg = tostring(rmsg)
-					if debuglevel >= 7 then
+					if debugLevel >= 7 then
 						print("comparing: " .. msgLower .. " to " .. cmd)
 					end
 					if tostring(msgLower) == tostring(cmd) then
-						if debuglevel >= 7 then
+						if debugLevel >= 7 then
 							print("Found matching !command")
 						end
 						for itemID, _ in string.gmatch(wmsg, "%[(%d+)%]") do
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print("itemID returned as " .. itemID)
 							end
 							local newitemLink = select(2, GetItemInfo(itemID))
-							if debuglevel >= 7 then
+							if debugLevel >= 7 then
 								print(newitemLink)
 							end
 							-- Escape the square brackets in the replacement pattern
@@ -10055,7 +10055,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 		end
 
-		if debuglevel >= 7 then
+		if debugLevel >= 7 then
 			print("No matching command found, continuing to possible enchant lookup")
 		end
 
@@ -10065,7 +10065,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 
 		if cmdFound == true and customcmdFound == 1 then
 			if ProEnchantersOptions["DisableWhisperCommands"] == true then
-				if debuglevel >= 7 then
+				if debugLevel >= 7 then
 					print("!whisper commands currently disabled, ending checks")
 				end
 				return
@@ -10166,7 +10166,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			cmdFound = false
 
-			if debuglevel >= 7 then
+			if debugLevel >= 7 then
 				print("cmdFound is false, end of check")
 			end
 		end
