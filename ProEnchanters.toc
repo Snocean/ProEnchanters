@@ -1,8 +1,8 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 6.6.2
+## Version: 6.7.4
 ## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames
 
 # External code
