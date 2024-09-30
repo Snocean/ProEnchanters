@@ -4,6 +4,30 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 6.7.4
+- **Fixed** Spell Power and Heal Power not working due to BLIZZARD ADDING A DOUBLE SPACE ON THEIR SIDE THANKS BLIZZARD THAT WAS HOURS WASTED ( FIX YOUR SHIT )
+- **Fixed** Debug level not working between separated LUA files, debug level is now a savedvariable that should reset to 0 on UI reloads
+
+## Update 6.7.1 and 6.7.2 and 6.7.3
+- **New** Added a SavedVariable for the minimap button to persist between sessions
+- **Fixed** grammar issue and debug printout issues
+
+## Update 6.7
+- **New** Ability to hide/show the minimap button by ctrl+leftclicking the button (hide only)
+- **Fixed(Potentially)** Spell power Weapon and Heal power Weapon enchants not displaying the finished enchant within work orders
+- **New** Can now "shift+control" click on Enchants within the enchants add-on window to force whisper to your current active work order instead of only having shift+click for linking and the add-on auto determining whether to whisper or not
+- **Changed** Debug levels changed from 1/2/3 to 7/8/9 for the defaults for major debugging, free'd up 1-6 as a way to add temporary debugging specific things without having to enable the other more major debugging options at the same time
+
+## Update 6.6.3.2
+- **New** Ability to hide/show the minimap button with '/pe minimap' or by ctrl+leftclicking the button (hide only)
+
+## Update 6.6.3.1
+- **Modified** Context menus to fit WoW's new menu format instead of the old way it was handled. Untested, need community feedback for if it works or not.
+- **Disabled Chat Context menu** it was causing the addon to fail to load it looks like.
+
+## Update 6.6.2.1
+- **Temporary Removal** Context menu "Create work order" had to be removed as WoW no longer allows 'hooksecurefunction' to add context menu items, added notes to the LUA section at line 339 about it but no fix yet
+
 ## Update 6.6.2
 
 - **Changed:** When frames are minimized and get hidden, they will be maximized when unhidden.
