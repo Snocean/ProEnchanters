@@ -2,13 +2,15 @@
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 6.7.4
-## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames
+## Version: 6.8
+## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB
 
 # External code
 libs\utf8data.lua
 libs\utf8.lua
 libs\LibSharedMedia-3.0\lib.xml
+libs\LibSharedMedia-3.0\embeds.xml
+libs\LibSharedMedia-3.0\LibDBIcon-1.0\lib.xml
 
 # Main
 PELocalization.lua

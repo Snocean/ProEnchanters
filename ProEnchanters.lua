@@ -1,4 +1,5 @@
 -- First Initilizations
+local version = "v6.7.5"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -25,7 +26,87 @@ local tradeYoffset = 0
 local target = ""
 local isConnected = true
 local LSM = LibStub("LibSharedMedia-3.0")
-local version = "v6.5"
+
+-- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
+local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
+local icon = LibStub("LibDBIcon-1.0", true)
+local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {  
+	type = "data source",  
+	text = "Pro Enchanters",  
+	icon = "Interface\\AddOns\\ProEnchanters\\custom_icon",  
+	OnClick = function(self, button) 
+		if button == "LeftButton" then
+			if IsControlKeyDown() then
+				addon.db.profile.minimap.hide = true
+				icon:Hide("ProEnchanters")
+			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
+				ProEnchantersWorkOrderFrame:Hide()
+				ProEnchantersWorkOrderEnchantsFrame:Hide()
+			elseif ProEnchantersWorkOrderFrame then
+				ProEnchantersWorkOrderFrame:Show()
+				ProEnchantersWorkOrderEnchantsFrame:Show()
+				--ResetFrames()
+			end
+		elseif button == "RightButton" then
+			if IsShiftKeyDown() then
+				-- Reset frame position and size
+				if ProEnchantersWorkOrderFrame then
+					ProEnchantersWorkOrderFrame:ClearAllPoints()
+					ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
+					ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
+				end
+				if ProEnchantersWorkOrderEnchantsFrame then
+					ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
+					ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
+					ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+						0)
+				end
+				print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
+			else
+				ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+				print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
+					(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+				-- Update the checkbox state
+				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+				end
+			end
+		end
+	end,
+	OnEnter = function(self) 
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+		local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+		GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
+		GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+		GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
+		GameTooltip:Show()
+	end,
+	OnLeave = function(self) 
+		GameTooltip:Hide()
+	end,
+})  
+
+function addon:OnInitialize()
+	-- Assuming you have a ## SavedVariables: BunniesDB line in your TOC
+	self.db = LibStub("AceDB-3.0"):New("ProEnchantersDB", {
+		profile = {
+			minimap = {
+				hide = false,
+			},
+		},
+	})
+
+	if self.db.profile.minimap.hide == nil then
+        self.db.profile.minimap.hide = false  -- Set default to false
+    end
+
+	icon:Register("ProEnchanters", PELDB, self.db.profile.minimap)
+end
+
+
 
 -- Sound Register
 local sounds = {
@@ -6606,10 +6687,13 @@ function CreateCusWorkOrder(customerName, bypass)
 			local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 			local lowerCusName = string.lower(customerName)
 			if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
-				print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
+				if frameInfo.ExistingWOWarning == nil then
+					print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
+					frameInfo.ExistingWOWarning = true
+				end
 				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-					ScrollToActiveWorkOrder(customerName)
-					UpdateTradeHistory(customerName)
+						ScrollToActiveWorkOrder(customerName)
+						UpdateTradeHistory(customerName)
 				end
 				return frameInfo.Frame
 			end
@@ -7849,7 +7933,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					local buttonNameBg = name .. "bg"
 					frame.namedButtons[buttonName]:SetScript("PostClick", function(self, btn, down)
 						if (down) then
-							frame.namedButtons[buttonName]:Hide() -- Bookmark, need to test this delay of disable/enable button
+							frame.namedButtons[buttonName]:Hide()
 							frame.namedButtons[buttonNameBg]:Hide()
 							local customerName = PEtradeWho
 							customerName = string.lower(customerName)
@@ -7899,7 +7983,7 @@ end
 
 -- End trade order on trade frame
 
---NEW MINIMAP ICON
+--[[NEW MINIMAP ICON
 -- For Leatrix and other addons that modify the minimap button it eventually should be changed to https://www.wowace.com/projects/libdbicon-1-0
 -- Create a minimap button
 local minimapButton = CreateFrame("Button", "ProEnchantersMinimapButton", Minimap)
@@ -8010,7 +8094,7 @@ end
 
 if not ProEnchantersOptions.minimapAngle then
 	ProEnchantersOptions.minimapAngle = 45
-end
+end]]
 
 
 local function LoadColorTables()
@@ -8326,9 +8410,9 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["EnableNewTradeSound"] = false
 	end
 
-	if ProEnchantersOptions["DisplayMinimapButton"] == nil then
+	--[[if ProEnchantersOptions["DisplayMinimapButton"] == nil then
 		ProEnchantersOptions["DisplayMinimapButton"] = true
-	end
+	end]]
 
 	if ProEnchantersOptions["WorkWhileClosed"] ~= true then
 		WorkWhileClosed = false
@@ -8468,12 +8552,12 @@ local function OnAddonLoaded()
 	ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	ProEnchantersSoundsFrame = ProEnchantersCreateSoundsFrame()
 
-	--Show or Hide minimap button
+	--[[Show or Hide minimap button
 	if ProEnchantersOptions["DisplayMinimapButton"] == true then
 		ProEnchantersMinimapButton:Show()
 	elseif ProEnchantersOptions["DisplayMinimapButton"] == false then
 		ProEnchantersMinimapButton:Hide()
-	end
+	end]]
 
 	print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
 	--CreatePEMacros()
@@ -8505,6 +8589,7 @@ SLASH_PROENCHANTERSFS1 = "/pefontsize"
 SLASH_PROENCHANTERSFS2 = "/proenchantersfontsize"
 SLASH_PROENCHANTERSDBG1 = "/pedebug"
 SLASH_PROENCHANTERSDBG2 = "/proenchantersdebug"
+SLASH_PROENCHANTERSCLEAR1 = "/peclearhistory"
 
 -- Ensure ProEnchantersWorkOrderFrame is not nil before accessing it in your functions
 SlashCmdList["PROENCHANTERS"] = function(msg)
@@ -8512,11 +8597,13 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		FullResetFrames()
 	elseif msg == "goldreset" then
 		ResetGoldTraded()
-	elseif msg == "minimap" then
-		if ProEnchantersMinimapButton:IsShown() then
-			ProEnchantersMinimapButton:Hide()
+	elseif msg == "minimap" then -- bookmark, can do icon:Hide("PELDB") or icon:Show("PELDB") to show icon, would need to pull the hide status from the new ProEnchantersDB saved variables something like self.db.profile.minimap.hide == true or false maybe
+		if addon.db.profile.minimap.hide then
+			icon:Show("ProEnchanters")
+			addon.db.profile.minimap.hide = false
 		else
-			ProEnchantersMinimapButton:Show()
+			icon:Hide("ProEnchanters")
+            addon.db.profile.minimap.hide = true
 		end
 	else
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
@@ -8527,6 +8614,17 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			ProEnchantersWorkOrderEnchantsFrame:Show()
 			ResetFrames()
 		end
+	end
+end
+
+SlashCmdList["PROENCHANTERSCLEAR"] = function(msg)
+	if msg == "yes" then
+		ProEnchantersTradeHistory = {}
+		print(GREEN .. "Trade history has been cleared." .. ColorClose)
+	else
+		print(RED .. "This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." .. ColorClose)
+		print(RED .. "This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." .. ColorClose)
+		print(RED .. "To proceed with the data wipe, please do: /peclearhistory yes" .. ColorClose)
 	end
 end
 
