@@ -126,9 +126,7 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
         reqQuantity = 1
     end
     local reqQuantity = reqQuantity
-    if debugLevel >= 1 then
-        print("Spell ID set to " .. id)
-    end
+    
     if CombinedEnchants[id].materials then
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
             -- Extract quantity and material name
@@ -1242,6 +1240,21 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
                 frame.otherEnchantsBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
                 frame.otherEnchants:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset + 3)
+                frame.otherEnchants:SetScript("OnEnter", function(self)
+                    if ProEnchantersOptions["EnableTooltips"] == true then
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                        GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+                        GameTooltip:AddLine(" ");
+                        GameTooltip:AddLine("|cFFFFFFFFClick to refresh enchant buttons|r")
+                        GameTooltip:Show()
+                    end
+                end)
+                    
+                frame.otherEnchants:SetScript("OnLeave", function(self)
+                        if ProEnchantersOptions["EnableTooltips"] == true then
+                            GameTooltip:Hide()
+                        end
+                    end)
                 frame.otherEnchants:SetScript("OnClick", function()
                     local customerName = PEtradeWho
                     customerName = string.lower(customerName)
@@ -1585,6 +1598,13 @@ function FinishedEnchant(customerName, reqEnchant)
             else
                 local enchCompleted = reqEnchant
                 local reqQuantity = 1
+                if ProEnchantersOptions["DebugLevel"] >= 9 then
+                    if enchCompleted ~= nil or "" then
+                        print("enchCompleted set to " .. tostring(enchCompleted))
+                    else
+                        print("enchCompleted returned nil or blank")
+                    end
+                end
                 local matsUsed = ProEnchants_GetReagentList(enchCompleted, reqQuantity)
                 for quantity, material in string.gmatch(matsUsed, "(%d+)x ([^,]+)") do
                     quantity = tonumber(quantity)
@@ -1899,11 +1919,21 @@ function PEdoTrade()
                     if item and item.link then
                         if item.enchant then
                             local enchantId = ""
-                            for key, name in pairs(EnchantsName) do
-                                if name == item.enchant then
+                            for key, table in pairs(CombinedEnchants) do
+                                if table.name == item.enchant then
                                     enchantId = key
                                 end
                             end
+                            --bookmark
+                            if ProEnchantersOptions["DebugLevel"] >= 9 then
+                                if enchantId ~= nil or "" then
+                                    print("item.enchant set to " .. tostring(item.enchant))
+                                    print("enchantId set to " .. tostring(enchantId))
+                                else
+                                    print("enchantId returned nil or blank")
+                                end
+                            end
+                            
                             FinishedEnchant(customerName, enchantId)
                             AddTradeLine(customerName,
                                 MAGENTA ..

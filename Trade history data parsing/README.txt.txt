@@ -1,0 +1,6 @@
+You can use the following two python scripts to get the average amount of gold you make from each type of enchant.
+Your PC needs to have python installed for this to run.
+You need to open the ProEnchanters.lua file located within the "World of Warcraft\_classic_era_\WTF\Account\12345678#1\SavedVariables" location and copy the data from the ProEnchantersTradeHistory section and paste it into the correct area in the file named step1.rawdataparse
+Once you run step1, you can run step2 as it imports the CSV file generated in step1. Once that is done and it generates the enchantment_totals_with_avg_counts.csv file you can import it into excel or google sheets and set up a formula that divides the total gold by the count of completed enchants, such as =C2/B2
+Then fill that formula down and you can see your avg gold per type of enchant and by doing sorting within the excel sheet you can see which enchants you've done the most and which ones pay the most on average
+This is not a very intuitive thing to do and if you need help please post in the discord and I will help when I am available

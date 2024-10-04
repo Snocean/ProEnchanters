@@ -586,7 +586,7 @@ CombinedEnchants = {
         },
     },
     ENCH50 = {
-        name = "Enchant Weapon - Healing Power",
+        name = "Enchant  Weapon - Healing Power",
         slot = "Weapon",
         spell_id = 22750,
         stats = " (+55 Heal Power)",
@@ -644,7 +644,7 @@ CombinedEnchants = {
         },
     },
     ENCH55 = {
-        name = "Enchant Weapon - Spell Power",
+        name = "Enchant  Weapon - Spell Power",
         slot = "Weapon",
         spell_id = 22749,
         stats = " (+30 Spell Dmg)",

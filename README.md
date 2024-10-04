@@ -4,8 +4,27 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
-## Update 6.7.1
+## Update 6.9 (nice)
+- **Added** Ability to toggle Auto Invite on/off from minimap button with Shift+Left Click
+- **Added** Option to enable/disable "Escape closes main window" now in settings, requires a reload when toggled
+- **Work in progress** Started work on adding tooltips, there is a checkbox within the main settings to enable/disable tooltips, disabled by default for now
+
+## Update 6.8
+- **Fixed (Hopefully)** Minimap button SHOULD NOW BE ABLE TO BE HIDDEN
+- **Modified** When the add-on attempts to open a new work order while one is already created and it displays a yellow message in the chat it should now check if it has sent this warning already or not and if it has then it will not repeat the warning. This is untested.
+- **New** Dangerous command "/peclearhistory" which will nuke the ProEnchantersTradeHistory table where all of the data of past trades are stored. You must do "/peclearhistory yes" to proceed, "/peclearhistory" by itself will only show a warning about the command.
+
+## Update 6.7.5 and 6.7.6
+- **New** Registered Minimap button through Ace3.0 so that it should interact better with other add-ons that manage minimap buttons
+- **Fixed** Minimap button should now be able to be hidden with "/pe minimap" again as well as ctrl+left click on the icon
+
+## Update 6.7.4
+- **Fixed** Spell Power and Heal Power not working due to BLIZZARD ADDING A DOUBLE SPACE ON THEIR SIDE THANKS BLIZZARD THAT WAS HOURS WASTED ( FIX YOUR SHIT )
+- **Fixed** Debug level not working between separated LUA files, debug level is now a savedvariable that should reset to 0 on UI reloads
+
+## Update 6.7.1 and 6.7.2 and 6.7.3
 - **New** Added a SavedVariable for the minimap button to persist between sessions
+- **Fixed** grammar issue and debug printout issues
 
 ## Update 6.7
 - **New** Ability to hide/show the minimap button by ctrl+leftclicking the button (hide only)

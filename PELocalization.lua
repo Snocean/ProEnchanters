@@ -1662,7 +1662,7 @@ PEenchantingLocales = {
 		},
 		["ENCH55"] = {
 			["Chinese"] = "附魔武器 - 法术能量",
-			["English"] = "Enchant Weapon - Spell Power",
+			["English"] = "Enchant  Weapon - Spell Power",
 			["French"] = "Ench. d'arme (Puissance de sort)",
 			["German"] = "Waffe - Zauberkraft",
 			["Korean"] = "무기 마법부여 - 주문 강화",
@@ -1674,7 +1674,7 @@ PEenchantingLocales = {
 		},
 		["ENCH50"] = {
 			["Chinese"] = "附魔武器 - 治疗能量",
-			["English"] = "Enchant Weapon - Healing Power",
+			["English"] = "Enchant  Weapon - Healing Power",
 			["French"] = "Ench. d'arme (Pouvoir de guérison)",
 			["German"] = "Waffe - Heilkraft",
 			["Korean"] = "무기 마법부여 - 치유 강화",
