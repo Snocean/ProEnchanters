@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v6.7.5"
+local version = "v6.9"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -39,6 +39,15 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 			if IsControlKeyDown() then
 				addon.db.profile.minimap.hide = true
 				icon:Hide("ProEnchanters")
+			elseif IsShiftKeyDown() then
+				ProEnchantersOptions["AutoInvite"] = not ProEnchantersOptions["AutoInvite"]
+				AutoInvite = ProEnchantersOptions["AutoInvite"]
+				print("|cFF800080ProEnchanters|r: \"Auto Invite\" is now " ..
+					(ProEnchantersOptions["AutoInvite"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+				-- Update the checkbox state
+				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.AutoInviteCheckbox then
+					ProEnchantersWorkOrderFrame.AutoInviteCheckbox:SetChecked(ProEnchantersOptions["AutoInvite"])
+				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
 				ProEnchantersWorkOrderFrame:Hide()
 				ProEnchantersWorkOrderEnchantsFrame:Hide()
@@ -77,10 +86,12 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+		local autoInviteColor = ProEnchantersOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
+		GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
 		local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-		GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
+		GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
 		GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-		GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
+		GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
 		GameTooltip:Show()
 	end,
 	OnLeave = function(self)
@@ -99,8 +110,8 @@ function addon:OnInitialize()
 	})
 
 	if self.db.profile.minimap.hide == nil then
-		self.db.profile.minimap.hide = false -- Set default to false
-	end
+        self.db.profile.minimap.hide = false -- Set default to false
+    end
 
 	icon:Register("ProEnchanters", PELDB, self.db.profile.minimap)
 end
@@ -396,30 +407,13 @@ local function FullResetFrames()
 	RepositionEnchantsFrame(ProEnchantersWorkOrderEnchantsFrame)
 end
 
---[[ PopUp Menu to create work order
-local function WorkOrderButton(self)
-	if self.value == "WorkOrderButton" then
-		local dropdownMenu = _G["UIDROPDOWNMENU_INIT_MENU"]
-		if (dropdownMenu.name ~= UnitName("player")) then
-			CreateCusWorkOrder(dropdownMenu.name)
-			ProEnchantersCustomerNameEditBox:SetText(dropdownMenu.name)
-			if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
-				ProEnchantersWorkOrderFrame:Show()
-				ProEnchantersWorkOrderEnchantsFrame:Show()
-				ResetFrames()
-			end
-		end
-	else
-	end
-end
-]]
-
---[[ this one was confirmed working
-local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
+-- New menu buttons
+local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
+	menuButton:CreateDivider()
+	menuButton:CreateTitle("Pro Enchanters")
 	menuButton:CreateButton("Create Work Order", function()
-		local target = UnitName("target")
-		CreateCusWorkOrder(target)
-		ProEnchantersCustomerNameEditBox:SetText(target)
+		CreateCusWorkOrder(contextData.name)
+		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
 		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
 			ProEnchantersWorkOrderFrame:Show()
 			ProEnchantersWorkOrderEnchantsFrame:Show()
@@ -427,9 +421,7 @@ local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
 		end
 	end)
 end)
-]]
 
--- Function to create the work order button
 local function createWorkOrderButton(menuButton, contextData)
 	menuButton:CreateButton("Create Work Order", function()
 		CreateCusWorkOrder(contextData.name)
@@ -461,104 +453,7 @@ addProEnchantersMenu("MENU_CHAT")        -- Right-click in chat messages
 addProEnchantersMenu("MENU_VEHICLE")     -- Right-click on vehicles
 addProEnchantersMenu("MENU_NAMEPLATE")   -- Right-click on nameplates
 
---[[ this one doesn't
-local menuButton2 = Menu.ModifyMenu("MENU_UNIT_CHAT_ROSTER", function(menuButton, contextData)
-	menuButton:CreateDivider()
-	menuButton:CreateTitle("Pro Enchanters")
-	menuButton:CreateButton("Create Work Order", function()
-		CreateCusWorkOrder(contextData.name)
-		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
-		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
-			ProEnchantersWorkOrderFrame:Show()
-			ProEnchantersWorkOrderEnchantsFrame:Show()
-			ResetFrames()
-		end
-	end)
-end)]]
-
---[[ Temporarily removed due to UnitPopup_ShowMenu being removed, WoW now uses UnitPopup_OpenMenu and no longer allows hooking the secure function to add menu items but now lets you add menu items through menu.modifymenu
-
--- Old Function
-hooksecurefunc("UnitPopup_ShowMenu", function()
-	if (UIDROPDOWNMENU_MENU_LEVEL > 1) then
-		return
-	end
-	local info = UIDropDownMenu_CreateInfo()
-	info.text = "Create Work Order"
-	info.owner = which
-	info.notCheckable = 1
-	info.func = WorkOrderButton
-	info.colorCode = "|cFF20B2AA"
-	info.value = "WorkOrderButton"
-	UIDropDownMenu_AddButton(info)
-end)
-
--- Potential New Function for "target" only
-local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
-        menuButton:CreateButton("Create Work Order", function()
-            local target = UnitName("target")
-            CreateCusWorkOrder(target)
-            ProEnchantersCustomerNameEditBox:SetText(target)
-            if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
-                ProEnchantersWorkOrderFrame:Show()
-                ProEnchantersWorkOrderEnchantsFrame:Show()
-                ResetFrames()
-            end
-        end)
-end)
-
--- Need to figure out the MENU_ for chat based context menus, not sure if it uses UNIT_TARGET or something else, putting CHAT_SENDER in-place of it for now
-local menuButton = Menu.ModifyMenu("MENU_CHAT_SENDER", function(_, menuButton)
-        menuButton:CreateButton("Create Work Order", function()
-            local target = CHAT_SENDER?
-            CreateCusWorkOrder(target)
-            ProEnchantersCustomerNameEditBox:SetText(target)
-            if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
-                ProEnchantersWorkOrderFrame:Show()
-                ProEnchantersWorkOrderEnchantsFrame:Show()
-                ResetFrames()
-            end
-        end)
-end)
-
-
--- This is the WoW UI MENU_UNIT_ section:
-local menuParent = nil;
-	MenuUtil.CreateContextMenu(menuParent, function(owner, rootDescription)
-		rootDescription:SetTag("MENU_UNIT_"..which, contextData);
-
-		-- Create a class colored title atop every menu.
-		local elementDescription = rootDescription:CreateTitle();
-		elementDescription:AddInitializer(function(frame, description, menu)
-			local title, class = GetNameAndClass(contextData.unit, contextData.name);
-			frame.fontString:SetText(title);
-
-			if class and not IsOnGlueScreen() then
-				local colorCode = select(4, GetClassColor(class));
-				local color = CreateColorFromHexString(colorCode);
-				frame.fontString:SetTextColor(color:GetRGBA());
-			end
-		end);
-
-		-- Section data for state relevant to each menu.
-		local sectionData = {};
-		local menu = self:GetMenu(which);
-		for index, entry in ipairs(menu:AssembleMenuEntries(contextData)) do
-			CreateEntries(entry, rootDescription, sectionData, contextData);
-		end
-	end);
-
-Based on the 'swarm' addon on curseforge and based on this thread that seemed to have ran into a similar issue, here are relevant links:
-https://www.wowinterface.com/forums/showthread.php?p=344204
-https://www.curseforge.com/wow/addons/swarm
-https://warcraft.wiki.gg/wiki/Patch_11.0.0/API_changes#New_menu_system
-https://www.townlong-yak.com/framexml/latest/Blizzard_Menu/11_0_0_MenuImplementationGuide.lua
-
-I attempted to use the same formatting as the Swarm addon for adding the context menu but having someone test in-game for me since I do not have WoW anymore did not produce favorable results, needs more testing to get it working
-Should be something similar to above though to get it working, in the swarm addon I do not see any call to the local menuButton to activate it so it seemed like just being a local variable was enough but I'm not sure, might have to add menuButton to somewhere else
-
-]]
-
+-- Offsets for frames
 local yOffset = -5
 local yOffsetoriginal = -80
 local enchyOffset = 5
@@ -960,7 +855,8 @@ PESupporters = {
 	"Ath",
 	"Paulallen",
 	"Artyrus",
-	"Grrgg"
+	"Grrgg",
+	"John S"
 }
 
 -- Filtered Words Table
@@ -1404,6 +1300,9 @@ function ProEnchantersCreateWorkOrderFrame()
 		AutoInvite = ProEnchantersOptions["AutoInvite"]
 	end)
 
+	-- Store the checkbox in the settings frame for later reference
+	ProEnchantersWorkOrderFrame.AutoInviteCheckbox = autoInviteCb
+
 	-- Expand enchants button
 	local enchantsShowButton = CreateFrame("Button", nil, WorkOrderFrame) --, "GameMenuButtonTemplate")
 	enchantsShowButton:SetSize(15, 25)
@@ -1449,6 +1348,21 @@ function ProEnchantersCreateWorkOrderFrame()
 	targetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	targetButton:SetNormalFontObject("GameFontHighlight")
 	targetButton:SetHighlightFontObject("GameFontNormal")
+	targetButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFTarget focused customer|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+		targetButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 	targetButton:SetAttribute("type", "macro")
 	targetButton:SetAttribute("macrotext", "/tar " .. target)
 
@@ -1492,6 +1406,23 @@ function ProEnchantersCreateWorkOrderFrame()
 	createButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	createButton:SetNormalFontObject("GameFontHighlight")
 	createButton:SetHighlightFontObject("GameFontNormal")
+	createButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			local customerName = ProEnchantersCustomerNameEditBox:GetText()
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFCreate a work order for|r " .. STEELBLUE .. customerName .. "|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	createButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
 	createButton:SetScript("OnClick", function()
 		OnCreateWorkorderButtonClick() -- Call your existing function
 		customerNameEditBox:ClearFocus() -- Remove focus from the edit box
@@ -1663,6 +1594,22 @@ function ProEnchantersCreateWorkOrderFrame()
 	if wofSize < 240 then
 		ClearAllButton:Hide()
 	end
+	ClearAllButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFMark all work orders as complete and close them|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+		ClearAllButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
+
 	ClearAllButton:SetScript("OnClick", function()
 		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 			if frameInfo.Completed == false then
@@ -1694,6 +1641,22 @@ function ProEnchantersCreateWorkOrderFrame()
 	if wofSize < 240 then
 		GoldTradedDisplay:Hide()
 	end
+	GoldTradedDisplay:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFOpen the Gold Traded Log|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	GoldTradedDisplay:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+	
 	GoldTradedDisplay:SetScript("OnClick", function()
 		ProEnchantersGoldFrame:Show()
 	end)
@@ -1791,6 +1754,22 @@ function ProEnchantersCreateWorkOrderFrame()
 		local currentHeight = WorkOrderFrame:GetHeight()
 		if currentHeight < 240 then -- If the work order frame is minimized, show it maximized
 			toggleWorkOrderFrameMinimize()
+		end
+	end)
+
+	titleButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFMinimize/Maximize main window|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	titleButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
 		end
 	end)
 
@@ -2139,6 +2118,75 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 			enchantFavIcon:Hide()
 		end
 
+		-- Tooltips for Enchants
+		local function tooltipFormat()
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+				if IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown() then
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift+Ctrl+Alt|r")
+					GameTooltip:AddLine("|cFFFFFF00Un-sync enchant, re-enable in settings|r")
+				elseif IsShiftKeyDown() and IsControlKeyDown() then -- force whisper link
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift+Ctrl|r")
+					GameTooltip:AddLine("|cFFFFFF00Link mats to current focus (Forced Whisper)|r")
+				elseif IsShiftKeyDown() then -- Link to player via party or whisper
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift|r")
+					GameTooltip:AddLine("|cFFFFFF00Link mats to current focus (Party/Raid/Whisper)|r")
+				elseif IsControlKeyDown() and IsAltKeyDown() then -- Remove from current trade target
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Ctrl+Alt|r")
+					GameTooltip:AddLine("|cFFFFFF00Remove from current trade targets work order|r")
+				elseif IsControlKeyDown() then -- Remove from current customer
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Ctrl|r")
+					GameTooltip:AddLine("|cFFFFFF00Remove from current focused work order|r")
+				elseif IsAltKeyDown() then -- Add to current trade target
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick+Alt|r")
+					GameTooltip:AddLine("|cFFFFFF00Quick add to current trade targets work order|r")
+				else
+					GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
+					GameTooltip:AddLine("|cFFFFFF00Add to current focused work order|r")
+					GameTooltip:AddLine(" ");
+					GameTooltip:AddLine("|cFFFFFFFFRightclick|r")
+					GameTooltip:AddLine("|cFFFFFF00Add/remove to favorites|r")
+				end
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
+				GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl,Alt,Shift+Ctrl,Ctrl+Alt,Shift+Ctrl+Alt|r")
+		end
+
+		enchantButton:EnableKeyboard(true)
+		enchantButton:SetScript("OnKeyDown", function(self, keyboard)
+			self:SetPropagateKeyboardInput(true)
+			if keyboard == "SHIFT" or "ALT" or "CONTROL" then
+				if ProEnchantersOptions["EnableTooltips"] == true then
+					GameTooltip:Hide()
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					tooltipFormat()
+					GameTooltip:Show()
+				end
+			end
+		end)
+		enchantButton:SetScript("OnKeyUp", function(self, keyboard)
+			if keyboard == "SHIFT" or "ALT" or "CONTROL" then
+				if ProEnchantersOptions["EnableTooltips"] == true then
+					GameTooltip:Hide()
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					tooltipFormat()
+					GameTooltip:Show()
+				end
+			end
+		end)
+		enchantButton:SetScript("OnEnter", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				tooltipFormat()
+				GameTooltip:Show()
+			end
+		end)
+		enchantButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
+
 		-- Set the script for the button's OnClick event
 		enchantButton:RegisterForClicks("RightButtonUp", "LeftButtonUp")
 		enchantButton:SetScript("OnMouseUp", function(self, button)
@@ -2325,6 +2373,22 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	cusreqButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 	cusreqButton:SetNormalFontObject("GameFontHighlight")
 	cusreqButton:SetHighlightFontObject("GameFontNormal")
+	cusreqButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFCreate a custom request|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	cusreqButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
 	cusreqButton:SetScript("OnClick", function()
 		StaticPopup_Show("CUS_REQ_POPUP")
 	end)
@@ -2338,6 +2402,22 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
 	local _, normHeight = WorkOrderEnchantsFrame:GetSize()
+	titleButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFMinimize enchants frame|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	titleButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
 	titleButton:SetScript("OnClick", function()
 		WorkOrderEnchantsFrame:Hide()
 		ProEnchantersWorkOrderFrame.enchantsShowButton:Show()
@@ -2726,13 +2806,12 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["DelayWorkOrder"] = self:GetChecked()
 	end)
 
-	-- Create a header for AutoInviteAllChannels
+	-- Create a header for Whisper forced for mats
 	local WhisperMatsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	WhisperMatsHeader:SetFontObject(UIFontBasic)
 	WhisperMatsHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
 	WhisperMatsHeader:SetText("Always whisper the players mats and requested enchants instead of party chat?")
 
-	-- Auto Invite Checkbox
 	local WhisperMatsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
 	WhisperMatsCb:SetPoint("LEFT", WhisperMatsHeader, "RIGHT", 10, 0)
 	WhisperMatsCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
@@ -2742,10 +2821,53 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["WhisperMats"] = self:GetChecked()
 	end)
 
+	-- Escape closes main window toggle
+	local EscCloseHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	EscCloseHeader:SetFontObject(UIFontBasic)
+	EscCloseHeader:SetPoint("TOPLEFT", WhisperMatsHeader, "TOPLEFT", 0, -30)
+	EscCloseHeader:SetText("Close main window on Escape press?")
+
+	
+	local EscCloseCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	EscCloseCb:SetPoint("LEFT", EscCloseHeader, "RIGHT", 10, 0)
+	EscCloseCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EscCloseCb:SetHitRectInsets(0, 0, 0, 0)
+	EscCloseCb:SetChecked(ProEnchantersOptions["CloseOnEscape"])
+	EscCloseCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["CloseOnEscape"] = self:GetChecked()
+		-- Add or Remove from the UISpecialFrames table
+		if ProEnchantersOptions["CloseOnEscape"] == true then
+			tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
+		elseif ProEnchantersOptions["CloseOnEscape"] == false then
+			for i, v in ipairs(UISpecialFrames) do
+				if v == "ProEnchantersWorkOrderFrame" then
+					table.remove(UISpecialFrames, i)
+					break
+				end
+			end
+		end
+	end)
+
+	-- Create a header for Tooltips
+	local TooltipsEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	TooltipsEnableHeader:SetFontObject(UIFontBasic)
+	TooltipsEnableHeader:SetPoint("TOPLEFT", EscCloseHeader, "TOPLEFT", 0, -30)
+	TooltipsEnableHeader:SetText("Enable tooltips? (Work in progress)")
+
+	local TooltipsEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	TooltipsEnableCb:SetPoint("LEFT", TooltipsEnableHeader, "RIGHT", 10, 0)
+	TooltipsEnableCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	TooltipsEnableCb:SetHitRectInsets(0, 0, 0, 0)
+	TooltipsEnableCb:SetChecked(ProEnchantersOptions["EnableTooltips"])
+	TooltipsEnableCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["EnableTooltips"] = self:GetChecked()
+	end)
+
+
 	local filtersButtonBg = ScrollChild:CreateTexture(nil, "BACKGROUND")
 	filtersButtonBg:SetColorTexture(unpack(MainButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
 	filtersButtonBg:SetSize(270, 24)                            -- Adjust size as needed
-	filtersButtonBg:SetPoint("TOPLEFT", WhisperMatsHeader, "TOPLEFT", -4, -25)
+	filtersButtonBg:SetPoint("TOPLEFT", TooltipsEnableHeader, "TOPLEFT", -4, -25)
 
 	-- Create a Trigger and Filters for invites button
 	local filtersButton2 = CreateFrame("Button", nil, ScrollChild)
@@ -6752,6 +6874,21 @@ function CreateCusWorkOrder(customerName, bypass)
 	local textWidth = customerTitleButton:GetFontString():GetStringWidth()
 	-- Add some padding to the width for aesthetics
 	customerTitleButton:SetSize(textWidth + 10, 20) -- Adjust the height as needed and add some padding to width
+	customerTitleButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFSet as current focused work order|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	customerTitleButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
 	customerTitleButton:SetScript("OnClick", function()
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
@@ -6767,6 +6904,33 @@ function CreateCusWorkOrder(customerName, bypass)
 	customerAllMats:SetNormalFontObject("GameFontHighlight")
 	customerAllMats:SetHighlightFontObject("GameFontNormal")
 	customerAllMats:SetSize(50, 20) -- Adjust the height as needed and add some padding to width
+	customerAllMats:SetScript("OnEnter", function(self) -- bookmark
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+					GameTooltip:AddLine(" ");
+					if IsShiftKeyDown() then -- Link to player via party or whisper
+						GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift|r")
+						GameTooltip:AddLine("|cFFFFFF00Msg all enchants requested within work order|r")
+					elseif IsControlKeyDown() then -- Remove from current customer
+						GameTooltip:AddLine("|cFFFFFFFFLeftclick+Ctrl|r")
+						GameTooltip:AddLine("|cFFFFFF00Remove all requested enchants from work order|r")
+					else
+						GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
+						GameTooltip:AddLine("|cFFFFFF00Msg all required mats for requested enchants (Party/Raid/Whisper)|r")
+					end
+					GameTooltip:AddLine(" ");
+					GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
+					GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
+					GameTooltip:Show()
+	end
+	end)
+		
+	customerAllMats:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
 	customerAllMats:SetScript("OnClick", function()
 		local cusName = tostring(customerName)
 		local lowercusName = string.lower(cusName)
@@ -6923,6 +7087,33 @@ function CreateCusWorkOrder(customerName, bypass)
 	tradehistoryEditBox:SetFontObject("GameFontHighlight")
 	tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 	tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0) -- Anchor bottom right to scrollChild
+	tradehistoryEditBox:SetScript("OnEnter", function(self) -- bookmark
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+					if IsShiftKeyDown() then
+						GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Shift|r")
+						GameTooltip:AddLine("|cFFFFFF00Msg required mats (Party/Raid/Whisper|r")
+					elseif IsControlKeyDown() then
+						GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Ctrl|r")
+						GameTooltip:AddLine("|cFFFFFF00Remove requested enchant|r")
+					else
+						GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
+						GameTooltip:AddLine("|cFFFFFF00Set as focused work order|r")
+					end
+					GameTooltip:AddLine(" ");
+					GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
+					GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
+					GameTooltip:Show()
+		end
+	end)
+		
+	tradehistoryEditBox:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
 	tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
@@ -7010,6 +7201,21 @@ function CreateCusWorkOrder(customerName, bypass)
 	minButton:SetHighlightFontObject("GameFontNormal")
 	local minimized = false
 	frame.minimized = minimized
+	minButton:SetScript("OnEnter", function(self) -- bookmark
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFMinimize/Maximize work order|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	minButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
 	minButton:SetScript("OnClick", function()
 		if minimized == false then
 			tradehistoryEditBox:SetText("")
@@ -7074,6 +7280,21 @@ function CreateCusWorkOrder(customerName, bypass)
 	closeButton:SetHighlightFontObject("GameFontNormal")
 
 	--Close Frame Functions
+	closeButton:SetScript("OnEnter", function(self) -- bookmark
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+			GameTooltip:AddLine(" ");
+			GameTooltip:AddLine("|cFFFFFFFFMark end of work order and close|r")
+			GameTooltip:Show()
+		end
+	end)
+		
+	closeButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
 	local tradeLine = LIGHTGREEN .. "---- End of Workorder# " .. frameID .. " ----" .. ColorClose
 	closeButton:SetScript("OnClick", function()
 		if minimized == true then
@@ -7391,6 +7612,21 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetHighlightFontObject("GameFontNormal")
 		enchantButton:SetMouseClickEnabled(true)
 		enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFApply " .. enchValue .. " to trade partners item|r")
+				GameTooltip:Show()
+			end
+		end)
+			
+		enchantButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 		enchantButton:SetAttribute("type", "macro")
 		enchantButton:SetAttribute("macrotext", macro2)
 		--enchantButton:SetAttribute("type", "spell")
@@ -7415,6 +7651,7 @@ function ProEnchantersTradeWindowCreateFrame()
 
 	-- Load rest of Relevant Enchant Buttons that are Not Available
 	for _, key in ipairs(keys) do
+		local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
 		enchantName = CombinedEnchants[key].name
 
 		local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
@@ -7442,6 +7679,21 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
+		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFLink missing mats for " .. enchValue .. "|r")
+				GameTooltip:Show()
+			end
+		end)
+			
+		enchantButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 		enchantButton:SetScript("OnClick", function()
 			local customerName = string.lower(UnitName("NPC"))
 			LinkMissingMats(key, customerName)
@@ -7528,7 +7780,21 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetHighlightFontObject("GameFontNormal")
 		enchantButton:SetMouseClickEnabled(true)
 		enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
-
+		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFApply " .. enchValue .. " to trade partners item|r")
+				GameTooltip:Show()
+			end
+		end)
+			
+		enchantButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 		enchantButton:SetAttribute("type", "macro")
 		enchantButton:SetAttribute("macrotext", macro2)
 		--[[enchantButton:SetAttribute("type", "spell")
@@ -7554,6 +7820,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	-- Load rest of Relevant Enchant Buttons that are Not Available
 	for _, key in ipairs(keys) do
 		enchantName = CombinedEnchants[key].name
+		local enchValue = PEenchantingLocales["Enchants"][key][LocalLanguage]
 
 		local enchantTitleText1 = enchantName:gsub(" %- ", "\n") -- Corrected from 'value' to 'enchantName'
 		local enchantStats1 = CombinedEnchants[key].stats
@@ -7581,6 +7848,21 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
+		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFLink missing mats for " .. enchValue .. "|r")
+				GameTooltip:Show()
+			end
+		end)
+			
+		enchantButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 		enchantButton:SetScript("OnClick", function()
 			local customerName = string.lower(UnitName("NPC"))
 			LinkMissingMats(key, customerName)
@@ -7624,6 +7906,21 @@ function ProEnchantersTradeWindowCreateFrame()
 		convertButton:SetHighlightFontObject("GameFontNormal")
 		convertButton:SetMouseClickEnabled(true)
 		convertButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
+		convertButton:SetScript("OnEnter", function(self) -- bookmark
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFConvert essence|r")
+				GameTooltip:Show()
+			end
+		end)
+			
+		convertButton:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
 		convertButton:SetAttribute("type", "item")
 		convertButton:SetAttribute("item", name)
 		convertButton:Hide()
@@ -8392,6 +8689,17 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["AcceptGoldPopups"] = false
 	end
 
+	if ProEnchantersOptions["CloseOnEscape"] == nil then
+		ProEnchantersOptions["CloseOnEscape"] = true
+		tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
+	elseif ProEnchantersOptions["CloseOnEscape"] == true then
+		tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
+	end
+
+	if ProEnchantersOptions["EnableTooltips"] == nil then
+		ProEnchantersOptions["EnableTooltips"] = false
+	end
+
 	if ProEnchantersOptions["PartyJoinSound"] == nil then
 		ProEnchantersOptions["PartyJoinSound"] = workwork
 	end
@@ -8611,13 +8919,13 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		FullResetFrames()
 	elseif msg == "goldreset" then
 		ResetGoldTraded()
-	elseif msg == "minimap" then -- bookmark, can do icon:Hide("PELDB") or icon:Show("PELDB") to show icon, would need to pull the hide status from the new ProEnchantersDB saved variables something like self.db.profile.minimap.hide == true or false maybe
+	elseif msg == "minimap" then
 		if addon.db.profile.minimap.hide then
 			icon:Show("ProEnchanters")
 			addon.db.profile.minimap.hide = false
 		else
 			icon:Hide("ProEnchanters")
-			addon.db.profile.minimap.hide = true
+            addon.db.profile.minimap.hide = true
 		end
 	else
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
@@ -8637,12 +8945,14 @@ SlashCmdList["PROENCHANTERSCLEAR"] = function(msg)
 		print(GREEN .. "Trade history has been cleared." .. ColorClose)
 	else
 		print(RED ..
-			"This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." ..
-			ColorClose)
+		"This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." ..
+		ColorClose)
 		print(RED ..
-			"This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." ..
-			ColorClose)
-		print(RED .. "To proceed with the data wipe, please do: /peclearhistory yes" .. ColorClose)
+		"This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." ..
+		ColorClose)
+		print(RED ..
+		"To proceed with the data wipe, please do: /peclearhistory yes" ..
+		ColorClose)
 	end
 end
 
@@ -10502,8 +10812,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 	end
 end
 
--- Enable close on Escape pressed
-tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
+
 
 -- Function to hide all frames
 local function HideAllFrames()

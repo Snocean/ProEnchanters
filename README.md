@@ -4,6 +4,21 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 7.0
+- **Added** Context menus for all right clicks (chat, nameplates, self, etc) - thanks @Cynsible
+- **Fixed** AutoInvite checkbox in settings not syncing with minimap toggle (should be fixed)
+- **Modify** Changed tooltips for the Enchants window to hopefully change while hovering instead of having to re-hover
+
+## Update 6.9.1
+- **Fixed** Abiltiy to toggle auto invite on/off from minimap button
+- **Fixed** Option to enable/disable "Escape closes main window", also attempted to make it no longer require a reload (not sure if this worked or not)
+- **Modified** Formatting for tooltips to be less obnoxious and massive
+
+## Update 6.9 (nice)
+- **Added** Ability to toggle Auto Invite on/off from minimap button with Shift+Left Click
+- **Added** Option to enable/disable "Escape closes main window" now in settings, requires a reload when toggled
+- **Work in progress** Started work on adding tooltips, there is a checkbox within the main settings to enable/disable tooltips, disabled by default for now
+
 ## Update 6.8
 - **Fixed (Hopefully)** Minimap button SHOULD NOW BE ABLE TO BE HIDDEN
 - **Modified** When the add-on attempts to open a new work order while one is already created and it displays a yellow message in the chat it should now check if it has sent this warning already or not and if it has then it will not repeat the warning. This is untested.
