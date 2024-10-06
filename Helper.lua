@@ -1240,6 +1240,21 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
                 frame.otherEnchantsBg:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
                 frame.otherEnchants:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset + 3)
+                frame.otherEnchants:SetScript("OnEnter", function(self)
+                    if ProEnchantersOptions["EnableTooltips"] == true then
+                        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                        GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+                        GameTooltip:AddLine(" ");
+                        GameTooltip:AddLine("|cFFFFFFFFClick to refresh enchant buttons|r")
+                        GameTooltip:Show()
+                    end
+                end)
+                    
+                frame.otherEnchants:SetScript("OnLeave", function(self)
+                        if ProEnchantersOptions["EnableTooltips"] == true then
+                            GameTooltip:Hide()
+                        end
+                    end)
                 frame.otherEnchants:SetScript("OnClick", function()
                     local customerName = PEtradeWho
                     customerName = string.lower(customerName)
