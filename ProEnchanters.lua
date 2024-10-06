@@ -63,7 +63,8 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
 			else
 				ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
-				print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " .. (ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+				print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
+					(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
 				-- Update the checkbox state
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
 					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions
