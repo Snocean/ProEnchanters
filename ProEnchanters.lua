@@ -433,10 +433,8 @@ local menuButton = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton)
 end)
 ]]
 
--- New menu buttons - this one works
-local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
-	menuButton:CreateDivider()
-	menuButton:CreateTitle("Pro Enchanters")
+-- Function to create the work order button
+local function createWorkOrderButton(menuButton, contextData)
 	menuButton:CreateButton("Create Work Order", function()
 		CreateCusWorkOrder(contextData.name)
 		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
@@ -446,7 +444,26 @@ local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, 
 			ResetFrames()
 		end
 	end)
-end)
+end
+
+-- Add custom Pro Enchanters options to various menus
+local function addProEnchantersMenu(menuName)
+	Menu.ModifyMenu(menuName, function(_, menuButton, contextData)
+		menuButton:CreateDivider()
+		menuButton:CreateTitle("Pro Enchanters")
+		createWorkOrderButton(menuButton, contextData)
+	end)
+end
+
+-- Modify menus for different unit types
+addProEnchantersMenu("MENU_UNIT_SELF")   -- Right-click on Self
+addProEnchantersMenu("MENU_UNIT_PLAYER") -- Right-click on players
+addProEnchantersMenu("MENU_UNIT_PARTY")  -- Right-click on party members
+addProEnchantersMenu("MENU_UNIT_RAID")   -- Right-click on raid members
+addProEnchantersMenu("MENU_UNIT_FRIEND") -- Right-click on friends
+addProEnchantersMenu("MENU_CHAT")        -- Right-click in chat messages
+addProEnchantersMenu("MENU_VEHICLE")     -- Right-click on vehicles
+addProEnchantersMenu("MENU_NAMEPLATE")   -- Right-click on nameplates
 
 --[[ this one doesn't
 local menuButton2 = Menu.ModifyMenu("MENU_UNIT_CHAT_ROSTER", function(menuButton, contextData)
