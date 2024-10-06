@@ -67,8 +67,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 					(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
 				-- Update the checkbox state
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions
-						["WorkWhileClosed"])
+					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
 				end
 			end
 		end
