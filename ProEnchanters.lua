@@ -71,7 +71,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				-- Update the checkbox state
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
 					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions
-					["WorkWhileClosed"])
+						["WorkWhileClosed"])
 				end
 			end
 		end
@@ -8624,11 +8624,11 @@ SlashCmdList["PROENCHANTERSCLEAR"] = function(msg)
 		print(GREEN .. "Trade history has been cleared." .. ColorClose)
 	else
 		print(RED ..
-		"This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." ..
-		ColorClose)
+			"This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." ..
+			ColorClose)
 		print(RED ..
-		"This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." ..
-		ColorClose)
+			"This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." ..
+			ColorClose)
 		print(RED .. "To proceed with the data wipe, please do: /peclearhistory yes" .. ColorClose)
 	end
 end
