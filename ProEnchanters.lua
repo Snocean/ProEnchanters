@@ -30,11 +30,11 @@ local LSM = LibStub("LibSharedMedia-3.0")
 -- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
 local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
 local icon = LibStub("LibDBIcon-1.0", true)
-local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {  
-	type = "data source",  
-	text = "Pro Enchanters",  
-	icon = "Interface\\AddOns\\ProEnchanters\\custom_icon",  
-	OnClick = function(self, button) 
+local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
+	type = "data source",
+	text = "Pro Enchanters",
+	icon = "Interface\\AddOns\\ProEnchanters\\custom_icon",
+	OnClick = function(self, button)
 		if button == "LeftButton" then
 			if IsControlKeyDown() then
 				addon.db.profile.minimap.hide = true
@@ -57,8 +57,10 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				end
 				if ProEnchantersWorkOrderEnchantsFrame then
 					ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-					ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-					ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
+					ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1,
+						0)
+					ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT",
+						-1,
 						0)
 				end
 				print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
@@ -68,12 +70,13 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 					(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
 				-- Update the checkbox state
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions
+					["WorkWhileClosed"])
 				end
 			end
 		end
 	end,
-	OnEnter = function(self) 
+	OnEnter = function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
@@ -84,10 +87,10 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 		GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
 		GameTooltip:Show()
 	end,
-	OnLeave = function(self) 
+	OnLeave = function(self)
 		GameTooltip:Hide()
 	end,
-})  
+})
 
 function addon:OnInitialize()
 	-- Assuming you have a ## SavedVariables: BunniesDB line in your TOC
@@ -100,13 +103,11 @@ function addon:OnInitialize()
 	})
 
 	if self.db.profile.minimap.hide == nil then
-        self.db.profile.minimap.hide = false  -- Set default to false
-    end
+		self.db.profile.minimap.hide = false -- Set default to false
+	end
 
 	icon:Register("ProEnchanters", PELDB, self.db.profile.minimap)
 end
-
-
 
 -- Sound Register
 local sounds = {
@@ -433,7 +434,7 @@ end)
 ]]
 
 -- New menu buttons - this one works
-local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(menuButton, contextData)
+local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
 	menuButton:CreateDivider()
 	menuButton:CreateTitle("Pro Enchanters")
 	menuButton:CreateButton("Create Work Order", function()
@@ -2154,11 +2155,11 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					local matsReq = ProEnchants_GetReagentList(reqEnchant)
 					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
 					local cusName = tostring(customerName)
-						if cusName and cusName ~= "" then
-							SendChatMessage(msgReq, "WHISPER", nil, cusName)
-						else
-							print("no whisper target for enchant link")
-						end
+					if cusName and cusName ~= "" then
+						SendChatMessage(msgReq, "WHISPER", nil, cusName)
+					else
+						print("no whisper target for enchant link")
+					end
 				elseif IsShiftKeyDown() then -- Link to player via party or whisper
 					--local matsReq = ProEnchants_GetReagentListNoLink(reqEnchant)
 					local matsReq = ProEnchants_GetReagentList(reqEnchant)
@@ -6692,8 +6693,8 @@ function CreateCusWorkOrder(customerName, bypass)
 					frameInfo.ExistingWOWarning = true
 				end
 				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						ScrollToActiveWorkOrder(customerName)
-						UpdateTradeHistory(customerName)
+					ScrollToActiveWorkOrder(customerName)
+					UpdateTradeHistory(customerName)
 				end
 				return frameInfo.Frame
 			end
@@ -8603,7 +8604,7 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			addon.db.profile.minimap.hide = false
 		else
 			icon:Hide("ProEnchanters")
-            addon.db.profile.minimap.hide = true
+			addon.db.profile.minimap.hide = true
 		end
 	else
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
@@ -8622,8 +8623,12 @@ SlashCmdList["PROENCHANTERSCLEAR"] = function(msg)
 		ProEnchantersTradeHistory = {}
 		print(GREEN .. "Trade history has been cleared." .. ColorClose)
 	else
-		print(RED .. "This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." .. ColorClose)
-		print(RED .. "This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." .. ColorClose)
+		print(RED ..
+		"This will completely NUKE your trade history and is not reversible. Please back up the ProEnchanters.lua and ProEnchanters.lua.bak in the WTF Account folder before continuing if you wish to be able to revert." ..
+		ColorClose)
+		print(RED ..
+		"This will wipe currently open work order information as well and may cause issues, please do this before or after you are finished your work orders and a /reload is highly recommended after doing this." ..
+		ColorClose)
 		print(RED .. "To proceed with the data wipe, please do: /peclearhistory yes" .. ColorClose)
 	end
 end
