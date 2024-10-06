@@ -2153,40 +2153,36 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 			GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl,Alt,Shift+Ctrl,Ctrl+Alt,Shift+Ctrl+Alt|r")
 		end
 
+		local lastModifierState = {}
+
 		enchantButton:EnableKeyboard(true)
 
 		-- Function to check and update tooltip when modifier keys are pressed
 		local function updateTooltipWithModifier()
 			if ProEnchantersOptions["EnableTooltips"] == true then
-				-- Only update tooltip content without clearing or hiding
+				-- Clear previous content without hiding the tooltip
 				tooltipFormat()
 				GameTooltip:Show() -- Ensure the tooltip remains visible and updates its content
 			end
 		end
 
-		-- OnKeyDown handler
-		enchantButton:SetScript("OnKeyDown", function(self, key)
-			--print("KeyDown: " .. key)
+		-- Function to get the current state of modifier keys
+		local function getModifierState()
+			return IsShiftKeyDown(), IsAltKeyDown(), IsControlKeyDown()
+		end
 
-			-- Use WoW API to check if a modifier is held down
-			if IsShiftKeyDown() or IsAltKeyDown() or IsControlKeyDown() then
-				--print("Modifier detected")
-				self:SetPropagateKeyboardInput(false) -- Stop propagation for modifier keys
-				updateTooltipWithModifier() -- Update the tooltip when a modifier is held
-			else
-				self:SetPropagateKeyboardInput(true)
-			end
-		end)
+		-- OnUpdate handler to continuously check modifier state and update tooltip
+		enchantButton:SetScript("OnUpdate", function(self, elapsed)
+			local shift, alt, ctrl = getModifierState()
 
-		-- OnKeyUp handler
-		enchantButton:SetScript("OnKeyUp", function(self, key)
-			--print("KeyUp: " .. key)
+			-- Check if the modifier state has changed
+			if lastModifierState.shift ~= shift or lastModifierState.alt ~= alt or lastModifierState.ctrl ~= ctrl then
+				lastModifierState.shift = shift
+				lastModifierState.alt = alt
+				lastModifierState.ctrl = ctrl
 
-			-- Use WoW API to check if a modifier key was released
-			if not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then --TODO: Whats happening here is now that everything works as expected besides if multiple mod-keys are pressed (e.g. ctrl+alt and one of them is released, it does not update the tooltext for the single mod-key tooltip)
-				--print("Modifier released")
-				self:SetPropagateKeyboardInput(true)                              -- Re-enable input propagation for non-modifiers
-				updateTooltipWithModifier()                                       -- Update the tooltip when a modifier is released
+				-- Update tooltip if any modifier state has changed
+				updateTooltipWithModifier()
 			end
 		end)
 
@@ -2207,8 +2203,6 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 				GameTooltip:Hide()
 			end
 		end)
-
-
 
 
 		-- Set the script for the button's OnClick event
