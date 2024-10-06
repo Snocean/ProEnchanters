@@ -2183,10 +2183,10 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 			--print("KeyUp: " .. key)
 
 			-- Use WoW API to check if a modifier key was released
-			if not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then
+			if not IsShiftKeyDown() and not IsAltKeyDown() and not IsControlKeyDown() then --TODO: Whats happening here is now that everything works as expected besides if multiple mod-keys are pressed (e.g. ctrl+alt and one of them is released, it does not update the tooltext for the single mod-key tooltip)
 				--print("Modifier released")
-				self:SetPropagateKeyboardInput(true) -- Re-enable input propagation for non-modifiers
-				updateTooltipWithModifier() -- Update the tooltip when a modifier is released
+				self:SetPropagateKeyboardInput(true)                              -- Re-enable input propagation for non-modifiers
+				updateTooltipWithModifier()                                       -- Update the tooltip when a modifier is released
 			end
 		end)
 
