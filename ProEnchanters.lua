@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v7.1"
+local version = "v7.2"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
