@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v6.9"
+local version = "v7.1"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -6922,25 +6922,64 @@ function CreateCusWorkOrder(customerName, bypass)
 	customerAllMats:SetNormalFontObject("GameFontHighlight")
 	customerAllMats:SetHighlightFontObject("GameFontNormal")
 	customerAllMats:SetSize(50, 20)                  -- Adjust the height as needed and add some padding to width
+	-- Tooltips for All Mats button
+	local function tooltipFormat()
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+		GameTooltip:AddLine(" ");
+		if IsShiftKeyDown() then -- Link to player via party or whisper
+			GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift|r")
+			GameTooltip:AddLine("|cFFFFFF00Msg all enchants requested within work order|r")
+		elseif IsControlKeyDown() then -- Remove from current customer
+			GameTooltip:AddLine("|cFFFFFFFFLeftclick+Ctrl|r")
+			GameTooltip:AddLine("|cFFFFFF00Remove all requested enchants from work order|r")
+		else
+			GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
+			GameTooltip:AddLine("|cFFFFFF00Msg all required mats for requested enchants (Party/Raid/Whisper)|r")
+		end
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
+		GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
+	end
+
+	local lastModifierState = {}
+
+	customerAllMats:EnableKeyboard(true)
+
+	-- Function to check and update tooltip when modifier keys are pressed
+	local function updateTooltipWithModifier()
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			-- Clear previous content without hiding the tooltip
+			tooltipFormat()
+			GameTooltip:Show() -- Ensure the tooltip remains visible and updates its content
+		end
+	end
+
+	-- Function to get the current state of modifier keys
+	local function getModifierState()
+		return IsShiftKeyDown(), IsAltKeyDown(), IsControlKeyDown()
+	end
+
+	-- OnUpdate handler to continuously check modifier state and update tooltip
+	customerAllMats:SetScript("OnUpdate", function(self, elapsed)
+		local shift, alt, ctrl = getModifierState()
+
+		-- Check if the modifier state has changed
+		if lastModifierState.shift ~= shift or lastModifierState.alt ~= alt or lastModifierState.ctrl ~= ctrl then
+			lastModifierState.shift = shift
+			lastModifierState.alt = alt
+			lastModifierState.ctrl = ctrl
+
+			-- Update tooltip if any modifier state has changed
+			updateTooltipWithModifier()
+		end
+	end)
+
 	customerAllMats:SetScript("OnEnter", function(self) -- bookmark
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-			GameTooltip:AddLine(" ");
-			if IsShiftKeyDown() then -- Link to player via party or whisper
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick+Shift|r")
-				GameTooltip:AddLine("|cFFFFFF00Msg all enchants requested within work order|r")
-			elseif IsControlKeyDown() then -- Remove from current customer
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick+Ctrl|r")
-				GameTooltip:AddLine("|cFFFFFF00Remove all requested enchants from work order|r")
-			else
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
-				GameTooltip:AddLine("|cFFFFFF00Msg all required mats for requested enchants (Party/Raid/Whisper)|r")
-			end
-			GameTooltip:AddLine(" ");
-			GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
-			GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
-			GameTooltip:Show()
+			tooltipFormat()
+			GameTooltip:Show() -- Force tooltip to update and display on enter
 		end
 	end)
 
@@ -6949,6 +6988,7 @@ function CreateCusWorkOrder(customerName, bypass)
 			GameTooltip:Hide()
 		end
 	end)
+
 	customerAllMats:SetScript("OnClick", function()
 		local cusName = tostring(customerName)
 		local lowercusName = string.lower(cusName)
@@ -7105,25 +7145,58 @@ function CreateCusWorkOrder(customerName, bypass)
 	tradehistoryEditBox:SetFontObject("GameFontHighlight")
 	tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 	tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0) -- Anchor bottom right to scrollChild
-	tradehistoryEditBox:SetScript("OnEnter", function(self)                    -- bookmark
+	-- Tooltips for trade history within work order
+	local function tooltipFormat2()
+		GameTooltip:ClearLines()
+		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+		GameTooltip:AddLine(" ");
+		if IsShiftKeyDown() then
+			GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Shift|r")
+			GameTooltip:AddLine("|cFFFFFF00Msg required mats (Party/Raid/Whisper|r")
+		elseif IsControlKeyDown() then
+			GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Ctrl|r")
+			GameTooltip:AddLine("|cFFFFFF00Remove requested enchant|r")
+		else
+			GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
+			GameTooltip:AddLine("|cFFFFFF00Set as focused work order|r")
+		end
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
+		GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
+	end
+
+	tradehistoryEditBox:EnableKeyboard(true)
+
+	-- Function to check and update tooltip when modifier keys are pressed
+	local function updateTooltipWithModifier2()
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			-- Clear previous content without hiding the tooltip
+			tooltipFormat2()
+			GameTooltip:Show() -- Ensure the tooltip remains visible and updates its content
+		end
+	end
+
+	-- OnUpdate handler to continuously check modifier state and update tooltip
+	tradehistoryEditBox:SetScript("OnUpdate", function(self, elapsed)
+		local shift, alt, ctrl = getModifierState()
+
+		-- Check if the modifier state has changed
+		if lastModifierState.shift ~= shift or lastModifierState.alt ~= alt or lastModifierState.ctrl ~= ctrl then
+			lastModifierState.shift = shift
+			lastModifierState.alt = alt
+			lastModifierState.ctrl = ctrl
+
+			-- Update tooltip if any modifier state has changed
+			updateTooltipWithModifier2()
+		end
+	end)
+
+-- Tooltips for trade history within work order
+	tradehistoryEditBox:SetScript("OnEnter", function(self) 
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-			GameTooltip:AddLine(" ");
-			if IsShiftKeyDown() then
-				GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Shift|r")
-				GameTooltip:AddLine("|cFFFFFF00Msg required mats (Party/Raid/Whisper|r")
-			elseif IsControlKeyDown() then
-				GameTooltip:AddLine("|cFFFFFFFFEnchant Leftclick+Ctrl|r")
-				GameTooltip:AddLine("|cFFFFFF00Remove requested enchant|r")
-			else
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick|r")
-				GameTooltip:AddLine("|cFFFFFF00Set as focused work order|r")
-			end
-			GameTooltip:AddLine(" ");
-			GameTooltip:AddLine("|cFFFFFFFFModifier Key Combos|r");
-			GameTooltip:AddLine("|cFFFFFF00Shift,Ctrl|r")
-			GameTooltip:Show()
+			tooltipFormat2()
+			GameTooltip:Show() -- Force tooltip to update and display on enter
 		end
 	end)
 
@@ -7132,6 +7205,7 @@ function CreateCusWorkOrder(customerName, bypass)
 			GameTooltip:Hide()
 		end
 	end)
+
 	tradehistoryEditBox:SetScript("OnEditFocusGained", function(self)
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
@@ -8309,122 +8383,6 @@ function PESearchInventoryForItems()
 	end
 	return availableMats, availableMatsIds
 end
-
--- End trade order on trade frame
-
---[[NEW MINIMAP ICON
--- For Leatrix and other addons that modify the minimap button it eventually should be changed to https://www.wowace.com/projects/libdbicon-1-0
--- Create a minimap button
-local minimapButton = CreateFrame("Button", "ProEnchantersMinimapButton", Minimap)
-minimapButton:SetFrameStrata("MEDIUM")
-minimapButton:SetSize(32, 32)
-minimapButton:SetFrameLevel(8)
-minimapButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-
--- Set the button's icon
-local icon = minimapButton:CreateTexture(nil, "BACKGROUND")
-icon:SetTexture("Interface\\AddOns\\ProEnchanters\\custom_icon")
-icon:SetSize(20, 20)
-icon:SetPoint("CENTER")
-
--- Set the button's border
-local border = minimapButton:CreateTexture(nil, "OVERLAY")
-border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-border:SetSize(54, 54)
-border:SetPoint("TOPLEFT")
-
--- Position the button around the minimap
-local function UpdateMinimapButtonPosition()
-	local x = ProEnchantersOptions.minimapX or (Minimap:GetRight() - minimapButton:GetWidth() / 2)
-	local y = ProEnchantersOptions.minimapY or (Minimap:GetTop() - minimapButton:GetHeight() / 2)
-	minimapButton:ClearAllPoints()
-	minimapButton:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
-end
-
-minimapButton:RegisterForDrag("LeftButton")
-minimapButton:SetMovable(true)
-
-minimapButton:SetScript("OnDragStart", function(self)
-	self:StartMoving()
-end)
-
-minimapButton:SetScript("OnDragStop", function(self)
-	self:StopMovingOrSizing()
-	local x, y = self:GetLeft(), self:GetTop()
-	ProEnchantersOptions.minimapX = x
-	ProEnchantersOptions.minimapY = y
-	UpdateMinimapButtonPosition()
-end)
-
-UpdateMinimapButtonPosition()
-
-minimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-minimapButton:SetScript("OnClick", function(self, button)
-	if button == "LeftButton" then
-		if IsControlKeyDown() then
-			--hide minimap button
-			minimapButton:Hide()
-		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
-			ProEnchantersWorkOrderFrame:Hide()
-			ProEnchantersWorkOrderEnchantsFrame:Hide()
-		elseif ProEnchantersWorkOrderFrame then
-			ProEnchantersWorkOrderFrame:Show()
-			ProEnchantersWorkOrderEnchantsFrame:Show()
-			ResetFrames()
-		end
-	elseif button == "RightButton" then
-		if IsShiftKeyDown() then
-			-- Reset frame position and size
-			if ProEnchantersWorkOrderFrame then
-				ProEnchantersWorkOrderFrame:ClearAllPoints()
-				ProEnchantersWorkOrderFrame:SetPoint("CENTER", UIParent, "CENTER")
-				ProEnchantersWorkOrderFrame:SetSize(455, 630) -- Set to default size
-			end
-			if ProEnchantersWorkOrderEnchantsFrame then
-				ProEnchantersWorkOrderEnchantsFrame:ClearAllPoints()
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("TOPLEFT", ProEnchantersWorkOrderFrame, "TOPRIGHT", -1, 0)
-				ProEnchantersWorkOrderEnchantsFrame:SetPoint("BOTTOMLEFT", ProEnchantersWorkOrderFrame, "BOTTOMRIGHT", -1,
-					0)
-			end
-			print("|cFF800080ProEnchanters|r: Frame position and size have been reset.")
-		else
-			ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
-			print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
-				(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-			-- Update the checkbox state
-			if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
-				ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
-			end
-		end
-	end
-end)
-
-minimapButton:SetScript("OnEnter", function(self)
-	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-	GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-	GameTooltip:AddLine(" ");
-	GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-	local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work Closed|r")
-	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-	GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, use /pe minimap to re-enable|r")
-	GameTooltip:Show()
-end)
-
-minimapButton:SetScript("OnLeave", function(self)
-	GameTooltip:Hide()
-end)
-
-icon:SetDrawLayer("ARTWORK")
-
-if minimapButton.border then
-	minimapButton.border:SetTexture(nil)
-end
-
-if not ProEnchantersOptions.minimapAngle then
-	ProEnchantersOptions.minimapAngle = 45
-end]]
-
 
 local function LoadColorTables()
 	-- Initialize ProEnchantersOptions as a table if it's nil

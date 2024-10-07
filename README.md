@@ -4,6 +4,9 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 7.1
+- **Added** Fixed tooltips - thanks @Cynsible
+
 ## Update 7.0
 - **Added** Context menus for all right clicks (chat, nameplates, self, etc) - thanks @Cynsible
 - **Fixed** AutoInvite checkbox in settings not syncing with minimap toggle (should be fixed)
