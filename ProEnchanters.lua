@@ -1298,6 +1298,9 @@ local function tooltipFormat(enchValue)
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
 		local customerName = ProEnchantersCustomerNameEditBox:GetText()
+		if customerName == "" then
+			customerName = "customer"
+		end
 		GameTooltip:AddLine("|cFFFFFFFFCreate a work order for|r " .. STEELBLUE .. customerName .. "|r")
 		GameTooltip:Show()
 	end
