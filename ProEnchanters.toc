@@ -2,7 +2,7 @@
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 7.1
+## Version: 7.2
 ## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB
 
 # External code
