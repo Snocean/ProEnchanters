@@ -76,9 +76,16 @@ local thoriumbar = "\124cffffffff\124Hitem:12359::::::::60:::::\124h[Thorium Bar
 local truesilverbar = "\124cff1eff00\124Hitem:6037::::::::60:::::\124h[Truesilver Bar]\124h\124r"
 local wildvine = "\124cffffffff\124Hitem:8153::::::::60:::::\124h[Wildvine]\124h\124r"
 local wintersbite = "\124cffffffff\124Hitem:3819::::::::60:::::\124h[Wintersbite]\124h\124r"
+-- Phase 6 items
+local greaternatureprotectionpotion = "\124cffffffff\124Hitem:13458::::::::60:::::\124h[Greater Nature Protection Potion]\124h\124r"
+local qirajistalkervenom = "\124cffffffff\124Hitem:234011::::::::60:::::\124h[Qiraji Stalker Venom]\124h\124r"
+local ancientsandwormbile = "\124cffffffff\124Hitem:234010::::::::60:::::\124h[Ancient Sandworm Bile]\124h\124r"
+local stratholmeholywater = "\124cffffffff\124Hitem:13180::::::::60:::::\124h[Stratholme Holy Water]\124h\124r"
+local frayedabominationstitching = "\124cff1eff00\124Hitem:12735::::::::60:::::\124h[Frayed Abomination Stitching]\124h\124r"
+local skinofshadow = "\124cff1eff00\124Hitem:12753::::::::60:::::\124h[Skin of Shadow]\124h\124r"
 
 CombinedEnchants = {
-    ENCH1 = {
+    ENCH1001 = {
         name = "Enchant 2H Weapon - Agility",
         slot = "Weapon",
         spell_id = 27837,
@@ -90,7 +97,7 @@ CombinedEnchants = {
             "4x " .. essenceofair
         },
     },
-    ENCH2 = {
+    ENCH1002 = {
         name = "Enchant 2H Weapon - Greater Impact",
         slot = "Weapon",
         spell_id = 13937,
@@ -100,7 +107,7 @@ CombinedEnchants = {
             "2x " .. dreamdust
         },
     },
-    ENCH3 = {
+    ENCH1003 = {
         name = "Enchant 2H Weapon - Major Intellect",
         slot = "Weapon",
         spell_id = 20036,
@@ -110,7 +117,7 @@ CombinedEnchants = {
             "2x " .. largebrilliantshard
         },
     },
-    ENCH4 = {
+    ENCH1004 = {
         name = "Enchant 2H Weapon - Major Spirit",
         slot = "Weapon",
         spell_id = 20035,
@@ -120,7 +127,7 @@ CombinedEnchants = {
             "2x " .. largebrilliantshard
         },
     },
-    ENCH5 = {
+    ENCH1005 = {
         name = "Enchant 2H Weapon - Superior Impact",
         slot = "Weapon",
         spell_id = 20030,
@@ -130,7 +137,7 @@ CombinedEnchants = {
             "10x " .. illusiondust
         },
     },
-    ENCH6 = {
+    ENCH1006 = {
         name = "Enchant Boots - Agility",
         slot = "Boots",
         spell_id = 13935,
@@ -139,7 +146,7 @@ CombinedEnchants = {
             "2x " .. greaternetheressence
         },
     },
-    ENCH7 = {
+    ENCH1007 = {
         name = "Enchant Boots - Greater Agility",
         slot = "Boots",
         spell_id = 20023,
@@ -148,7 +155,7 @@ CombinedEnchants = {
             "8x " .. greatereternalessence
         },
     },
-    ENCH8 = {
+    ENCH1008 = {
         name = "Enchant Boots - Greater Stamina",
         slot = "Boots",
         spell_id = 20020,
@@ -157,7 +164,7 @@ CombinedEnchants = {
             "10x " .. dreamdust
         },
     },
-    ENCH9 = {
+    ENCH1009 = {
         name = "Enchant Boots - Spirit",
         slot = "Boots",
         spell_id = 20024,
@@ -167,7 +174,7 @@ CombinedEnchants = {
             "1x " .. lessereternalessence
         },
     },
-    ENCH10 = {
+    ENCH10010 = {
         name = "Enchant Bracer - Deflection",
         slot = "Bracer",
         spell_id = 13931,
@@ -177,7 +184,7 @@ CombinedEnchants = {
             "2x " .. dreamdust
         },
     },
-    ENCH11 = {
+    ENCH10011 = {
         name = "Enchant Bracer - Greater Intellect",
         slot = "Bracer",
         spell_id = 20008,
@@ -186,7 +193,7 @@ CombinedEnchants = {
             "3x " .. lessereternalessence
         },
     },
-    ENCH12 = {
+    ENCH10012 = {
         name = "Enchant Bracer - Greater Stamina",
         slot = "Bracer",
         spell_id = 13945,
@@ -195,7 +202,7 @@ CombinedEnchants = {
             "5x " .. dreamdust
         },
     },
-    ENCH13 = {
+    ENCH10013 = {
         name = "Enchant Bracer - Greater Strength",
         slot = "Bracer",
         spell_id = 13939,
@@ -205,7 +212,7 @@ CombinedEnchants = {
             "1x " .. greaternetheressence
         },
     },
-    ENCH14 = {
+    ENCH10014 = {
         name = "Enchant Bracer - Healing Power",
         slot = "Bracer",
         spell_id = 23802,
@@ -217,7 +224,7 @@ CombinedEnchants = {
             "6x " .. livingessence
         },
     },
-    ENCH15 = {
+    ENCH10015 = {
         name = "Enchant Bracer - Mana Regeneration",
         slot = "Bracer",
         spell_id = 23801,
@@ -228,7 +235,7 @@ CombinedEnchants = {
             "2x " .. essenceofwater
         },
     },
-    ENCH16 = {
+    ENCH10016 = {
         name = "Enchant Bracer - Superior Spirit",
         slot = "Bracer",
         spell_id = 20009,
@@ -238,7 +245,7 @@ CombinedEnchants = {
             "10x " .. dreamdust
         },
     },
-    ENCH17 = {
+    ENCH10017 = {
         name = "Enchant Bracer - Superior Stamina",
         slot = "Bracer",
         spell_id = 20011,
@@ -247,7 +254,7 @@ CombinedEnchants = {
             "15x " .. illusiondust
         },
     },
-    ENCH18 = {
+    ENCH10018 = {
         name = "Enchant Bracer - Superior Strength",
         slot = "Bracer",
         spell_id = 20010,
@@ -257,7 +264,7 @@ CombinedEnchants = {
             "6x " .. greatereternalessence
         },
     },
-    ENCH19 = {
+    ENCH10019 = {
         name = "Enchant Chest - Greater Stats",
         slot = "Chest",
         spell_id = 20025,
@@ -268,7 +275,7 @@ CombinedEnchants = {
             "10x " .. greatereternalessence
         },
     },
-    ENCH20 = {
+    ENCH10020 = {
         name = "Enchant Chest - Major Health",
         slot = "Chest",
         spell_id = 20026,
@@ -278,7 +285,7 @@ CombinedEnchants = {
             "1x " .. smallbrilliantshard
         },
     },
-    ENCH21 = {
+    ENCH10021 = {
         name = "Enchant Chest - Major Mana",
         slot = "Chest",
         spell_id = 20028,
@@ -288,7 +295,7 @@ CombinedEnchants = {
             "1x " .. smallbrilliantshard
         },
     },
-    ENCH22 = {
+    ENCH10022 = {
         name = "Enchant Chest - Stats",
         slot = "Chest",
         spell_id = 13941,
@@ -299,7 +306,7 @@ CombinedEnchants = {
             "2x " .. greaternetheressence
         },
     },
-    ENCH23 = {
+    ENCH10023 = {
         name = "Enchant Chest - Superior Mana",
         slot = "Chest",
         spell_id = 13917,
@@ -309,7 +316,7 @@ CombinedEnchants = {
             "2x " .. lessernetheressence
         },
     },
-    ENCH24 = {
+    ENCH10024 = {
         name = "Enchant Cloak - Dodge",
         slot = "Cloak",
         spell_id = 25086,
@@ -320,7 +327,7 @@ CombinedEnchants = {
             "8x " .. guardianstone
         },
     },
-    ENCH25 = {
+    ENCH10025 = {
         name = "Enchant Cloak - Greater Fire Resistance",
         slot = "Cloak",
         spell_id = 25081,
@@ -331,7 +338,7 @@ CombinedEnchants = {
             "4x " .. essenceoffire
         },
     },
-    ENCH26 = {
+    ENCH10026 = {
         name = "Enchant Cloak - Greater Nature Resistance",
         slot = "Cloak",
         spell_id = 25082,
@@ -342,7 +349,7 @@ CombinedEnchants = {
             "4x " .. livingessence
         },
     },
-    ENCH27 = {
+    ENCH10027 = {
         name = "Enchant Cloak - Greater Resistance",
         slot = "Cloak",
         spell_id = 20014,
@@ -356,7 +363,7 @@ CombinedEnchants = {
             "1x " .. ichorofundeath
         },
     },
-    ENCH28 = {
+    ENCH10028 = {
         name = "Enchant Cloak - Stealth",
         slot = "Cloak",
         spell_id = 25083,
@@ -367,7 +374,7 @@ CombinedEnchants = {
             "2x " .. blacklotus
         },
     },
-    ENCH29 = {
+    ENCH10029 = {
         name = "Enchant Cloak - Subtlety",
         slot = "Cloak",
         spell_id = 25084,
@@ -378,7 +385,7 @@ CombinedEnchants = {
             "2x " .. blackdiamond
         },
     },
-    ENCH30 = {
+    ENCH10030 = {
         name = "Enchant Cloak - Superior Defense",
         slot = "Cloak",
         spell_id = 20015,
@@ -387,7 +394,7 @@ CombinedEnchants = {
             "8x " .. illusiondust
         },
     },
-    ENCH31 = {
+    ENCH10031 = {
         name = "Enchant Gloves - Fire Power",
         slot = "Gloves",
         spell_id = 25078,
@@ -398,7 +405,7 @@ CombinedEnchants = {
             "4x " .. essenceoffire
         },
     },
-    ENCH32 = {
+    ENCH10032 = {
         name = "Enchant Gloves - Frost Power",
         slot = "Gloves",
         spell_id = 25074,
@@ -409,7 +416,7 @@ CombinedEnchants = {
             "4x " .. essenceofwater
         },
     },
-    ENCH33 = {
+    ENCH10033 = {
         name = "Enchant Gloves - Greater Agility",
         slot = "Gloves",
         spell_id = 20012,
@@ -419,7 +426,7 @@ CombinedEnchants = {
             "3x " .. illusiondust
         },
     },
-    ENCH34 = {
+    ENCH10034 = {
         name = "Enchant Gloves - Greater Strength",
         slot = "Gloves",
         spell_id = 20013,
@@ -429,7 +436,7 @@ CombinedEnchants = {
             "4x " .. illusiondust
         },
     },
-    ENCH35 = {
+    ENCH10035 = {
         name = "Enchant Gloves - Healing Power",
         slot = "Gloves",
         spell_id = 25079,
@@ -440,7 +447,7 @@ CombinedEnchants = {
             "1x " .. righteousorb
         },
     },
-    ENCH36 = {
+    ENCH10036 = {
         name = "Enchant Gloves - Minor Haste",
         slot = "Gloves",
         spell_id = 13948,
@@ -450,7 +457,7 @@ CombinedEnchants = {
             "2x " .. wildvine
         },
     },
-    ENCH37 = {
+    ENCH10037 = {
         name = "Enchant Gloves - Riding Skill",
         slot = "Gloves",
         spell_id = 13947,
@@ -460,7 +467,7 @@ CombinedEnchants = {
             "3x " .. dreamdust
         },
     },
-    ENCH38 = {
+    ENCH10038 = {
         name = "Enchant Gloves - Shadow Power",
         slot = "Gloves",
         spell_id = 25073,
@@ -471,7 +478,7 @@ CombinedEnchants = {
             "6x " .. essenceofundeath
         },
     },
-    ENCH39 = {
+    ENCH10039 = {
         name = "Enchant Gloves - Superior Agility",
         slot = "Gloves",
         spell_id = 25080,
@@ -482,7 +489,7 @@ CombinedEnchants = {
             "4x " .. essenceofair
         },
     },
-    ENCH40 = {
+    ENCH10040 = {
         name = "Enchant Gloves - Threat",
         slot = "Gloves",
         spell_id = 25072,
@@ -493,7 +500,7 @@ CombinedEnchants = {
             "8x " .. larvalacid
         },
     },
-    ENCH41 = {
+    ENCH10041 = {
         name = "Enchant Shield - Frost Resistance",
         slot = "Shield",
         spell_id = 13933,
@@ -503,7 +510,7 @@ CombinedEnchants = {
             "1x " .. frostoil
         },
     },
-    ENCH42 = {
+    ENCH10042 = {
         name = "Enchant Shield - Greater Spirit",
         slot = "Shield",
         spell_id = 13905,
@@ -513,7 +520,7 @@ CombinedEnchants = {
             "2x " .. dreamdust
         },
     },
-    ENCH43 = {
+    ENCH10043 = {
         name = "Enchant Shield - Greater Stamina",
         slot = "Shield",
         spell_id = 20017,
@@ -522,7 +529,7 @@ CombinedEnchants = {
             "10x " .. dreamdust
         },
     },
-    ENCH44 = {
+    ENCH10044 = {
         name = "Enchant Shield - Superior Spirit",
         slot = "Shield",
         spell_id = 20016,
@@ -532,7 +539,7 @@ CombinedEnchants = {
             "4x " .. illusiondust
         },
     },
-    ENCH45 = {
+    ENCH10045 = {
         name = "Enchant Weapon - Agility",
         slot = "Weapon",
         spell_id = 23800,
@@ -544,7 +551,7 @@ CombinedEnchants = {
             "2x " .. essenceofair
         },
     },
-    ENCH46 = {
+    ENCH10046 = {
         name = "Enchant Weapon - Crusader",
         slot = "Weapon",
         spell_id = 20034,
@@ -554,7 +561,7 @@ CombinedEnchants = {
             "2x " .. righteousorb
         },
     },
-    ENCH47 = {
+    ENCH10047 = {
         name = "Enchant Weapon - Demonslaying",
         slot = "Weapon",
         spell_id = 13915,
@@ -565,7 +572,7 @@ CombinedEnchants = {
             "1x " .. elixirofdemonslayer
         },
     },
-    ENCH48 = {
+    ENCH10048 = {
         name = "Enchant Weapon - Fiery Weapon",
         slot = "Weapon",
         spell_id = 13898,
@@ -575,7 +582,7 @@ CombinedEnchants = {
             "1x " .. essenceoffire
         },
     },
-    ENCH49 = {
+    ENCH10049 = {
         name = "Enchant Weapon - Greater Striking",
         slot = "Weapon",
         spell_id = 13943,
@@ -585,7 +592,7 @@ CombinedEnchants = {
             "2x " .. greaternetheressence
         },
     },
-    ENCH50 = {
+    ENCH10050 = {
         name = "Enchant  Weapon - Healing Power",
         slot = "Weapon",
         spell_id = 22750,
@@ -598,7 +605,7 @@ CombinedEnchants = {
             "1x " .. righteousorb
         },
     },
-    ENCH51 = {
+    ENCH10051 = {
         name = "Enchant Weapon - Icy Chill",
         slot = "Weapon",
         spell_id = 20029,
@@ -610,7 +617,7 @@ CombinedEnchants = {
             "1x " .. icecap
         },
     },
-    ENCH52 = {
+    ENCH10052 = {
         name = "Enchant Weapon - Lifestealing",
         slot = "Weapon",
         spell_id = 20032,
@@ -621,7 +628,7 @@ CombinedEnchants = {
             "6x " .. livingessence
         },
     },
-    ENCH53 = {
+    ENCH10053 = {
         name = "Enchant Weapon - Mighty Intellect",
         slot = "Weapon",
         spell_id = 23804,
@@ -632,7 +639,7 @@ CombinedEnchants = {
             "20x " .. illusiondust
         },
     },
-    ENCH54 = {
+    ENCH10054 = {
         name = "Enchant Weapon - Mighty Spirit",
         slot = "Weapon",
         spell_id = 23803,
@@ -643,7 +650,7 @@ CombinedEnchants = {
             "15x " .. illusiondust
         },
     },
-    ENCH55 = {
+    ENCH10055 = {
         name = "Enchant  Weapon - Spell Power",
         slot = "Weapon",
         spell_id = 22749,
@@ -657,7 +664,7 @@ CombinedEnchants = {
             "2x " .. goldenpearl
         },
     },
-    ENCH56 = {
+    ENCH10056 = {
         name = "Enchant Weapon - Strength",
         slot = "Weapon",
         spell_id = 23799,
@@ -669,7 +676,7 @@ CombinedEnchants = {
             "2x " .. essenceofearth
         },
     },
-    ENCH57 = {
+    ENCH10057 = {
         name = "Enchant Weapon - Superior Striking",
         slot = "Weapon",
         spell_id = 20031,
@@ -679,7 +686,7 @@ CombinedEnchants = {
             "10x " .. greatereternalessence
         },
     },
-    ENCH58 = {
+    ENCH10058 = {
         name = "Enchant Weapon - Unholy Weapon",
         slot = "Weapon",
         spell_id = 20033,
@@ -689,7 +696,7 @@ CombinedEnchants = {
             "4x " .. essenceofundeath
         },
     },
-    ENCH59 = {
+    ENCH10059 = {
         name = "Enchant Boots - Minor Speed",
         slot = "Boots",
         spell_id = 13890,
@@ -700,7 +707,7 @@ CombinedEnchants = {
             "1x " .. lessernetheressence
         },
     },
-    ENCH60 = {
+    ENCH10060 = {
         name = "Enchant Boots - Stamina",
         slot = "Boots",
         spell_id = 13836,
@@ -709,7 +716,7 @@ CombinedEnchants = {
             "5x " .. visiondust
         },
     },
-    ENCH61 = {
+    ENCH10061 = {
         name = "Enchant Bracer - Greater Spirit",
         slot = "Bracer",
         spell_id = 13846,
@@ -719,7 +726,7 @@ CombinedEnchants = {
             "1x " .. visiondust
         },
     },
-    ENCH62 = {
+    ENCH10062 = {
         name = "Enchant Bracer - Intellect",
         slot = "Bracer",
         spell_id = 13822,
@@ -728,7 +735,7 @@ CombinedEnchants = {
             "2x " .. lessernetheressence
         },
     },
-    ENCH63 = {
+    ENCH10063 = {
         name = "Enchant Chest - Superior Health",
         slot = "Chest",
         spell_id = 13858,
@@ -737,7 +744,7 @@ CombinedEnchants = {
             "6x " .. visiondust
         },
     },
-    ENCH64 = {
+    ENCH10064 = {
         name = "Enchant Cloak - Lesser Agility",
         slot = "Cloak",
         spell_id = 13882,
@@ -746,7 +753,7 @@ CombinedEnchants = {
             "2x " .. lessernetheressence
         },
     },
-    ENCH65 = {
+    ENCH10065 = {
         name = "Enchant Gloves - Advanced Herbalism",
         slot = "Gloves",
         spell_id = 13868,
@@ -756,7 +763,7 @@ CombinedEnchants = {
             "3x " .. sungrass
         },
     },
-    ENCH66 = {
+    ENCH10066 = {
         name = "Enchant Gloves - Advanced Mining",
         slot = "Gloves",
         spell_id = 13841,
@@ -766,7 +773,7 @@ CombinedEnchants = {
             "3x " .. truesilverbar
         },
     },
-    ENCH67 = {
+    ENCH10067 = {
         name = "Enchant Gloves - Agility",
         slot = "Gloves",
         spell_id = 13815,
@@ -776,7 +783,7 @@ CombinedEnchants = {
             "1x " .. visiondust
         },
     },
-    ENCH68 = {
+    ENCH10068 = {
         name = "Enchant Gloves - Strength",
         slot = "Gloves",
         spell_id = 13887,
@@ -786,7 +793,7 @@ CombinedEnchants = {
             "3x " .. visiondust
         },
     },
-    ENCH69 = {
+    ENCH10069 = {
         name = "Enchant Shield - Stamina",
         slot = "Shield",
         spell_id = 13817,
@@ -795,7 +802,7 @@ CombinedEnchants = {
             "5x " .. visiondust
         },
     },
-    ENCH70 = {
+    ENCH10070 = {
         name = "Enchant 2H Weapon - Impact",
         slot = "Weapon",
         spell_id = 13695,
@@ -805,7 +812,7 @@ CombinedEnchants = {
             "1x " .. largeglowingshard
         },
     },
-    ENCH71 = {
+    ENCH10071 = {
         name = "Enchant Weapon - Lesser Beastslayer",
         slot = "Weapon",
         spell_id = 13653,
@@ -816,7 +823,7 @@ CombinedEnchants = {
             "1x " .. smallglowingshard
         },
     },
-    ENCH72 = {
+    ENCH10072 = {
         name = "Enchant Weapon - Lesser Elemental Slayer",
         slot = "Weapon",
         spell_id = 13655,
@@ -827,7 +834,7 @@ CombinedEnchants = {
             "1x " .. smallglowingshard
         },
     },
-    ENCH73 = {
+    ENCH10073 = {
         name = "Enchant Boots - Lesser Spirit",
         slot = "Boots",
         spell_id = 13687,
@@ -837,7 +844,7 @@ CombinedEnchants = {
             "2x " .. lessermysticessence
         },
     },
-    ENCH74 = {
+    ENCH10074 = {
         name = "Enchant Chest - Lesser Stats",
         slot = "Chest",
         spell_id = 13700,
@@ -848,7 +855,7 @@ CombinedEnchants = {
             "1x " .. largeglowingshard
         },
     },
-    ENCH75 = {
+    ENCH10075 = {
         name = "Enchant Chest - Retricutioner",
         slot = "Chest",
         spell_id = 435903,
@@ -858,7 +865,7 @@ CombinedEnchants = {
             "2x " .. dreamdust
         },
     },
-    ENCH76 = {
+    ENCH10076 = {
         name = "Enchant Cloak - Greater Defense",
         slot = "Cloak",
         spell_id = 13746,
@@ -867,7 +874,7 @@ CombinedEnchants = {
             "3x " .. visiondust
         },
     },
-    ENCH77 = {
+    ENCH10077 = {
         name = "Enchant Cloak - Resistance",
         slot = "Cloak",
         spell_id = 13794,
@@ -876,7 +883,7 @@ CombinedEnchants = {
             "1x " .. lessernetheressence
         },
     },
-    ENCH78 = {
+    ENCH10078 = {
         name = "Enchant Gloves - Skinning",
         slot = "Gloves",
         spell_id = 13698,
@@ -886,7 +893,7 @@ CombinedEnchants = {
             "3x " .. greenwhelpscale
         },
     },
-    ENCH79 = {
+    ENCH10079 = {
         name = "Enchant Shield - Lesser Block",
         slot = "Shield",
         spell_id = 13689,
@@ -897,7 +904,7 @@ CombinedEnchants = {
             "1x " .. largeglowingshard
         },
     },
-    ENCH80 = {
+    ENCH10080 = {
         name = "Enchant Weapon - Dismantle",
         slot = "Weapon",
         spell_id = 435481,
@@ -908,7 +915,7 @@ CombinedEnchants = {
             "2x " .. smallradiantshard
         },
     },
-    ENCH81 = {
+    ENCH10081 = {
         name = "Enchant Weapon - Striking",
         slot = "Weapon",
         spell_id = 13693,
@@ -918,7 +925,7 @@ CombinedEnchants = {
             "2x " .. greatermysticessence
         },
     },
-    ENCH82 = {
+    ENCH10082 = {
         name = "Enchant Weapon - Winter's Might",
         slot = "Weapon",
         spell_id = 21931,
@@ -930,7 +937,7 @@ CombinedEnchants = {
             "2x " .. wintersbite
         },
     },
-    ENCH83 = {
+    ENCH10083 = {
         name = "Enchant Boots - Lesser Stamina",
         slot = "Boots",
         spell_id = 13644,
@@ -939,7 +946,7 @@ CombinedEnchants = {
             "4x " .. souldust
         },
     },
-    ENCH84 = {
+    ENCH10084 = {
         name = "Enchant Bracer - Lesser Deflection",
         slot = "Bracer",
         spell_id = 13646,
@@ -949,7 +956,7 @@ CombinedEnchants = {
             "2x " .. souldust
         },
     },
-    ENCH85 = {
+    ENCH10085 = {
         name = "Enchant Bracer - Stamina",
         slot = "Bracer",
         spell_id = 13648,
@@ -958,7 +965,7 @@ CombinedEnchants = {
             "6x " .. souldust
         },
     },
-    ENCH86 = {
+    ENCH10086 = {
         name = "Enchant Bracer - Strength",
         slot = "Bracer",
         spell_id = 13661,
@@ -967,7 +974,7 @@ CombinedEnchants = {
             "1x " .. visiondust
         },
     },
-    ENCH87 = {
+    ENCH10087 = {
         name = "Enchant Chest - Greater Mana",
         slot = "Chest",
         spell_id = 13663,
@@ -976,7 +983,7 @@ CombinedEnchants = {
             "1x " .. greatermysticessence
         },
     },
-    ENCH88 = {
+    ENCH10088 = {
         name = "Enchant Cloak - Fire Resistance",
         slot = "Cloak",
         spell_id = 13657,
@@ -986,7 +993,7 @@ CombinedEnchants = {
             "1x " .. elementalfire
         },
     },
-    ENCH89 = {
+    ENCH10089 = {
         name = "Enchant Shield - Spirit",
         slot = "Shield",
         spell_id = 13659,
@@ -996,7 +1003,7 @@ CombinedEnchants = {
             "1x " .. visiondust
         },
     },
-    ENCH90 = {
+    ENCH10090 = {
         name = "Enchant 2H Weapon - Lesser Impact",
         slot = "Weapon",
         spell_id = 13529,
@@ -1006,7 +1013,7 @@ CombinedEnchants = {
             "1x " .. largeglimmeringshard
         },
     },
-    ENCH91 = {
+    ENCH10091 = {
         name = "Enchant 2H Weapon - Lesser Intellect",
         slot = "Weapon",
         spell_id = 7793,
@@ -1015,7 +1022,7 @@ CombinedEnchants = {
             "3x " .. greatermagicessence
         },
     },
-    ENCH92 = {
+    ENCH10092 = {
         name = "Enchant 2H Weapon - Lesser Spirit",
         slot = "Weapon",
         spell_id = 13380,
@@ -1025,7 +1032,7 @@ CombinedEnchants = {
             "6x " .. strangedust
         },
     },
-    ENCH93 = {
+    ENCH10093 = {
         name = "Enchant 2H Weapon - Minor Impact",
         slot = "Weapon",
         spell_id = 7745,
@@ -1035,7 +1042,7 @@ CombinedEnchants = {
             "1x " .. smallglimmeringshard
         },
     },
-    ENCH94 = {
+    ENCH10094 = {
         name = "Enchant Weapon - Lesser Striking",
         slot = "Weapon",
         spell_id = 13503,
@@ -1045,7 +1052,7 @@ CombinedEnchants = {
             "1x " .. largeglimmeringshard
         },
     },
-    ENCH95 = {
+    ENCH10095 = {
         name = "Enchant Weapon - Minor Beastslayer",
         slot = "Weapon",
         spell_id = 7786,
@@ -1055,7 +1062,7 @@ CombinedEnchants = {
             "2x " .. greatermagicessence
         },
     },
-    ENCH96 = {
+    ENCH10096 = {
         name = "Enchant Weapon - Minor Striking",
         slot = "Weapon",
         spell_id = 7788,
@@ -1066,7 +1073,7 @@ CombinedEnchants = {
             "1x " .. smallglimmeringshard
         },
     },
-    ENCH97 = {
+    ENCH10097 = {
         name = "Enchant Boots - Lesser Agility",
         slot = "Boots",
         spell_id = 13637,
@@ -1076,7 +1083,7 @@ CombinedEnchants = {
             "1x " .. lessermysticessence
         },
     },
-    ENCH98 = {
+    ENCH10098 = {
         name = "Enchant Boots - Minor Agility",
         slot = "Boots",
         spell_id = 7867,
@@ -1086,7 +1093,7 @@ CombinedEnchants = {
             "2x " .. lesserastralessence
         },
     },
-    ENCH99 = {
+    ENCH10099 = {
         name = "Enchant Boots - Minor Stamina",
         slot = "Boots",
         spell_id = 7863,
@@ -1095,7 +1102,7 @@ CombinedEnchants = {
             "8x " .. strangedust
         },
     },
-    ENCH100 = {
+    ENCH100100 = {
         name = "Enchant Bracer - Lesser Intellect",
         slot = "Bracer",
         spell_id = 13622,
@@ -1104,7 +1111,7 @@ CombinedEnchants = {
             "2x " .. greaterastralessence
         },
     },
-    ENCH101 = {
+    ENCH100101 = {
         name = "Enchant Bracer - Lesser Spirit",
         slot = "Bracer",
         spell_id = 7859,
@@ -1113,7 +1120,7 @@ CombinedEnchants = {
             "2x " .. lesserastralessence
         },
     },
-    ENCH102 = {
+    ENCH100102 = {
         name = "Enchant Bracer - Lesser Stamina",
         slot = "Bracer",
         spell_id = 13501,
@@ -1122,7 +1129,7 @@ CombinedEnchants = {
             "2x " .. souldust
         },
     },
-    ENCH103 = {
+    ENCH100103 = {
         name = "Enchant Bracer - Lesser Strength",
         slot = "Bracer",
         spell_id = 13536,
@@ -1131,7 +1138,7 @@ CombinedEnchants = {
             "2x " .. souldust
         },
     },
-    ENCH104 = {
+    ENCH100104 = {
         name = "Enchant Bracer - Minor Agility",
         slot = "Bracer",
         spell_id = 7779,
@@ -1141,7 +1148,7 @@ CombinedEnchants = {
             "1x " .. greatermagicessence
         },
     },
-    ENCH105 = {
+    ENCH100105 = {
         name = "Enchant Bracer - Minor Deflect",
         slot = "Bracer",
         spell_id = 7428,
@@ -1151,7 +1158,7 @@ CombinedEnchants = {
             "1x " .. strangedust
         },
     },
-    ENCH106 = {
+    ENCH100106 = {
         name = "Enchant Bracer - Minor Health",
         slot = "Bracer",
         spell_id = 7418,
@@ -1160,7 +1167,7 @@ CombinedEnchants = {
             "1x " .. strangedust
         },
     },
-    ENCH107 = {
+    ENCH100107 = {
         name = "Enchant Bracer - Minor Spirit",
         slot = "Bracer",
         spell_id = 7766,
@@ -1169,7 +1176,7 @@ CombinedEnchants = {
             "2x " .. lessermagicessence
         },
     },
-    ENCH108 = {
+    ENCH100108 = {
         name = "Enchant Bracer - Minor Stamina",
         slot = "Bracer",
         spell_id = 7457,
@@ -1178,7 +1185,7 @@ CombinedEnchants = {
             "3x " .. strangedust
         },
     },
-    ENCH109 = {
+    ENCH100109 = {
         name = "Enchant Bracer - Minor Strength",
         slot = "Bracer",
         spell_id = 7782,
@@ -1187,7 +1194,7 @@ CombinedEnchants = {
             "5x " .. strangedust
         },
     },
-    ENCH110 = {
+    ENCH100110 = {
         name = "Enchant Bracer - Spirit",
         slot = "Bracer",
         spell_id = 13642,
@@ -1196,7 +1203,7 @@ CombinedEnchants = {
             "1x " .. lessermysticessence
         },
     },
-    ENCH111 = {
+    ENCH100111 = {
         name = "Enchant Chest - Greater Health",
         slot = "Chest",
         spell_id = 13640,
@@ -1205,7 +1212,7 @@ CombinedEnchants = {
             "3x " .. souldust
         },
     },
-    ENCH112 = {
+    ENCH100112 = {
         name = "Enchant Chest - Health",
         slot = "Chest",
         spell_id = 7857,
@@ -1215,7 +1222,7 @@ CombinedEnchants = {
             "1x " .. lesserastralessence
         },
     },
-    ENCH113 = {
+    ENCH100113 = {
         name = "Enchant Chest - Lesser Absorption",
         slot = "Chest",
         spell_id = 13538,
@@ -1226,7 +1233,7 @@ CombinedEnchants = {
             "1x " .. largeglimmeringshard
         },
     },
-    ENCH114 = {
+    ENCH100114 = {
         name = "Enchant Chest - Lesser Health",
         slot = "Chest",
         spell_id = 7748,
@@ -1236,7 +1243,7 @@ CombinedEnchants = {
             "2x " .. lessermagicessence
         },
     },
-    ENCH115 = {
+    ENCH100115 = {
         name = "Enchant Chest - Lesser Mana",
         slot = "Chest",
         spell_id = 7776,
@@ -1246,7 +1253,7 @@ CombinedEnchants = {
             "1x " .. lessermagicessence
         },
     },
-    ENCH116 = {
+    ENCH100116 = {
         name = "Enchant Chest - Mana",
         slot = "Chest",
         spell_id = 13607,
@@ -1256,7 +1263,7 @@ CombinedEnchants = {
             "2x " .. lesserastralessence
         },
     },
-    ENCH117 = {
+    ENCH100117 = {
         name = "Enchant Chest - Minor Absorption",
         slot = "Chest",
         spell_id = 7426,
@@ -1266,7 +1273,7 @@ CombinedEnchants = {
             "1x " .. lessermagicessence
         },
     },
-    ENCH118 = {
+    ENCH100118 = {
         name = "Enchant Chest - Minor Health",
         slot = "Chest",
         spell_id = 7420,
@@ -1275,7 +1282,7 @@ CombinedEnchants = {
             "1x " .. strangedust
         },
     },
-    ENCH119 = {
+    ENCH100119 = {
         name = "Enchant Chest - Minor Mana",
         slot = "Chest",
         spell_id = 7443,
@@ -1284,7 +1291,7 @@ CombinedEnchants = {
             "1x " .. lessermagicessence
         },
     },
-    ENCH120 = {
+    ENCH100120 = {
         name = "Enchant Chest - Minor Stats",
         slot = "Chest",
         spell_id = 13626,
@@ -1295,7 +1302,7 @@ CombinedEnchants = {
             "1x " .. largeglimmeringshard
         },
     },
-    ENCH121 = {
+    ENCH100121 = {
         name = "Enchant Cloak - Defense",
         slot = "Cloak",
         spell_id = 13635,
@@ -1305,7 +1312,7 @@ CombinedEnchants = {
             "3x " .. souldust
         },
     },
-    ENCH122 = {
+    ENCH100122 = {
         name = "Enchant Cloak - Lesser Fire Resistance",
         slot = "Cloak",
         spell_id = 7861,
@@ -1315,7 +1322,7 @@ CombinedEnchants = {
             "1x " .. lesserastralessence
         },
     },
-    ENCH123 = {
+    ENCH100123 = {
         name = "Enchant Cloak - Lesser Protection",
         slot = "Cloak",
         spell_id = 13421,
@@ -1325,7 +1332,7 @@ CombinedEnchants = {
             "1x " .. smallglimmeringshard
         },
     },
-    ENCH124 = {
+    ENCH100124 = {
         name = "Enchant Cloak - Lesser Shadow Resistance",
         slot = "Cloak",
         spell_id = 13522,
@@ -1335,7 +1342,7 @@ CombinedEnchants = {
             "1x " .. shadowprotectionpotion
         },
     },
-    ENCH125 = {
+    ENCH100125 = {
         name = "Enchant Cloak - Minor Agility",
         slot = "Cloak",
         spell_id = 13419,
@@ -1344,7 +1351,7 @@ CombinedEnchants = {
             "1x " .. lesserastralessence
         },
     },
-    ENCH126 = {
+    ENCH100126 = {
         name = "Enchant Cloak - Minor Protection",
         slot = "Cloak",
         spell_id = 7771,
@@ -1354,7 +1361,7 @@ CombinedEnchants = {
             "1x " .. greatermagicessence
         },
     },
-    ENCH127 = {
+    ENCH100127 = {
         name = "Enchant Cloak - Minor Resistance",
         slot = "Cloak",
         spell_id = 7454,
@@ -1364,7 +1371,7 @@ CombinedEnchants = {
             "2x " .. lessermagicessence
         },
     },
-    ENCH128 = {
+    ENCH100128 = {
         name = "Enchant Gloves - Fishing",
         slot = "Gloves",
         spell_id = 13620,
@@ -1374,7 +1381,7 @@ CombinedEnchants = {
             "3x " .. blackmouthoil
         },
     },
-    ENCH129 = {
+    ENCH100129 = {
         name = "Enchant Gloves - Herbalism",
         slot = "Gloves",
         spell_id = 13617,
@@ -1384,7 +1391,7 @@ CombinedEnchants = {
             "3x " .. kingsblood
         },
     },
-    ENCH130 = {
+    ENCH100130 = {
         name = "Enchant Gloves - Mining",
         slot = "Gloves",
         spell_id = 13612,
@@ -1394,7 +1401,7 @@ CombinedEnchants = {
             "3x " .. ironore
         },
     },
-    ENCH131 = {
+    ENCH100131 = {
         name = "Enchant Shield - Lesser Protection",
         slot = "Shield",
         spell_id = 13464,
@@ -1405,7 +1412,7 @@ CombinedEnchants = {
             "1x " .. smallglimmeringshard
         },
     },
-    ENCH132 = {
+    ENCH100132 = {
         name = "Enchant Shield - Lesser Spirit",
         slot = "Shield",
         spell_id = 13485,
@@ -1415,7 +1422,7 @@ CombinedEnchants = {
             "4x " .. strangedust
         },
     },
-    ENCH133 = {
+    ENCH100133 = {
         name = "Enchant Shield - Lesser Stamina",
         slot = "Shield",
         spell_id = 13631,
@@ -1425,7 +1432,7 @@ CombinedEnchants = {
             "1x " .. souldust
         },
     },
-    ENCH134 = {
+    ENCH100134 = {
         name = "Enchant Shield - Minor Stamina",
         slot = "Shield",
         spell_id = 13378,
@@ -1435,7 +1442,7 @@ CombinedEnchants = {
             "2x " .. strangedust
         },
     },
-    ENCH135 = {
+    ENCH999 = {
         name = "Enchant Shield - Law of Nature",
         slot = "Shield",
         spell_id = 463871,
@@ -1447,6 +1454,69 @@ CombinedEnchants = {
             "4x " .. essenceofwater,
             "1x " .. essenceofearth,
             "1x " .. righteousorb
+        },
+    },
+    ENCH998 = {
+        name = "Enchant Chest - Living Stats",
+        slot = "Chest",
+        spell_id = 1213616,
+        stats = " (+4 All Stats, +15 Nat Res)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "8x " .. illusiondust,
+            "5x " .. greatereternalessence,
+            "10x " .. greaternatureprotectionpotion,
+            "2x " .. qirajistalkervenom,
+            "2x " .. ancientsandwormbile
+        },
+    },
+    ENCH997 = {
+        name = "Enchant Gloves - Holy Power",
+        slot = "Gloves",
+        spell_id = 1213622,
+        stats = " (+20 Holy Spell Dmg)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "5x " .. largebrilliantshard,
+            "5x " .. stratholmeholywater,
+            "2x " .. frayedabominationstitching
+        },
+    },
+    ENCH996 = {
+        name = "Enchant Gloves - Arcane Power",
+        slot = "Gloves",
+        spell_id = 1213626,
+        stats = " (+20 Arcane Spell Dmg)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "5x " .. largebrilliantshard,
+            "2x " .. skinofshadow
+        },
+    },
+    ENCH995 = {
+        name = "Enchant Bracer - Agility",
+        slot = "Bracer",
+        spell_id = 1217203,
+        stats = " (+9 Agi)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "10x " .. illusiondust,
+            "2x " .. greatereternalessence,
+            "2x " .. essenceofair
+        },
+    },
+    ENCH994 = {
+        name = "Enchant Bracer - Spell Power",
+        slot = "Bracer",
+        spell_id = 1217189,
+        stats = " (+12 Spell Dmg)",
+        materials = {
+            "2x " .. largebrilliantshard,
+            "20x " .. illusiondust,
+            "4x " .. greatereternalessence,
+            "2x " .. essenceofwater,
+            "2x " .. essenceoffire,
+            "2x " .. essenceofair
         },
     },
 }

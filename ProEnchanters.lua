@@ -6,6 +6,7 @@ ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
 ProEnchantersOptions.filters = {}
 ProEnchantersWorkOrderFrames = {}
 ProEnchantersOptions.favorites = {}
+ProEnchantersOptions.recentwhispers = {}
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -26,6 +27,7 @@ local tradeYoffset = 0
 local target = ""
 local isConnected = true
 local LSM = LibStub("LibSharedMedia-3.0")
+local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local mouseFocus = ""
 local tempEnchValue = ""
 
@@ -232,6 +234,7 @@ function InviteUnitPEAddon(name)
 	local currentPartySize = 0
 	local isInGroup = IsInGroup()
 	local raidConvert = false
+	local nametrim = string.gsub(name, "%-.*", "")
 
 	if isInGroup == true then
 		currentPartySize = tonumber(GetNumGroupMembers())
@@ -249,11 +252,19 @@ function InviteUnitPEAddon(name)
 				end
 				if raidConvert == true then
 					if not string.find(selfnameCheck, nameCheck, 1, true) then
-						C_Timer.After(1, function() InviteUnit(name) end)
+						if ProEnchantersOptions["TrimServerName"] == true then
+							C_Timer.After(1, function() InviteUnit(nametrim) end)
+						else
+							C_Timer.After(1, function() InviteUnit(name) end)
+						end
 					end
 				else
 					if not string.find(selfnameCheck, nameCheck, 1, true) then
-						InviteUnit(name)
+						if ProEnchantersOptions["TrimServerName"] == true then
+							InviteUnit(nametrim)
+						else
+							InviteUnit(name)
+						end
 					end
 				end
 			elseif maxPartySize <= currentPartySize then
@@ -271,11 +282,19 @@ function InviteUnitPEAddon(name)
 			end
 			if raidConvert == true then
 				if not string.find(selfnameCheck, nameCheck, 1, true) then
-					C_Timer.After(1, function() InviteUnit(name) end)
+					if ProEnchantersOptions["TrimServerName"] == true then
+						C_Timer.After(1, function() InviteUnit(nametrim) end)
+					else
+						C_Timer.After(1, function() InviteUnit(name) end)
+					end
 				end
 			else
 				if not string.find(selfnameCheck, nameCheck, 1, true) then
-					InviteUnit(name)
+					if ProEnchantersOptions["TrimServerName"] == true then
+						InviteUnit(nametrim)
+					else
+						InviteUnit(name)
+					end
 				end
 			end
 		elseif maxPartySize <= currentPartySize then
@@ -344,9 +363,15 @@ local function DelayedWorkOrder(playerName)
 		local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
 		local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 		if FullWelcomeMsg == "" then
+			local playerName = string.lower(playerName)
+			CreateCusWorkOrder(playerName)
+		elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
+			SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+			local playerName = string.lower(playerName)
 			CreateCusWorkOrder(playerName)
 		else
 			SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+			local playerName = string.lower(playerName)
 			CreateCusWorkOrder(playerName)
 		end
 	end
@@ -1028,6 +1053,7 @@ local function hideTextureRegions(frame)
 		end
 	end
 end
+
 local function createDropdown(opts)
 	local dropdown_name = '$parent_' .. opts['name'] .. '_dropdown'
 	local menu_items = opts['items'] or {}
@@ -1036,7 +1062,7 @@ local function createDropdown(opts)
 	local default_val = opts['defaultVal'] or ''
 	local change_func = opts['changeFunc'] or function(dropdown_val) end
 
-	local dropdown = CreateFrame("Frame", dropdown_name, opts['parent'], 'UIDropDownMenuTemplate')
+	local dropdown = LibDD:Create_UIDropDownMenu(dropdown_name, opts['parent'])
 	dropdown:SetWidth(120)
 	local children = { dropdown:GetChildren() }
 	for _, child in ipairs(children) do
@@ -1067,24 +1093,24 @@ local function createDropdown(opts)
 		end
 	end
 
-	UIDropDownMenu_SetWidth(dropdown, dropdown_width)
-	UIDropDownMenu_SetText(dropdown, default_val)
+	LibDD:UIDropDownMenu_SetWidth(dropdown, dropdown_width)
+	LibDD:UIDropDownMenu_SetText(dropdown, default_val)
 	dd_title:SetText(title_text)
 
-	UIDropDownMenu_Initialize(dropdown, function(self, level, _)
-		local info = UIDropDownMenu_CreateInfo()
+	LibDD:UIDropDownMenu_Initialize(dropdown, function(self, level, _)
+		local info = LibDD:UIDropDownMenu_CreateInfo()
 		for key, val in pairs(menu_items) do
 			info.text = val;
 			info.checked = false
 			info.menuList = key
 			info.hasArrow = false
 			info.func = function(b)
-				UIDropDownMenu_SetSelectedValue(dropdown, b.value, b.value)
-				UIDropDownMenu_SetText(dropdown, b.value)
+				LibDD:UIDropDownMenu_SetSelectedValue(dropdown, b.value, b.value)
+				LibDD:UIDropDownMenu_SetText(dropdown, b.value)
 				b.checked = true
 				change_func(dropdown, b.value)
 			end
-			UIDropDownMenu_AddButton(info)
+			LibDD:UIDropDownMenu_AddButton(info)
 		end
 	end)
 
@@ -2784,6 +2810,18 @@ function ProEnchantersCreateOptionsFrame()
 	LocalDefenseChannelHeader:SetPoint("LEFT", LFGChannelHeader, "RIGHT", 15, 0)
 	LocalDefenseChannelHeader:SetText("Local City Defense")
 
+	-- Create a header for World
+	local LocalWorldChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	LocalWorldChannelHeader:SetFontObject(UIFontBasic)
+	LocalWorldChannelHeader:SetPoint("LEFT", LocalDefenseChannelHeader, "RIGHT", 15, 0)
+	LocalWorldChannelHeader:SetText("World")
+
+	-- Create a header for Services
+	local LocalServicesChannelHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	LocalServicesChannelHeader:SetFontObject(UIFontBasic)
+	LocalServicesChannelHeader:SetPoint("LEFT", LocalWorldChannelHeader, "RIGHT", 15, 0)
+	LocalServicesChannelHeader:SetText("Services")
+
 	-- Checkboxes
 	local SayYellChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
 	SayYellChannelCb:SetPoint("TOP", SayYellChannelsHeader, "TOP", 0, -15)
@@ -2828,6 +2866,24 @@ function ProEnchantersCreateOptionsFrame()
 	LocalDefenseChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["LocalDefense"])
 	LocalDefenseChannelCb:SetScript("OnClick", function(self)
 		ProEnchantersOptions["AllChannels"]["LocalDefense"] = self:GetChecked()
+	end)
+
+	local LocalWorldChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	LocalWorldChannelCb:SetPoint("TOP", LocalWorldChannelHeader, "TOP", 0, -15)
+	LocalWorldChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	LocalWorldChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	LocalWorldChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["World"])
+	LocalWorldChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["World"] = self:GetChecked()
+	end)
+
+	local LocalServicesChannelCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	LocalServicesChannelCb:SetPoint("TOP", LocalServicesChannelHeader, "TOP", 0, -15)
+	LocalServicesChannelCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	LocalServicesChannelCb:SetHitRectInsets(0, 0, 0, 0)
+	LocalServicesChannelCb:SetChecked(ProEnchantersOptions["AllChannels"]["Services"])
+	LocalServicesChannelCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AllChannels"]["Services"] = self:GetChecked()
 	end)
 
 
@@ -2958,10 +3014,58 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["DelayWorkOrder"] = self:GetChecked()
 	end)
 
+	-- Enable warnings for whisper spam header
+	local EnableWhisperSpamWarningHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	EnableWhisperSpamWarningHeader:SetFontObject(UIFontBasic)
+	EnableWhisperSpamWarningHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
+	EnableWhisperSpamWarningHeader:SetText("Enable warning message for potential whisper spam? (60 whispers per 5 minutes triggers this)")
+
+	-- Enable warnings for whisper spam CB
+	local EnableWhisperSpamWarningCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	EnableWhisperSpamWarningCb:SetPoint("LEFT", EnableWhisperSpamWarningHeader, "RIGHT", 10, 0)
+	EnableWhisperSpamWarningCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnableWhisperSpamWarningCb:SetHitRectInsets(0, 0, 0, 0)
+	EnableWhisperSpamWarningCb:SetChecked(ProEnchantersOptions["whispercountwarn"])
+	EnableWhisperSpamWarningCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["whispercountwarn"] = self:GetChecked()
+	end)
+
+	-- Enable recently whispered filter header
+	local EnableRecentWhisperedFilterHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	EnableRecentWhisperedFilterHeader:SetFontObject(UIFontBasic)
+	EnableRecentWhisperedFilterHeader:SetPoint("TOPLEFT", EnableWhisperSpamWarningHeader, "TOPLEFT", 0, -30)
+	EnableRecentWhisperedFilterHeader:SetText("Enable 3 minute delay between whispering the same potential customer for invites? (This does not stop the invite, only the whisper)")
+
+	-- Enable warnings for whisper spam CB
+	local EnableRecentWhisperedFilterCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	EnableRecentWhisperedFilterCb:SetPoint("LEFT", EnableRecentWhisperedFilterHeader, "RIGHT", 10, 0)
+	EnableRecentWhisperedFilterCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	EnableRecentWhisperedFilterCb:SetHitRectInsets(0, 0, 0, 0)
+	EnableRecentWhisperedFilterCb:SetChecked(ProEnchantersOptions["recentwhisperscheck"])
+	EnableRecentWhisperedFilterCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["recentwhisperscheck"] = self:GetChecked()
+	end)
+
+	-- Create a header for trim server name
+	local TrimServerNameHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	TrimServerNameHeader:SetFontObject(UIFontBasic)
+	TrimServerNameHeader:SetPoint("TOPLEFT", EnableRecentWhisperedFilterHeader, "TOPLEFT", 0, -30)
+	TrimServerNameHeader:SetText("Trim server name when sending invites? (If invites are failing try this)")
+
+	-- trim server name Checkbox
+	local TrimServerNameCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	TrimServerNameCb:SetPoint("LEFT", TrimServerNameHeader, "RIGHT", 10, 0)
+	TrimServerNameCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	TrimServerNameCb:SetHitRectInsets(0, 0, 0, 0)
+	TrimServerNameCb:SetChecked(ProEnchantersOptions["DelayWorkorder"])
+	TrimServerNameCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["TrimServerName"] = self:GetChecked()
+	end)
+
 	-- Create a header for Whisper forced for mats
 	local WhisperMatsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	WhisperMatsHeader:SetFontObject(UIFontBasic)
-	WhisperMatsHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
+	WhisperMatsHeader:SetPoint("TOPLEFT", TrimServerNameHeader, "TOPLEFT", 0, -30)
 	WhisperMatsHeader:SetText("Always whisper the players mats and requested enchants instead of party chat?")
 
 	local WhisperMatsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3070,12 +3174,42 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["DisableWhisperCommands"] = self:GetChecked()
 	end)
 
+	-- Create a header for forced whisper of party welcome msg
+	local WhisperWelcomeMsgHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	WhisperWelcomeMsgHeader:SetFontObject(UIFontBasic)
+	WhisperWelcomeMsgHeader:SetPoint("TOPLEFT", DisableWhisperCommandsHeader, "TOPLEFT", 0, -30)
+	WhisperWelcomeMsgHeader:SetText("Send the Party Welcome Msg in a whisper instead of party/raid chat?")
 
+	-- forced whisper of party welcome msg checkbox
+	local WhisperWelcomeMsgCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	WhisperWelcomeMsgCb:SetPoint("LEFT", WhisperWelcomeMsgHeader, "RIGHT", 10, 0)
+	WhisperWelcomeMsgCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	WhisperWelcomeMsgCb:SetHitRectInsets(0, 0, 0, 0)
+	WhisperWelcomeMsgCb:SetChecked(ProEnchantersOptions["WhisperWelcomeMsg"])
+	WhisperWelcomeMsgCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["WhisperWelcomeMsg"] = self:GetChecked()
+	end)
+
+	-- Create a header for simple tip money
+	local SimplifyTipsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	SimplifyTipsHeader:SetFontObject(UIFontBasic)
+	SimplifyTipsHeader:SetPoint("TOPLEFT", WhisperWelcomeMsgHeader, "TOPLEFT", 0, -30)
+	SimplifyTipsHeader:SetText("Format the tip value as 123g, 456s, 789c instead of Gold, Silver, Copper?")
+
+	-- Create cb for simple tip moneycheckbox
+	local SimplifyTipsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	SimplifyTipsCb:SetPoint("LEFT", SimplifyTipsHeader, "RIGHT", 10, 0)
+	SimplifyTipsCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	SimplifyTipsCb:SetHitRectInsets(0, 0, 0, 0)
+	SimplifyTipsCb:SetChecked(ProEnchantersOptions["SimplifyTips"])
+	SimplifyTipsCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["SimplifyTips"] = self:GetChecked()
+	end)
 
 	-- Create a header for AutoInv Msg
 	local AutoInviteMsgEditBoxHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	AutoInviteMsgEditBoxHeader:SetFontObject(UIFontBasic)
-	AutoInviteMsgEditBoxHeader:SetPoint("TOPLEFT", DisableWhisperCommandsHeader, "TOPLEFT", 0, -30)
+	AutoInviteMsgEditBoxHeader:SetPoint("TOPLEFT", SimplifyTipsHeader, "TOPLEFT", 0, -30)
 	AutoInviteMsgEditBoxHeader:SetText("Auto Invite Msg:")
 
 	-- Create an EditBox for AutoInv Msg
@@ -8740,6 +8874,9 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["DelayInviteMsgTime"] = 0
 	end
 
+	if ProEnchantersOptions["TrimServerName"] ~= true then
+		ProEnchantersOptions["TrimServerName"] = false
+	end
 
 	-- Setting AutoInviteOptions
 	if ProEnchantersOptions["RaidIcon"] == nil or ProEnchantersOptions["RaidIcon"] == "" then
@@ -8828,6 +8965,14 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["WhisperMats"] = ProEnchantersOptions["WhisperMats"]
 	end
 
+	if ProEnchantersOptions["SimplifyTips"] ~= false then
+		ProEnchantersOptions["SimplifyTips"] = true
+	end
+
+	if ProEnchantersOptions["WhisperWelcomeMsg"] ~= true then
+		ProEnchantersOptions["WhisperWelcomeMsg"] = false
+	end
+
 	if ProEnchantersOptions["DisableWhisperCommands"] ~= true then
 		ProEnchantersOptions["DisableWhisperCommands"] = false
 	else
@@ -8906,6 +9051,30 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["AllChannels"] = {}
 	end
 
+	if ProEnchantersOptions["recentwhisperscheck"] ~= false then
+		ProEnchantersOptions["recentwhisperscheck"] = true
+	end
+
+	if type(ProEnchantersOptions["recentwhispers"]) ~= "table" then
+		ProEnchantersOptions.recentwhispers = {}
+	end
+
+	if type(ProEnchantersOptions["recentwhispers"]) == "table" then
+		ProEnchantersOptions.recentwhispers = {}
+	end
+
+	if type(ProEnchantersOptions["whispercount"]) ~= "table" then
+		ProEnchantersOptions.whispercount = {}
+	end
+
+	if type(ProEnchantersOptions["whispercount"]) == "table" then
+		ProEnchantersOptions.whispercount = {}
+	end
+
+	if ProEnchantersOptions["whispercountwarn"] == nil then
+		ProEnchantersOptions["whispercountwarn"] = true
+	end
+
 	-- Check if ProEnchantersOptions.AllChannels is empty
 	local allChannelsIsEmpty = true
 	for _ in pairs(ProEnchantersOptions.AllChannels) do
@@ -8920,6 +9089,15 @@ local function OnAddonLoaded()
 		ProEnchantersOptions.AllChannels["TradeChannel"] = true
 		ProEnchantersOptions.AllChannels["LFGChannel"] = true
 		ProEnchantersOptions.AllChannels["LocalDefense"] = true
+	end
+
+	if ProEnchanters["AllChannels"] then
+		if ProEnchantersOptions.AllChannels["Services"] == nil then
+			ProEnchantersOptions.AllChannels["Services"] = true
+		end
+		if ProEnchantersOptions.AllChannels["World"] == nil then
+			ProEnchantersOptions.AllChannels["World"] = true
+		end
 	end
 
 	if ProEnchantersOptions["SortBy"] == nil then
@@ -9248,10 +9426,26 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					else
 						if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
 							C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+									ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+									AddWhisperCount()
+									if GetWhisperCount() > 60 then
+										WarnWhisperCounter()
+									end
+									-- proceed with whisper strings
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end)
 						else
-							SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+							if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+								ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+								AddWhisperCount()
+								if GetWhisperCount() > 60 then
+									WarnWhisperCounter()
+								end
+								-- proceed with whisper strings
+								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 					end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -9260,10 +9454,26 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					else
 						if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
 							C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+									ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+									AddWhisperCount()
+									if GetWhisperCount() > 60 then
+										WarnWhisperCounter()
+									end
+									-- proceed with whisper strings
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end)
 						else
-							SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+							if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+								ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+								AddWhisperCount()
+								if GetWhisperCount() > 60 then
+									WarnWhisperCounter()
+								end
+								-- proceed with whisper strings
+								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 					end
 				end
@@ -9290,6 +9500,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.lower(playerName)
+						CreateCusWorkOrder(playerName)
+					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
+						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
@@ -9324,6 +9538,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.lower(playerName)
+						CreateCusWorkOrder(playerName)
+					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
+						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
@@ -9370,6 +9588,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if FullWelcomeMsg == "" then
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
+					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
+						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						local playerName = string.lower(playerName)
+						CreateCusWorkOrder(playerName)
 					else
 						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 						local playerName = string.lower(playerName)
@@ -9402,6 +9624,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local capPlayerName = CapFirstLetter(playerName)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
+						local playerName = string.lower(playerName)
+						CreateCusWorkOrder(playerName)
+					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
+						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
@@ -9445,10 +9671,26 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					else
 						if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
 							C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
-								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+									ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+									AddWhisperCount()
+									if GetWhisperCount() > 60 then
+										WarnWhisperCounter()
+									end
+									-- proceed with whisper strings
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end
 							end)
 						else
-							SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+								ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+								AddWhisperCount()
+								if GetWhisperCount() > 60 then
+									WarnWhisperCounter()
+								end
+								-- proceed with whisper strings
+								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 					end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
@@ -9457,10 +9699,26 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					else
 						if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
 							C_Timer.After(ProEnchantersOptions["DelayInviteMsgTime"], function()
-								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+									ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+									AddWhisperCount()
+									if GetWhisperCount() > 60 then
+										WarnWhisperCounter()
+									end
+									-- proceed with whisper strings
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end
 							end)
 						else
-							SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+								ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+								AddWhisperCount()
+								if GetWhisperCount() > 60 then
+									WarnWhisperCounter()
+								end
+								-- proceed with whisper strings
+								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+							end
 						end
 					end
 				end
@@ -9480,6 +9738,8 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local localLFGChannel = PEenchantingLocales["LFGChannelName"][LocalLanguage]
 		local localTradeChannel = PEenchantingLocales["TradeChannelName"][LocalLanguage]
 		local localDefenseChannel = PEenchantingLocales["DefenseChannelName"][LocalLanguage]
+		local localWorldChannel = PEenchantingLocales["WorldChannelName"][LocalLanguage]
+		local localServicesChannel = PEenchantingLocales["ServicesChannelName"][LocalLanguage]
 		local channelCheck = "General - " .. city
 		local defenseCheck = "LocalDefense - " .. city
 		local guildrecruitCheck = "GuildRecruitment - City"
@@ -9589,6 +9849,204 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
 			if ProEnchantersOptions["DebugLevel"] >= 7 then
 				print("Message found in LFG Channel: " .. channelName)
+			end
+			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
+				local check1 = false
+				local check2 = false
+				local check3 = false
+				local check4 = false
+				local startPos, endPos = string.find(msg2, tword)
+				if string.find(msg2, tword, 1, true) then
+					check1 = true
+					if ProEnchantersOptions["DebugLevel"] >= 8 then
+						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
+					end
+				end
+
+
+				if startPos then
+					-- Check if "ench" is at the start of the string or preceded by a space
+					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+						check2 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print(tword .. " does not have any leading characters, returning check2 as true")
+						end
+					else
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print(tword .. " is contained within a word, check2 returned as false")
+						end
+					end
+				end
+
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					if string.find(msg2, filteredWord, 1, true) then
+						check3 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Potential Customer " ..
+								author2 ..
+								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
+						end
+						break
+					end
+				end
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					if string.find(author, filteredWord, 1, true) then
+						check4 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Potential Customer " ..
+								author2 .. " name found in filter list, check 3 returning false")
+						end
+						break
+					end
+				end
+
+				if check1 == true and check2 == true and check3 == false and check4 == false then
+					if ProEnchantersOptions["DebugLevel"] >= 8 then
+						print("All checks passed, continuing with potential customer invite or pop-up")
+					end
+					local playerName = author3
+					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
+					if ProEnchantersOptions["WorkWhileClosed"] == true then
+						if AutoInviteFlag == true then
+							AddonInvite = true
+							if AddonInvite == true then
+								InviteUnitPEAddon(author2)
+								PEPlayerInvited[playerName] = msg
+							end
+							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						elseif AutoInviteFlag == false then
+							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						end
+					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+						if AutoInviteFlag == true then
+							AddonInvite = true
+							if AddonInvite == true then
+								InviteUnitPEAddon(author2)
+								PEPlayerInvited[playerName] = msg
+							end
+							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						elseif AutoInviteFlag == false then
+							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						end
+					end
+				end
+			end
+		elseif ProEnchantersOptions.AllChannels["World"] == true and string.find(channelName, localWorldChannel, 1, true) then
+			if ProEnchantersOptions["DebugLevel"] >= 7 then
+				print("Message found in World Channel: " .. channelName)
+			end
+			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
+				local check1 = false
+				local check2 = false
+				local check3 = false
+				local check4 = false
+				local startPos, endPos = string.find(msg2, tword)
+				if string.find(msg2, tword, 1, true) then
+					check1 = true
+					if ProEnchantersOptions["DebugLevel"] >= 8 then
+						print("Potential Customer " .. author2 .. " trigger found: " .. tword .. " found within " .. msg2)
+					end
+				end
+
+
+				if startPos then
+					-- Check if "ench" is at the start of the string or preceded by a space
+					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+						check2 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print(tword .. " does not have any leading characters, returning check2 as true")
+						end
+					else
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print(tword .. " is contained within a word, check2 returned as false")
+						end
+					end
+				end
+
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					if string.find(msg2, filteredWord, 1, true) then
+						check3 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Potential Customer " ..
+								author2 ..
+								" filter found: " .. word .. " found within " .. msg2 .. ", check 3 returning false")
+						end
+						break
+					end
+				end
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					if string.find(author, filteredWord, 1, true) then
+						check4 = true
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Potential Customer " ..
+								author2 .. " name found in filter list, check 3 returning false")
+						end
+						break
+					end
+				end
+
+				if check1 == true and check2 == true and check3 == false and check4 == false then
+					if ProEnchantersOptions["DebugLevel"] >= 8 then
+						print("All checks passed, continuing with potential customer invite or pop-up")
+					end
+					local playerName = author3
+					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
+					if ProEnchantersOptions["WorkWhileClosed"] == true then
+						if AutoInviteFlag == true then
+							AddonInvite = true
+							if AddonInvite == true then
+								InviteUnitPEAddon(author2)
+								PEPlayerInvited[playerName] = msg
+							end
+							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						elseif AutoInviteFlag == false then
+							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						end
+					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+						if AutoInviteFlag == true then
+							AddonInvite = true
+							if AddonInvite == true then
+								InviteUnitPEAddon(author2)
+								PEPlayerInvited[playerName] = msg
+							end
+							PlaySound(SOUNDKIT.MAP_PING)
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						elseif AutoInviteFlag == false then
+							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
+							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+								PESound(ProEnchantersOptions["PotentialCustomerSound"])
+							end
+						end
+					end
+				end
+			end
+		elseif ProEnchantersOptions.AllChannels["Services"] == true and string.find(channelName, localServicesChannel, 1, true) then
+			if ProEnchantersOptions["DebugLevel"] >= 7 then
+				print("Message found in Services Channel: " .. channelName)
 			end
 			for _, tword in pairs(ProEnchantersOptions.triggerwords) do
 				local check1 = false

@@ -4,6 +4,39 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 8.0.1
+- **Changed** Default tip message now displays as g, s, c (example: 123g, 456s, 789c) instead your game clients language of Gold, Silver, Copper. This is more a change for those who use non-english versions of WoW and currently have their tip responses formatting as "12 Or, 10 Argent" etc. There is now a checkbox that lets you toggle this as well, by default it is on but by turning it off it will go back to the previous formatting of "Gold, Silver, Copper" in your game clients language. Fixed the tip showing a comma when its not neccesary
+
+## Update 7.9
+- **Changed** Added DropDown library to avoid taint with LFG blizzard function, re-enabled drop downs for filter section of enchants as well as raid icon selection
+
+## Update 7.8
+- **New** Added a new option to send the Party/Raid Join Welcome Message to the customer as a whisper instead of the party chat for instances when you have 5-6 players joining in a short time period and the chat gets spammed
+
+## Update 7.7.1
+- **New** Added a "recently whispered" control to party invites (successful and failed), this will avoid re-whispering the same player within a three minute period when enabled. Enabled by default, new setting in options to disable. This does not stop sending the invite, only the whisper.
+- **New** Warning for potential whisper spamming. If you send more than 60 whispers through the invite feature in 5 minutes the add-on will alert you the next time you go to send another whisper. This is an average of 1 whisper per 5 seconds. Can disable this warning in settings.
+- **Fixed 7.7.1** New settings options were overlapping, this should be fixed
+
+## Update 7.6
+- **New** Added World and Services as channels the add-on can watch for potential customers (This is un-tested, please let me know if there are any errors)
+
+## Update 7.5
+- **Changed** Re-ordered Enchants so that the new SoD recipes are considered the highest level enchants so that their buttons get sorted more intuitively
+- With this change it will most likely break all your favorited enchants and you will have to re-add your favorites, sorry! This should be a one time thing as I have accounted for the need to add more enchants at later SoD versions or even iterations of classic, there are around 1000 available spots to add new enchants without causing another re-ordering
+
+## Update 7.4
+- **Fix** Included AceAddon libraries so that the addon runs standalone on fresh WoW clients, previously addon would only work if you had an addon that was also installed which also used the AceAddon libraries (most addons use this)
+
+## Update 7.3.1
+- **Ducktape Fix** Removed drop down menus (Sort by and Raid Icon selector) to avoid taint issues with SoD LFG until new UI drop down menus (Most likely ACE based) can be added
+
+## Update 7.3
+- **New** Season 6 of SoD recipes added
+
+## Update 7.2.1
+- **Small Fix** Added checkbox in settings to trim server name when sending an invite to a player, hopefully to work around any weird invite issues.
+
 ## Update 7.1 and 7.2
 - **Added** Fixed and streamlined tooltips - thanks @Cynsible
 

@@ -75,7 +75,14 @@ ProEnchantersItemCacheTable = {
     --thoriumbar = "12359",
     truesilverbar = "6037",
     wildvine = "8153",
-    wintersbite = "3819"
+    wintersbite = "3819",
+    -- phase 6 required items
+    greaternatureprotectionpotion = "13458",
+    qirajistalkervenom = "234011",
+    ancientsandwormbile = "234010",
+    stratholmeholywater = "13180",
+    frayedabominationstitching = "12735",
+    skinofshadow = "12753"
 }
 
 function CapFirstLetter(word)
@@ -1833,7 +1840,31 @@ function PEdoTrade()
                 end
                 table.insert(ProEnchantersLog[customerName], TargetMoney)
                 if ProEnchantersOptions["TipMsg"] then
-                    local tip = tostring(GetCoinText(TargetMoney))
+                    local tip = ""
+                    if ProEnchantersOptions["SimplifyTips"] == true then
+                        local gold = floor(TargetMoney / 1e4)
+                        local silver = floor(TargetMoney / 100 % 100)
+                        local copper = TargetMoney % 100
+                        if copper > 0 then
+                            tip = tostring(copper) .. "c"
+                        end
+                        if silver > 0 then
+                            if tip == "" then
+                                tip = tostring(silver) .. "s"
+                            else
+                                tip = tostring(silver) .. "s, " .. tip
+                            end
+                        end
+                        if gold > 0 then
+                            if tip == "" then
+                                tip = tostring(gold) .. "g"
+                            else
+                                tip = tostring(gold) .. "g, " .. tip
+                            end
+                        end
+                    else
+                        tip = tostring(GetCoinText(TargetMoney))
+                    end
                     local tipMsg = ProEnchantersOptions["TipMsg"]
                     local capPlayerName = CapFirstLetter(PEtradeWho)
                     local newTipMsg1 = string.gsub(tipMsg, "CUSTOMER", capPlayerName)
@@ -1992,4 +2023,44 @@ function PEresetCurrentTradeData()
     PEtradeWhoItems = { player = {}, target = {} }
     ItemsTraded = false
     -- reset other trade-related variables as needed
+end
+
+-- Check for Recent Msg - timepassed is 10 seconds, GetTime is seconds.miliseconds (60.100)
+-- timepassed in seconds, add 10 seconds, compare current time in seconds
+function CheckRecentlyWhispered(name)
+
+        if ProEnchantersOptions["recentwhisperscheck"] ~= true then
+            return false
+        end
+
+        for playername, timesent in pairs(ProEnchantersOptions["recentwhispers"]) do
+            if ((name == playername) and (GetTime() < timesent+180)) then
+                return true
+            end
+        end
+    return false
+end
+
+-- Add counted whisper with current system time
+function AddWhisperCount()
+    table.insert(ProEnchantersOptions["whispercount"], GetTime())
+end
+
+-- Check for amount of whispers sent and return integer when whisper sent
+function GetWhisperCount()
+local whispercount = 0
+    for i, timesent in ipairs(ProEnchantersOptions["whispercount"]) do
+        if GetTime() < timesent+300 then
+            whispercount = whispercount + 1
+        else
+            table.remove(ProEnchantersOptions["whispercount"], i)
+        end
+        return whispercount
+    end
+end
+
+function WarnWhisperCounter()
+    if ProEnchantersOptions["whispercountwarn"] == true then
+        print("You have sent " .. string(GetWhisperCount()) .. " whispers in the last 5 minutes")
+    end
 end

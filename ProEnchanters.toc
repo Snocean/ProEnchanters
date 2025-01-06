@@ -1,8 +1,8 @@
-## Interface: 11504
+## Interface: 11505
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better flow while running enchanting services for other players
 ## Author: EffinOwen
-## Version: 7.2
+## Version: 8.0.1
 ## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB
 
 # External code
@@ -11,6 +11,19 @@ libs\utf8.lua
 libs\LibSharedMedia-3.0\lib.xml
 libs\LibSharedMedia-3.0\embeds.xml
 libs\LibSharedMedia-3.0\LibDBIcon-1.0\lib.xml
+libs\LibSharedMedia-3.0\AceAddon-3.0\AceAddon-3.0.xml
+libs\LibSharedMedia-3.0\AceEvent-3.0\AceEvent-3.0.xml
+libs\LibSharedMedia-3.0\AceHook-3.0\AceHook-3.0.xml
+libs\LibSharedMedia-3.0\AceTab-3.0\AceTab-3.0.xml
+libs\LibSharedMedia-3.0\AceGUI-3.0\AceGUI-3.0.xml
+libs\LibSharedMedia-3.0\AceConfig-3.0\AceConfig-3.0.xml
+libs\LibSharedMedia-3.0\AceDB-3.0\AceDB-3.0.xml
+libs\LibSharedMedia-3.0\AceDBOptions-3.0\AceDBOptions-3.0.xml
+libs\LibSharedMedia-3.0\AceLocale-3.0\AceLocale-3.0.xml
+libs\LibSharedMedia-3.0\AceSerializer-3.0\AceSerializer-3.0.xml
+libs\LibSharedMedia-3.0\AceTimer-3.0\AceTimer-3.0.xml
+libs\LibSharedMedia-3.0\AceConsole-3.0\AceConsole-3.0.xml
+libs\LibSharedMedia-3.0\LibUIDropDownMenu\LibUIDropDownMenu\LibUIDropDownMenu.xml
 
 # Main
 PELocalization.lua

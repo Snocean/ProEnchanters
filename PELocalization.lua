@@ -51,6 +51,30 @@ PEenchantingLocales = {
 		["Spanish"] = "BuscandoGrupo",
 		["Taiwanese"] = "尋求組隊"
 	},
+	["WorldChannelName"] = {
+		["Chinese"] = "世界",
+		["English"] = "World",
+		["French"] = "Monde",
+		["German"] = "Welt",
+		["Korean"] = "월드",
+		["Mexican"] = "Mundo",
+		["Portuguese"] = "Mundo",
+		["Russian"] = "Мир",
+		["Spanish"] = "Mundo",
+		["Taiwanese"] = "世界"
+	},
+	["ServicesChannelName"] = {
+		["Chinese"] = "服务",
+		["English"] = "Services",
+		["French"] = "Services",
+		["German"] = "Dienstleistungen",
+		["Korean"] = "서비스",
+		["Mexican"] = "Servicios",
+		["Portuguese"] = "Serviços",
+		["Russian"] = "Услуги",
+		["Spanish"] = "Servicios",
+		["Taiwanese"] = "服務"
+	},
 	["GeneralChannelName"] = {
 		["Chinese"] = "综合",
 		["English"]="General",
@@ -160,7 +184,7 @@ PEenchantingLocales = {
 		["Taiwanese"] = "已經加入了別的隊伍"
 	},
 	["Enchants"] = {
-		["ENCH106"] = {
+		["ENCH100106"] = {
 			["Chinese"] = "附魔护腕 - 初级生命",
 			["English"] = "Enchant Bracer - Minor Health",
 			["French"] = "Ench. de bracelets (Vie mineure)",
@@ -172,7 +196,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: salud menor",
 			["Taiwanese"] = "附魔護腕 - 初級生命"
 		},
-		["ENCH118"] = {
+		["ENCH100118"] = {
 			["Chinese"] = "附魔胸甲 - 初级生命",
 			["English"] = "Enchant Chest - Minor Health",
 			["French"] = "Ench. de plastron (Vie mineure)",
@@ -184,7 +208,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud menor",
 			["Taiwanese"] = "附魔胸甲 - 初級生命"
 		},
-		["ENCH881"] = {
+		["ENCH100881"] = {
 			["Chinese"] = "符文铜棒",
 			["English"] = "Runed Copper Rod",
 			["French"] = "Bâtonnet runique en cuivre",
@@ -196,7 +220,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Vara de cobre rúnico",
 			["Taiwanese"] = "符文銅棒"
 		},
-		["ENCH117"] = {
+		["ENCH100117"] = {
 			["Chinese"] = "附魔胸甲 - 初级吸收",
 			["English"] = "Enchant Chest - Minor Absorption",
 			["French"] = "Ench. de plastron (Absorption mineure)",
@@ -208,7 +232,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: absorción menor",
 			["Taiwanese"] = "附魔胸甲 - 初級吸收"
 		},
-		["ENCH105"] = {
+		["ENCH100105"] = {
 			["Chinese"] = "附魔护腕 - 初级偏斜",
 			["English"] = "Enchant Bracer - Minor Deflect",
 			["French"] = "Ench. de bracelets (Déviation mineure)",
@@ -220,7 +244,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: desvío menor",
 			["Taiwanese"] = "附魔護腕 - 初級偏斜"
 		},
-		["ENCH119"] = {
+		["ENCH100119"] = {
 			["Chinese"] = "附魔胸甲 - 初级法力",
 			["English"] = "Enchant Chest - Minor Mana",
 			["French"] = "Ench. de plastron (Mana mineur)",
@@ -232,7 +256,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná menor",
 			["Taiwanese"] = "附魔胸甲 - 初級法力"
 		},
-		["ENCH127"] = {
+		["ENCH100127"] = {
 			["Chinese"] = "附魔披风 - 初级抗性",
 			["English"] = "Enchant Cloak - Minor Resistance",
 			["French"] = "Ench. de cape (Résistance mineure)",
@@ -244,7 +268,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia menor",
 			["Taiwanese"] = "附魔披風 - 初級抗性"
 		},
-		["ENCH108"] = {
+		["ENCH100108"] = {
 			["Chinese"] = "附魔护腕 - 初级耐力",
 			["English"] = "Enchant Bracer - Minor Stamina",
 			["French"] = "Ench. de bracelets (Endurance mineure)",
@@ -256,7 +280,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: aguante menor",
 			["Taiwanese"] = "附魔護腕 - 初級耐力"
 		},
-		["ENCH93"] = {
+		["ENCH10093"] = {
 			["Chinese"] = "附魔双手武器 - 初级冲击",
 			["English"] = "Enchant 2H Weapon - Minor Impact",
 			["French"] = "Ench. d'arme 2M (impact mineur)",
@@ -268,7 +292,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: impacto menor",
 			["Taiwanese"] = "附魔雙手武器 - 初級衝擊"
 		},
-		["ENCH114"] = {
+		["ENCH100114"] = {
 			["Chinese"] = "附魔胸甲 - 次级生命",
 			["English"] = "Enchant Chest - Lesser Health",
 			["French"] = "Ench. de plastron (Vie inférieure)",
@@ -280,7 +304,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud inferior",
 			["Taiwanese"] = "附魔胸甲 - 次級生命"
 		},
-		["ENCH107"] = {
+		["ENCH100107"] = {
 			["Chinese"] = "附魔护腕 - 初级精神",
 			["English"] = "Enchant Bracer - Minor Spirit",
 			["French"] = "Ench. de bracelets (Esprit mineur)",
@@ -292,7 +316,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: espíritu menor",
 			["Taiwanese"] = "附魔護腕 - 初級精神"
 		},
-		["ENCH126"] = {
+		["ENCH100126"] = {
 			["Chinese"] = "附魔披风 - 初级防护",
 			["English"] = "Enchant Cloak - Minor Protection",
 			["French"] = "Ench. de cape (Protection mineure)",
@@ -304,7 +328,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: protección menor",
 			["Taiwanese"] = "附魔披風 - 初級防護"
 		},
-		["ENCH115"] = {
+		["ENCH100115"] = {
 			["Chinese"] = "附魔胸甲 - 次级法力",
 			["English"] = "Enchant Chest - Lesser Mana",
 			["French"] = "Ench. de plastron (Mana inférieur)",
@@ -316,7 +340,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná inferior",
 			["Taiwanese"] = "附魔胸甲 - 次級法力"
 		},
-		["ENCH104"] = {
+		["ENCH100104"] = {
 			["Chinese"] = "附魔护腕 - 初级敏捷",
 			["English"] = "Enchant Bracer - Minor Agility",
 			["French"] = "Ench. de bracelets (Agilité mineure)",
@@ -328,7 +352,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: agilidad menor",
 			["Taiwanese"] = "附魔護腕 - 初級敏捷"
 		},
-		["ENCH109"] = {
+		["ENCH100109"] = {
 			["Chinese"] = "附魔护腕 - 初级力量",
 			["English"] = "Enchant Bracer - Minor Strength",
 			["French"] = "Ench. de bracelets (Force mineure)",
@@ -340,7 +364,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: fuerza menor",
 			["Taiwanese"] = "附魔護腕 - 初級力量"
 		},
-		["ENCH95"] = {
+		["ENCH10095"] = {
 			["Chinese"] = "附魔武器 - 初级屠兽",
 			["English"] = "Enchant Weapon - Minor Beastslayer",
 			["French"] = "Ench. d'arme (Tueur de bête mineur)",
@@ -352,7 +376,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: bestiacida menor",
 			["Taiwanese"] = "附魔武器 - 初級屠獸"
 		},
-		["ENCH96"] = {
+		["ENCH10096"] = {
 			["Chinese"] = "附魔武器 - 初级攻击",
 			["English"] = "Enchant Weapon - Minor Striking",
 			["French"] = "Ench. d'arme (Frappe mineure)",
@@ -364,7 +388,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: golpear menor",
 			["Taiwanese"] = "附魔武器 - 初級攻擊"
 		},
-		["ENCH91"] = {
+		["ENCH10091"] = {
 			["Chinese"] = "附魔双手武器 - 次级智力",
 			["English"] = "Enchant 2H Weapon - Lesser Intellect",
 			["French"] = "Ench. d'arme 2M (Intelligence inférieure)",
@@ -376,7 +400,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: intelecto inferior",
 			["Taiwanese"] = "附魔雙手武器 - 次級智力",
 		},
-		["ENCH882"] = {
+		["ENCH100882"] = {
 			["Chinese"] = "符文银棒",
 			["English"] = "Runed Silver Rod",
 			["French"] = "Bâtonnet runique en argent",
@@ -388,7 +412,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Vara rúnica plateada",
 			["Taiwanese"] = "符文銀棒",
 		},
-		["ENCH112"] = {
+		["ENCH100112"] = {
 			["Chinese"] = "附魔胸甲 - 生命",
 			["English"] = "Enchant Chest - Health",
 			["French"] = "Ench. de plastron (Vie)",
@@ -400,7 +424,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud",
 			["Taiwanese"] = "附魔胸甲 - 生命",
 		},
-		["ENCH101"] = {
+		["ENCH100101"] = {
 			["Chinese"] = "附魔护腕 - 次级精神",
 			["English"] = "Enchant Bracer - Lesser Spirit",
 			["French"] = "Ench. de bracelets (Esprit inférieur)",
@@ -412,7 +436,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: espíritu inferior",
 			["Taiwanese"] = "附魔護腕 - 次級精神",
 		},
-		["ENCH122"] = {
+		["ENCH100122"] = {
 			["Chinese"] = "附魔披风 - 次级火焰抗性",
 			["English"] = "Enchant Cloak - Lesser Fire Resistance",
 			["French"] = "Ench. de cape (Résistance au Feu inf.)",
@@ -424,7 +448,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia al Fuego inferior",
 			["Taiwanese"] = "附魔披風 - 次級火焰抗性",
 		},
-		["ENCH99"] = {
+		["ENCH10099"] = {
 			["Chinese"] = "附魔靴子 - 初级耐力",
 			["English"] = "Enchant Boots - Minor Stamina",
 			["French"] = "Ench. de bottes (Endurance mineure)",
@@ -436,7 +460,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: aguante menor",
 			["Taiwanese"] = "附魔靴子 - 初級耐力",
 		},
-		["ENCH98"] = {
+		["ENCH10098"] = {
 			["Chinese"] = "附魔靴子 - 初级敏捷",
 			["English"] = "Enchant Boots - Minor Agility",
 			["French"] = "Ench. de bottes (Agilité mineure)",
@@ -448,7 +472,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: agilidad menor",
 			["Taiwanese"] = "附魔靴子 - 初級敏捷",
 		},
-		["ENCH134"] = {
+		["ENCH100134"] = {
 			["Chinese"] = "附魔盾牌 - 初级耐力",
 			["English"] = "Enchant Shield - Minor Stamina",
 			["French"] = "Ench. de bouclier (Endurance mineure)",
@@ -460,7 +484,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: aguante menor",
 			["Taiwanese"] = "附魔盾牌 - 初級耐力",
 		},
-		["ENCH135"] = {
+		["ENCH999"] = {
 			["Chinese"] = "附魔盾牌 - Law of Nature",
 			["English"] = "Enchant Shield - Law of Nature",
 			["French"] = "Ench. de bouclier (Law of Nature)",
@@ -472,7 +496,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: Law of Nature",
 			["Taiwanese"] = "附魔盾牌 - Law of Nature",
 		},
-		["ENCH92"] = {
+		["ENCH10092"] = {
 			["Chinese"] = "附魔双手武器 - 次级精神",
 			["English"] = "Enchant 2H Weapon - Lesser Spirit",
 			["French"] = "Ench. d'arme 2M (Esprit inférieur)",
@@ -484,7 +508,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: espíritu inferior",
 			["Taiwanese"] = "附魔雙手武器 - 次級精神",
 		},
-		["ENCH125"] = {
+		["ENCH100125"] = {
 			["Chinese"] = "附魔披风 - 初级敏捷",
 			["English"] = "Enchant Cloak - Minor Agility",
 			["French"] = "Ench. de cape (Agilité mineure)",
@@ -496,7 +520,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: agilidad menor",
 			["Taiwanese"] = "附魔披風 - 初級敏捷",
 		},
-		["ENCH123"] = {
+		["ENCH100123"] = {
 			["Chinese"] = "附魔披风 - 次级防护",
 			["English"] = "Enchant Cloak - Lesser Protection",
 			["French"] = "Ench. de cape (Protection inférieure)",
@@ -508,7 +532,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: protección inferior",
 			["Taiwanese"] = "附魔披風 - 次級防護",
 		},
-		["ENCH131"] = {
+		["ENCH100131"] = {
 			["Chinese"] = "附魔盾牌 - 次级防护",
 			["English"] = "Enchant Shield - Lesser Protection",
 			["French"] = "Ench. de bouclier (Protection inférieure)",
@@ -520,7 +544,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: protección inferior",
 			["Taiwanese"] = "附魔盾牌 - 次級防護",
 		},
-		["ENCH132"] = {
+		["ENCH100132"] = {
 			["Chinese"] = "附魔盾牌 - 次级精神",
 			["English"] = "Enchant Shield - Lesser Spirit",
 			["French"] = "Ench. de bouclier (Esprit inférieur)",
@@ -532,7 +556,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: espíritu inferior",
 			["Taiwanese"] = "附魔盾牌 - 次級精神",
 		},
-		["ENCH102"] = {
+		["ENCH100102"] = {
 			["Chinese"] = "附魔护腕 - 次级耐力",
 			["English"] = "Enchant Bracer - Lesser Stamina",
 			["French"] = "Ench. de bracelets (Endurance inférieure)",
@@ -544,7 +568,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: aguante inferior",
 			["Taiwanese"] = "附魔護腕 - 次級耐力",
 		},
-		["ENCH94"] = {
+		["ENCH10094"] = {
 			["Chinese"] = "附魔武器 - 次级攻击",
 			["English"] = "Enchant Weapon - Lesser Striking",
 			["French"] = "Ench. d'arme (Frappe inférieure)",
@@ -556,7 +580,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: golpear inferior",
 			["Taiwanese"] = "附魔武器 - 次級攻擊",
 		},
-		["ENCH124"] = {
+		["ENCH100124"] = {
 			["Chinese"] = "附魔披风 - 次级暗影抵抗",
 			["English"] = "Enchant Cloak - Lesser Shadow Resistance",
 			["French"] = "Ench. de cape (Résistance à l'Ombre inf.)",
@@ -568,7 +592,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia a las sombras inferior",
 			["Taiwanese"] = "附魔披風 - 次級暗影抵抗",
 		},
-		["ENCH90"] = {
+		["ENCH10090"] = {
 			["Chinese"] = "附魔双手武器 - 次级冲击",
 			["English"] = "Enchant 2H Weapon - Lesser Impact",
 			["French"] = "Ench. d'arme 2M (Impact inférieur)",
@@ -580,7 +604,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: impacto inferior",
 			["Taiwanese"] = "附魔雙手武器 - 次級衝擊",
 		},
-		["ENCH103"] = {
+		["ENCH100103"] = {
 			["Chinese"] = "附魔护腕 - 次级力量",
 			["English"] = "Enchant Bracer - Lesser Strength",
 			["French"] = "Ench. de bracelets (Force inférieure)",
@@ -592,7 +616,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: fuerza inferior",
 			["Taiwanese"] = "附魔護腕 - 次級力量",
 		},
-		["ENCH113"] = {
+		["ENCH100113"] = {
 			["Chinese"] = "附魔胸甲 - 次级吸收",
 			["English"] = "Enchant Chest - Lesser Absorption",
 			["French"] = "Ench. de plastron (Absorption inférieure)",
@@ -604,7 +628,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: absorción inferior",
 			["Taiwanese"] = "附魔胸甲 - 次級吸收",
 		},
-		["ENCH116"] = {
+		["ENCH100116"] = {
 			["Chinese"] = "附魔胸甲 - 法力",
 			["English"] = "Enchant Chest - Mana",
 			["French"] = "Ench. de plastron (Mana)",
@@ -616,7 +640,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná",
 			["Taiwanese"] = "附魔胸甲 - 法力",
 		},
-		["ENCH130"] = {
+		["ENCH100130"] = {
 			["Chinese"] = "附魔手套 - 采矿",
 			["English"] = "Enchant Gloves - Mining",
 			["French"] = "Ench. de gants (Minage)",
@@ -628,7 +652,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: minería",
 			["Taiwanese"] = "附魔手套 - 採礦",
 		},
-		["ENCH129"] = {
+		["ENCH100129"] = {
 			["Chinese"] = "附魔手套 - 草药学",
 			["English"] = "Enchant Gloves - Herbalism",
 			["French"] = "Ench. de gants (Herboristerie)",
@@ -640,7 +664,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: herboristería",
 			["Taiwanese"] = "附魔手套 - 草藥學",
 		},
-		["ENCH128"] = {
+		["ENCH100128"] = {
 			["Chinese"] = "附魔手套 - 钓鱼",
 			["English"] = "Enchant Gloves - Fishing",
 			["French"] = "Ench. de gants (Pêche)",
@@ -652,7 +676,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: pesca",
 			["Taiwanese"] = "附魔手套 - 釣魚",
 		},
-		["ENCH100"] = {
+		["ENCH100100"] = {
 			["Chinese"] = "附魔护腕 - 次级智力",
 			["English"] = "Enchant Bracer - Lesser Intellect",
 			["French"] = "Ench. de bracelets (Intelligence inférieure)",
@@ -664,7 +688,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: intelecto inferior",
 			["Taiwanese"] = "附魔護腕 - 次級智力",
 		},
-		["ENCH120"] = {
+		["ENCH100120"] = {
 			["Chinese"] = "附魔胸甲 - 初级属性",
 			["English"] = "Enchant Chest - Minor Stats",
 			["French"] = "Ench. de plastron (Caract. mineures)",
@@ -676,7 +700,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: estadísticas menores",
 			["Taiwanese"] = "附魔胸甲 - 初級屬性",
 		},
-		["ENCH883"] = {
+		["ENCH100883"] = {
 			["Chinese"] = "符文金棒",
 			["English"] = "Runed Golden Rod",
 			["French"] = "Bâtonnet runique en or",
@@ -688,7 +712,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Vara rúnica dorada",
 			["Taiwanese"] = "符文金棒",
 		},
-		["ENCH133"] = {
+		["ENCH100133"] = {
 			["Chinese"] = "附魔盾牌 - 次级耐力",
 			["English"] = "Enchant Shield - Lesser Stamina",
 			["French"] = "Ench. de bouclier (Endurance inférieure)",
@@ -700,7 +724,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: aguante inferior",
 			["Taiwanese"] = "附魔盾牌 - 次級耐力",
 		},
-		["ENCH121"] = {
+		["ENCH100121"] = {
 			["Chinese"] = "附魔披风 - 防御",
 			["English"] = "Enchant Cloak - Defense",
 			["French"] = "Ench. de cape (Défense)",
@@ -712,7 +736,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: defensa",
 			["Taiwanese"] = "附魔披風 - 防禦",
 		},
-		["ENCH97"] = {
+		["ENCH10097"] = {
 			["Chinese"] = "附魔靴子 - 次级敏捷",
 			["English"] = "Enchant Boots - Lesser Agility",
 			["French"] = "Ench. de bottes (Agilité inférieure)",
@@ -724,7 +748,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: agilidad inferior",
 			["Taiwanese"] = "附魔靴子 - 次級敏捷",
 		},
-		["ENCH111"] = {
+		["ENCH100111"] = {
 			["Chinese"] = "附魔胸甲 - 强效生命",
 			["English"] = "Enchant Chest - Greater Health",
 			["French"] = "Ench. de plastron (Vie supérieure)",
@@ -736,7 +760,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud superior",
 			["Taiwanese"] = "附魔胸甲 - 強效生命",
 		},
-		["ENCH110"] = {
+		["ENCH100110"] = {
 			["Chinese"] = "附魔护腕 - 精神",
 			["English"] = "Enchant Bracer - Spirit",
 			["French"] = "Ench. de bracelets (Esprit)",
@@ -748,7 +772,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: espíritu",
 			["Taiwanese"] = "附魔護腕 - 精神",
 		},
-		["ENCH83"] = {
+		["ENCH10083"] = {
 			["Chinese"] = "附魔靴子 - 次级耐力",
 			["English"] = "Enchant Boots - Lesser Stamina",
 			["French"] = "Ench. de bottes (Endurance inférieure)",
@@ -760,7 +784,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: aguante inferior",
 			["Taiwanese"] = "附魔靴子 - 次級耐力",
 		},
-		["ENCH84"] = {
+		["ENCH10084"] = {
 			["Chinese"] = "附魔护腕 - 次级偏斜",
 			["English"] = "Enchant Bracer - Lesser Deflection",
 			["French"] = "Ench. de bracelets (Déviation inférieure)",
@@ -772,7 +796,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: desvío inferior",
 			["Taiwanese"] = "附魔護腕 - 次級偏斜",
 		},
-		["ENCH85"] = {
+		["ENCH10085"] = {
 			["Chinese"] = "附魔护腕 - 耐力",
 			["English"] = "Enchant Bracer - Stamina",
 			["French"] = "Ench. de bracelets (Endurance)",
@@ -784,7 +808,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: aguante",
 			["Taiwanese"] = "附魔護腕 - 耐力",
 		},
-		["ENCH71"] = {
+		["ENCH10071"] = {
 			["Chinese"] = "附魔武器 - 次级屠兽",
 			["English"] = "Enchant Weapon - Lesser Beastslayer",
 			["French"] = "Ench. d'arme (Tueur de bête inférieur)",
@@ -796,7 +820,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: bestiacida inferior",
 			["Taiwanese"] = "附魔武器 - 次級屠獸",
 		},
-		["ENCH72"] = {
+		["ENCH10072"] = {
 			["Chinese"] = "附魔武器 - 次级元素杀手",
 			["English"] = "Enchant Weapon - Lesser Elemental Slayer",
 			["French"] = "Ench. d'arme (Tueur d'élémentaire inférieur)",
@@ -808,7 +832,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: mataelementales inferior",
 			["Taiwanese"] = "附魔武器 - 次級元素殺手",
 		},
-		["ENCH88"] = {
+		["ENCH10088"] = {
 			["Chinese"] = "附魔披风 - 火焰抗性",
 			["English"] = "Enchant Cloak - Fire Resistance",
 			["French"] = "Ench. de cape (Résistance au Feu)",
@@ -820,7 +844,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia al Fuego",
 			["Taiwanese"] = "附魔披風 - 火焰抗性",
 		},
-		["ENCH89"] = {
+		["ENCH10089"] = {
 			["Chinese"] = "附魔盾牌 - 精神",
 			["English"] = "Enchant Shield - Spirit",
 			["French"] = "Ench. de bouclier (Esprit)",
@@ -832,7 +856,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: espíritu",
 			["Taiwanese"] = "附魔盾牌 - 精神",
 		},
-		["ENCH86"] = {
+		["ENCH10086"] = {
 			["Chinese"] = "附魔护腕 - 力量",
 			["English"] = "Enchant Bracer - Strength",
 			["French"] = "Ench. de bracelets (Force)",
@@ -844,7 +868,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: fuerza",
 			["Taiwanese"] = "附魔護腕 - 力量",
 		},
-		["ENCH87"] = {
+		["ENCH10087"] = {
 			["Chinese"] = "附魔胸甲 - 强效法力",
 			["English"] = "Enchant Chest - Greater Mana",
 			["French"] = "Ench. de plastron (Mana supérieur)",
@@ -856,7 +880,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná superior",
 			["Taiwanese"] = "附魔胸甲 - 強效法力",
 		},
-		["ENCH73"] = {
+		["ENCH10073"] = {
 			["Chinese"] = "附魔靴子 - 次级精神",
 			["English"] = "Enchant Boots - Lesser Spirit",
 			["French"] = "Ench. de bottes (Esprit inférieur)",
@@ -868,7 +892,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: espíritu inferior",
 			["Taiwanese"] = "附魔靴子 - 次級精神",
 		},
-		["ENCH79"] = {
+		["ENCH10079"] = {
 			["Chinese"] = "附魔盾牌 - 次级格挡",
 			["English"] = "Enchant Shield - Lesser Block",
 			["French"] = "Ench. de bouclier (Blocage inférieur)",
@@ -880,7 +904,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: bloqueo inferior",
 			["Taiwanese"] = "附魔盾牌 - 次級格擋",
 		},
-		["ENCH81"] = {
+		["ENCH10081"] = {
 			["Chinese"] = "附魔武器 - 攻击",
 			["English"] = "Enchant Weapon - Striking",
 			["French"] = "Ench. d'arme (Frappe)",
@@ -892,7 +916,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: golpear",
 			["Taiwanese"] = "附魔武器 - 攻擊",
 		},
-		["ENCH70"] = {
+		["ENCH10070"] = {
 			["Chinese"] = "附魔双手武器 - 冲击",
 			["English"] = "Enchant 2H Weapon - Impact",
 			["French"] = "Ench. d'arme 2M (Impact)",
@@ -904,7 +928,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: impacto",
 			["Taiwanese"] = "附魔雙手武器 - 衝擊",
 		},
-		["ENCH78"] = {
+		["ENCH10078"] = {
 			["Chinese"] = "附魔手套 - 剥皮",
 			["English"] = "Enchant Gloves - Skinning",
 			["French"] = "Ench. de gants (Dépeçage)",
@@ -916,7 +940,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: desuello",
 			["Taiwanese"] = "附魔手套 - 剝皮",
 		},
-		["ENCH74"] = {
+		["ENCH10074"] = {
 			["Chinese"] = "附魔胸甲 - 次级状态",
 			["English"] = "Enchant Chest - Lesser Stats",
 			["French"] = "Ench. de plastron (Caract. inférieures)",
@@ -928,7 +952,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: estadísticas inferiores",
 			["Taiwanese"] = "附魔胸甲 - 次級狀態",
 		},
-		["ENCH884"] = {
+		["ENCH100884"] = {
 			["Chinese"] = "符文真银棒",
 			["English"] = "Runed Truesilver Rod",
 			["French"] = "Bâtonnet runique en vrai-argent",
@@ -940,7 +964,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Vara rúnica de veraplata",
 			["Taiwanese"] = "符文真銀棒",
 		},
-		["ENCH76"] = {
+		["ENCH10076"] = {
 			["Chinese"] = "附魔披风 - 强效防御",
 			["English"] = "Enchant Cloak - Greater Defense",
 			["French"] = "Ench. de cape (Défense supérieure)",
@@ -952,7 +976,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: defensa superior",
 			["Taiwanese"] = "附魔披風 - 強效防禦",
 		},
-		["ENCH77"] = {
+		["ENCH10077"] = {
 			["Chinese"] = "附魔披风 - 抗性",
 			["English"] = "Enchant Cloak - Resistance",
 			["French"] = "Ench. de cape (Résistance)",
@@ -964,7 +988,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia",
 			["Taiwanese"] = "附魔披風 - 抗性",
 		},
-		["ENCH67"] = {
+		["ENCH10067"] = {
 			["Chinese"] = "附魔手套 - 敏捷",
 			["English"] = "Enchant Gloves - Agility",
 			["French"] = "Ench. de gants (Agilité)",
@@ -976,7 +1000,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: agilidad",
 			["Taiwanese"] = "附魔手套 - 敏捷",
 		},
-		["ENCH69"] = {
+		["ENCH10069"] = {
 			["Chinese"] = "附魔盾牌 - 耐力",
 			["English"] = "Enchant Shield - Stamina",
 			["French"] = "Ench. de bouclier (Endurance)",
@@ -988,7 +1012,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: aguante",
 			["Taiwanese"] = "附魔盾牌 - 耐力",
 		},
-		["ENCH62"] = {
+		["ENCH10062"] = {
 			["Chinese"] = "附魔护腕 - 智力",
 			["English"] = "Enchant Bracer - Intellect",
 			["French"] = "Ench. de bracelets (Intelligence)",
@@ -1000,7 +1024,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: intelecto",
 			["Taiwanese"] = "附魔護腕 - 智力",
 		},
-		["ENCH60"] = {
+		["ENCH10060"] = {
 			["Chinese"] = "附魔靴子 - 耐力",
 			["English"] = "Enchant Boots - Stamina",
 			["French"] = "Ench. de bottes (Endurance)",
@@ -1012,7 +1036,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: aguante",
 			["Taiwanese"] = "附魔靴子 - 耐力",
 		},
-		["ENCH66"] = {
+		["ENCH10066"] = {
 			["Chinese"] = "附魔手套 - 高级采矿",
 			["English"] = "Enchant Gloves - Advanced Mining",
 			["French"] = "Ench. de gants (Minage avancé)",
@@ -1024,7 +1048,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: minería avanzada",
 			["Taiwanese"] = "附魔手套 - 高級採礦",
 		},
-		["ENCH61"] = {
+		["ENCH10061"] = {
 			["Chinese"] = "附魔护腕 - 强效精神",
 			["English"] = "Enchant Bracer - Greater Spirit",
 			["French"] = "Ench. de bracelets (Esprit supérieur)",
@@ -1036,7 +1060,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: espíritu superior",
 			["Taiwanese"] = "附魔護腕 - 強效精神",
 		},
-		["ENCH63"] = {
+		["ENCH10063"] = {
 			["Chinese"] = "附魔胸甲 - 超强生命",
 			["English"] = "Enchant Chest - Superior Health",
 			["French"] = "Ench. de plastron (Santé excellente)",
@@ -1048,7 +1072,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud excelente",
 			["Taiwanese"] = "附魔胸甲 - 超強生命",
 		},
-		["ENCH65"] = {
+		["ENCH10065"] = {
 			["Chinese"] = "附魔手套 - 高级草药学",
 			["English"] = "Enchant Gloves - Advanced Herbalism",
 			["French"] = "Ench. de gants (Herboristerie avancée)",
@@ -1060,7 +1084,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: herboristería avanzada",
 			["Taiwanese"] = "附魔手套 - 高級草藥學",
 		},
-		["ENCH64"] = {
+		["ENCH10064"] = {
 			["Chinese"] = "附魔披风 - 次级敏捷",
 			["English"] = "Enchant Cloak - Lesser Agility",
 			["French"] = "Ench. de cape (Agilité inférieure)",
@@ -1072,7 +1096,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: agilidad inferior",
 			["Taiwanese"] = "附魔披風 - 次級敏捷",
 		},
-		["ENCH68"] = {
+		["ENCH10068"] = {
 			["Chinese"] = "附魔手套 - 力量",
 			["English"] = "Enchant Gloves - Strength",
 			["French"] = "Ench. de gants (Force)",
@@ -1084,7 +1108,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: fuerza",
 			["Taiwanese"] = "附魔手套 - 力量",
 		},
-		["ENCH59"] = {
+		["ENCH10059"] = {
 			["Chinese"] = "附魔靴子 - 初级速度",
 			["English"] = "Enchant Boots - Minor Speed",
 			["French"] = "Ench. de bottes (Vitesse mineure)",
@@ -1096,7 +1120,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: velocidad menor",
 			["Taiwanese"] = "附魔靴子 - 初級速度",
 		},
-		["ENCH48"] = {
+		["ENCH10048"] = {
 			["Chinese"] = "附魔武器 - 烈焰",
 			["English"] = "Enchant Weapon - Fiery Weapon",
 			["French"] = "Ench. d'arme (Arme flamboyante)",
@@ -1108,7 +1132,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: arma abrasadora",
 			["Taiwanese"] = "附魔武器 - 灼熱武器",
 		},
-		["ENCH42"] = {
+		["ENCH10042"] = {
 			["Chinese"] = "附魔盾牌 - 强效精神",
 			["English"] = "Enchant Shield - Greater Spirit",
 			["French"] = "Ench. de bouclier (Esprit supérieur)",
@@ -1120,7 +1144,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: espíritu superior",
 			["Taiwanese"] = "附魔盾牌 - 強效精神",
 		},
-		["ENCH47"] = {
+		["ENCH10047"] = {
 			["Chinese"] = "附魔武器 - 屠魔",
 			["English"] = "Enchant Weapon - Demonslaying",
 			["French"] = "Ench. d'arme (Tueur de démons)",
@@ -1132,7 +1156,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: matanza de demonios",
 			["Taiwanese"] = "附魔武器 - 屠魔",
 		},
-		["ENCH23"] = {
+		["ENCH10023"] = {
 			["Chinese"] = "附魔胸甲 - 超强法力",
 			["English"] = "Enchant Chest - Superior Mana",
 			["French"] = "Ench. de plastron (Mana excellent)",
@@ -1144,7 +1168,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná superior",
 			["Taiwanese"] = "附魔胸甲 - 超強法力",
 		},
-		["ENCH10"] = {
+		["ENCH10010"] = {
 			["Chinese"] = "附魔护腕 - 偏斜",
 			["English"] = "Enchant Bracer - Deflection",
 			["French"] = "Ench. de bracelets (Déviation)",
@@ -1156,7 +1180,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: desvío",
 			["Taiwanese"] = "附魔護腕 - 偏斜",
 		},
-		["ENCH41"] = {
+		["ENCH10041"] = {
 			["Chinese"] = "附魔盾牌 - 冰霜抗性",
 			["English"] = "Enchant Shield - Frost Resistance",
 			["French"] = "Ench. de bouclier (Résistance au Givre)",
@@ -1168,7 +1192,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: resistencia a la Escarcha",
 			["Taiwanese"] = "附魔盾牌 - 冰霜抗性",
 		},
-		["ENCH6"] = {
+		["ENCH1006"] = {
 			["Chinese"] = "附魔靴子 - 敏捷",
 			["English"] = "Enchant Boots - Agility",
 			["French"] = "Ench. de bottes (Agilité)",
@@ -1180,7 +1204,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: agilidad",
 			["Taiwanese"] = "附魔靴子 - 敏捷",
 		},
-		["ENCH2"] = {
+		["ENCH1002"] = {
 			["Chinese"] = "附魔双手武器 - 强效冲击",
 			["English"] = "Enchant 2H Weapon - Greater Impact",
 			["French"] = "Ench. d'arme 2M (Impact supérieur)",
@@ -1192,7 +1216,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: impacto superior",
 			["Taiwanese"] = "附魔雙手武器 - 強效衝擊",
 		},
-		["ENCH13"] = {
+		["ENCH10013"] = {
 			["Chinese"] = "附魔护腕 - 强效力量",
 			["English"] = "Enchant Bracer - Greater Strength",
 			["French"] = "Ench. de bracelets (Force supérieure)",
@@ -1204,7 +1228,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: fuerza superior",
 			["Taiwanese"] = "附魔護腕 - 強效力量",
 		},
-		["ENCH22"] = {
+		["ENCH10022"] = {
 			["Chinese"] = "附魔胸甲 - 状态",
 			["English"] = "Enchant Chest - Stats",
 			["French"] = "Ench. de plastron (Caractéristiques)",
@@ -1216,7 +1240,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: estadísticas",
 			["Taiwanese"] = "附魔胸甲 - 狀態",
 		},
-		["ENCH49"] = {
+		["ENCH10049"] = {
 			["Chinese"] = "附魔武器 - 强效攻击",
 			["English"] = "Enchant Weapon - Greater Striking",
 			["French"] = "Ench. d'arme (Frappe supérieure)",
@@ -1228,7 +1252,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: golpear superior",
 			["Taiwanese"] = "附魔武器 - 強效攻擊",
 		},
-		["ENCH12"] = {
+		["ENCH10012"] = {
 			["Chinese"] = "附魔护腕 - 强效耐力",
 			["English"] = "Enchant Bracer - Greater Stamina",
 			["French"] = "Ench. de bracelets (Endurance supérieure)",
@@ -1240,7 +1264,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: aguante superior",
 			["Taiwanese"] = "附魔護腕 - 強效耐力",
 		},
-		["ENCH37"] = {
+		["ENCH10037"] = {
 			["Chinese"] = "附魔手套 - 骑乘",
 			["English"] = "Enchant Gloves - Riding Skill",
 			["French"] = "Ench. de gants (Equitation)",
@@ -1252,7 +1276,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: equitación",
 			["Taiwanese"] = "附魔手套 - 騎乘",
 		},
-		["ENCH36"] = {
+		["ENCH10036"] = {
 			["Chinese"] = "附魔手套 - 初级加速",
 			["English"] = "Enchant Gloves - Minor Haste",
 			["French"] = "Ench. de gants (Hâte mineure)",
@@ -1264,7 +1288,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: velocidad menor",
 			["Taiwanese"] = "附魔手套 - 初級加速",
 		},
-		["ENCH885"] = {
+		["ENCH100885"] = {
 			["Chinese"] = "次级魔法杖",
 			["English"] = "Lesser Magic Wand",
 			["French"] = "Baguette magique inférieure",
@@ -1276,7 +1300,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Varita mágica inferior",
 			["Taiwanese"] = "次級魔法杖",
 		},
-		["ENCH886"] = {
+		["ENCH100886"] = {
 			["Chinese"] = "强效魔法杖",
 			["English"] = "Greater Magic Wand",
 			["French"] = "Baguette magique supérieure",
@@ -1288,7 +1312,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Varita mágica superior",
 			["Taiwanese"] = "強效魔法杖",
 		},
-		["ENCH887"] = {
+		["ENCH100887"] = {
 			["Chinese"] = "次级秘法魔杖",
 			["English"] = "Lesser Mystic Wand",
 			["French"] = "Baguette mystique inférieure",
@@ -1300,7 +1324,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Varita mística inferior",
 			["Taiwanese"] = "次級秘法魔杖",
 		},
-		["ENCH888"] = {
+		["ENCH100888"] = {
 			["Chinese"] = "强效秘法杖",
 			["English"] = "Greater Mystic Wand",
 			["French"] = "Baguette mystique supérieure",
@@ -1312,7 +1336,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Varita mística superior",
 			["Taiwanese"] = "強效秘法杖",
 		},
-		["ENCH889"] = {
+		["ENCH100889"] = {
 			["Chinese"] = "浓烟山脉之心",
 			["English"] = "Smoking Heart of the Mountain",
 			["French"] = "Coeur fumant de la montagne",
@@ -1324,7 +1348,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Corazón fumeante de la montaña",
 			["Taiwanese"] = "濃煙山脈之心",
 		},
-		["ENCH990"] = {
+		["ENCH100990"] = {
 			["Chinese"] = "魔化瑟银锭",
 			["English"] = "Enchanted Thorium",
 			["French"] = "Thorium enchanté",
@@ -1336,7 +1360,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Torio encantado",
 			["Taiwanese"] = "魔化瑟銀",
 		},
-		["ENCH991"] = {
+		["ENCH100991"] = {
 			["Chinese"] = "魔化皮",
 			["English"] = "Enchanted Leather",
 			["French"] = "Cuir enchanté",
@@ -1348,7 +1372,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Cuero encantado",
 			["Taiwanese"] = "魔化皮",
 		},
-		["ENCH11"] = {
+		["ENCH10011"] = {
 			["Chinese"] = "附魔护腕 - 强效智力",
 			["English"] = "Enchant Bracer - Greater Intellect",
 			["French"] = "Ench. de bracelets (Intelligence supérieure)",
@@ -1360,7 +1384,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: intelecto superior",
 			["Taiwanese"] = "附魔護腕 - 強效智力",
 		},
-		["ENCH16"] = {
+		["ENCH10016"] = {
 			["Chinese"] = "附魔护腕 - 超强精神",
 			["English"] = "Enchant Bracer - Superior Spirit",
 			["French"] = "Ench. de bracelets (Esprit excellent)",
@@ -1372,7 +1396,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: espíritu excelente",
 			["Taiwanese"] = "附魔護腕 - 超強精神",
 		},
-		["ENCH18"] = {
+		["ENCH10018"] = {
 			["Chinese"] = "附魔护腕 - 超强力量",
 			["English"] = "Enchant Bracer - Superior Strength",
 			["French"] = "Ench. de bracelets (Force excellente)",
@@ -1384,7 +1408,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: fuerza excelente",
 			["Taiwanese"] = "附魔護腕 - 超強力量",
 		},
-		["ENCH17"] = {
+		["ENCH10017"] = {
 			["Chinese"] = "附魔护腕 - 超强耐力",
 			["English"] = "Enchant Bracer - Superior Stamina",
 			["French"] = "Ench. de bracelets (Endurance excellente)",
@@ -1396,7 +1420,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: aguante excelente",
 			["Taiwanese"] = "附魔護腕 - 超強耐力",
 		},
-		["ENCH33"] = {
+		["ENCH10033"] = {
 			["Chinese"] = "附魔手套 - 强效敏捷",
 			["English"] = "Enchant Gloves - Greater Agility",
 			["French"] = "Ench. de gants (Agilité supérieure)",
@@ -1408,7 +1432,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: agilidad superior",
 			["Taiwanese"] = "附魔手套 - 強效敏捷",
 		},
-		["ENCH34"] = {
+		["ENCH10034"] = {
 			["Chinese"] = "附魔手套 - 强效力量",
 			["English"] = "Enchant Gloves - Greater Strength",
 			["French"] = "Ench. de gants (Force supérieure)",
@@ -1420,7 +1444,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: fuerza superior",
 			["Taiwanese"] = "附魔手套 - 強效力量",
 		},
-		["ENCH27"] = {
+		["ENCH10027"] = {
 			["Chinese"] = "附魔披风 - 强效抗性",
 			["English"] = "Enchant Cloak - Greater Resistance",
 			["French"] = "Ench. de cape (Résistance supérieure)",
@@ -1432,7 +1456,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia superior",
 			["Taiwanese"] = "附魔披風 - 強效抗性",
 		},
-		["ENCH30"] = {
+		["ENCH10030"] = {
 			["Chinese"] = "附魔披风 - 超级防御",
 			["English"] = "Enchant Cloak - Superior Defense",
 			["French"] = "Ench. de cape (Défense excellente)",
@@ -1444,7 +1468,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: defensa excelente",
 			["Taiwanese"] = "附魔披風 - 超級防禦",
 		},
-		["ENCH44"] = {
+		["ENCH10044"] = {
 			["Chinese"] = "附魔盾牌 - 超强精神",
 			["English"] = "Enchant Shield - Superior Spirit",
 			["French"] = "Ench. de bouclier (Esprit excellent)",
@@ -1456,7 +1480,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: espíritu excelente",
 			["Taiwanese"] = "附魔盾牌 - 超強精神",
 		},
-		["ENCH43"] = {
+		["ENCH10043"] = {
 			["Chinese"] = "附魔盾牌 - 强效耐力",
 			["English"] = "Enchant Shield - Greater Stamina",
 			["French"] = "Ench. de bouclier (Endurance supérieure)",
@@ -1468,7 +1492,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar escudo: aguante superior",
 			["Taiwanese"] = "附魔盾牌 - 強效耐力",
 		},
-		["ENCH8"] = {
+		["ENCH1008"] = {
 			["Chinese"] = "附魔靴子 - 强效耐力",
 			["English"] = "Enchant Boots - Greater Stamina",
 			["French"] = "Ench. de bottes (Endurance supérieure)",
@@ -1480,7 +1504,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: aguante superior",
 			["Taiwanese"] = "附魔靴子 - 強效耐力",
 		},
-		["ENCH7"] = {
+		["ENCH1007"] = {
 			["Chinese"] = "附魔靴子 - 强效敏捷",
 			["English"] = "Enchant Boots - Greater Agility",
 			["French"] = "Ench. de bottes (Agilité supérieure)",
@@ -1492,7 +1516,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: agilidad superior",
 			["Taiwanese"] = "附魔靴子 - 強效敏捷",
 		},
-		["ENCH9"] = {
+		["ENCH1009"] = {
 			["Chinese"] = "附魔靴子 - 精神",
 			["English"] = "Enchant Boots - Spirit",
 			["French"] = "Ench. de bottes (Esprit)",
@@ -1504,7 +1528,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar botas: espíritu",
 			["Taiwanese"] = "附魔靴子 - 精神",
 		},
-		["ENCH19"] = {
+		["ENCH10019"] = {
 			["Chinese"] = "附魔胸甲 - 强效属性",
 			["English"] = "Enchant Chest - Greater Stats",
 			["French"] = "Ench. de plastron (Caract. supérieures)",
@@ -1516,7 +1540,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: estadísticas superiores",
 			["Taiwanese"] = "附魔胸甲 - 強效屬性",
 		},
-		["ENCH20"] = {
+		["ENCH10020"] = {
 			["Chinese"] = "附魔胸甲 - 极效生命",
 			["English"] = "Enchant Chest - Major Health",
 			["French"] = "Ench. de plastron (Vie majeure)",
@@ -1528,7 +1552,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: salud sublime",
 			["Taiwanese"] = "附魔胸甲 - 極效生命",
 		},
-		["ENCH21"] = {
+		["ENCH10021"] = {
 			["Chinese"] = "附魔胸甲 - 极效法力",
 			["English"] = "Enchant Chest - Major Mana",
 			["French"] = "Ench. de plastron (Mana majeur)",
@@ -1540,7 +1564,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: maná sublime",
 			["Taiwanese"] = "附魔胸甲 - 極效法力",
 		},
-		["ENCH51"] = {
+		["ENCH10051"] = {
 			["Chinese"] = "附魔武器 - 冰寒",
 			["English"] = "Enchant Weapon - Icy Chill",
 			["French"] = "Ench. d'arme (Frisson glacial)",
@@ -1552,7 +1576,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: escalofrío gélido",
 			["Taiwanese"] = "附魔武器 - 冰寒",
 		},
-		["ENCH5"] = {
+		["ENCH1005"] = {
 			["Chinese"] = "附魔双手武器 - 超强冲击",
 			["English"] = "Enchant 2H Weapon - Superior Impact",
 			["French"] = "Ench. d'arme 2M (Impact excellent)",
@@ -1564,7 +1588,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: impacto excelente",
 			["Taiwanese"] = "附魔雙手武器 - 超強衝擊",
 		},
-		["ENCH57"] = {
+		["ENCH10057"] = {
 			["Chinese"] = "附魔武器 - 超强打击",
 			["English"] = "Enchant Weapon - Superior Striking",
 			["French"] = "Ench. d'arme (Frappe excellente)",
@@ -1576,7 +1600,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: golpear excelente",
 			["Taiwanese"] = "附魔武器 - 超強打擊",
 		},
-		["ENCH52"] = {
+		["ENCH10052"] = {
 			["Chinese"] = "附魔武器 - 生命偷取",
 			["English"] = "Enchant Weapon - Lifestealing",
 			["French"] = "Ench. d'arme (Vol de vie)",
@@ -1588,7 +1612,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: robo de vida",
 			["Taiwanese"] = "附魔武器 - 生命偷取",
 		},
-		["ENCH58"] = {
+		["ENCH10058"] = {
 			["Chinese"] = "附魔武器 - 邪恶武器",
 			["English"] = "Enchant Weapon - Unholy Weapon",
 			["French"] = "Ench. d'arme (Arme impie)",
@@ -1600,7 +1624,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: arma profana",
 			["Taiwanese"] = "附魔武器 - 邪惡武器",
 		},
-		["ENCH46"] = {
+		["ENCH10046"] = {
 			["Chinese"] = "附魔武器 - 十字军",
 			["English"] = "Enchant Weapon - Crusader",
 			["French"] = "Ench. d'arme (Croisé)",
@@ -1612,7 +1636,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: cruzado",
 			["Taiwanese"] = "附魔武器 - 十字軍",
 		},
-		["ENCH4"] = {
+		["ENCH1004"] = {
 			["Chinese"] = "附魔双手武器 - 极效精神",
 			["English"] = "Enchant 2H Weapon - Major Spirit",
 			["French"] = "Ench. d'arme 2M (Esprit majeur)",
@@ -1624,7 +1648,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: espíritu sublime",
 			["Taiwanese"] = "附魔雙手武器 - 極效精神",
 		},
-		["ENCH3"] = {
+		["ENCH1003"] = {
 			["Chinese"] = "附魔双手武器 - 极效智力",
 			["English"] = "Enchant 2H Weapon - Major Intellect",
 			["French"] = "Ench. d'arme 2M (Intelligence majeure)",
@@ -1636,7 +1660,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: intelecto sublime",
 			["Taiwanese"] = "附魔雙手武器 - 極效智力",
 		},
-		["ENCH992"] = {
+		["ENCH100992"] = {
 			["Chinese"] = "符文奥金棒",
 			["English"] = "Runed Arcanite Rod",
 			["French"] = "Bâtonnet runique en arcanite",
@@ -1648,7 +1672,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Vara de arcanita rúnica",
 			["Taiwanese"] = "符文奧金棒",
 		},
-		["ENCH82"] = {
+		["ENCH10082"] = {
 			["Chinese"] = "附魔武器 - 寒冬之力",
 			["English"] = "Enchant Weapon - Winter's Might",
 			["French"] = "Ench. d'arme (Puissance de l'hiver)",
@@ -1660,7 +1684,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: poderío del invierno",
 			["Taiwanese"] = "附魔武器 - 寒冬之力",
 		},
-		["ENCH55"] = {
+		["ENCH10055"] = {
 			["Chinese"] = "附魔武器 - 法术能量",
 			["English"] = "Enchant  Weapon - Spell Power",
 			["French"] = "Ench. d'arme (Puissance de sort)",
@@ -1672,7 +1696,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: poder de hechizo",
 			["Taiwanese"] = "附魔武器 - 法術能量",
 		},
-		["ENCH50"] = {
+		["ENCH10050"] = {
 			["Chinese"] = "附魔武器 - 治疗能量",
 			["English"] = "Enchant  Weapon - Healing Power",
 			["French"] = "Ench. d'arme (Pouvoir de guérison)",
@@ -1684,7 +1708,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: poder de curación",
 			["Taiwanese"] = "附魔武器 - 治療能量",
 		},
-		["ENCH56"] = {
+		["ENCH10056"] = {
 			["Chinese"] = "附魔武器 - 力量",
 			["English"] = "Enchant Weapon - Strength",
 			["French"] = "Ench. d'arme (Force)",
@@ -1696,7 +1720,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: fuerza",
 			["Taiwanese"] = "附魔武器 - 力量",
 		},
-		["ENCH45"] = {
+		["ENCH10045"] = {
 			["Chinese"] = "附魔武器 - 敏捷",
 			["English"] = "Enchant Weapon - Agility",
 			["French"] = "Ench. d'arme (Agilité)",
@@ -1708,7 +1732,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: agilidad",
 			["Taiwanese"] = "附魔武器 - 敏捷",
 		},
-		["ENCH15"] = {
+		["ENCH10015"] = {
 			["Chinese"] = "附魔护腕 - 法力回复",
 			["English"] = "Enchant Bracer - Mana Regeneration",
 			["French"] = "Ench. de bracelets (Régénération de mana)",
@@ -1720,7 +1744,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: regeneración de maná",
 			["Taiwanese"] = "附魔護腕 - 法力回復",
 		},
-		["ENCH14"] = {
+		["ENCH10014"] = {
 			["Chinese"] = "附魔护腕 - 治疗能力",
 			["English"] = "Enchant Bracer - Healing Power",
 			["French"] = "Ench. de bracelets (Pouvoir de guérison)",
@@ -1732,7 +1756,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar brazal: poder de curación",
 			["Taiwanese"] = "附魔護腕 - 治療能力",
 		},
-		["ENCH54"] = {
+		["ENCH10054"] = {
 			["Chinese"] = "附魔武器 - 强效精神",
 			["English"] = "Enchant Weapon - Mighty Spirit",
 			["French"] = "Ench. d'arme (Esprit renforcé)",
@@ -1744,7 +1768,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: espíritu poderoso",
 			["Taiwanese"] = "附魔武器 - 強效精神",
 		},
-		["ENCH53"] = {
+		["ENCH10053"] = {
 			["Chinese"] = "附魔武器 - 强效智力",
 			["English"] = "Enchant Weapon - Mighty Intellect",
 			["French"] = "Ench. d'arme (Intelligence renforcée)",
@@ -1756,7 +1780,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma: intelecto poderoso",
 			["Taiwanese"] = "附魔武器 - 強效智力",
 		},
-		["ENCH40"] = {
+		["ENCH10040"] = {
 			["Chinese"] = "附魔手套 - 威胁",
 			["English"] = "Enchant Gloves - Threat",
 			["French"] = "Enchantement de gants (Menace)",
@@ -1768,7 +1792,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: amenaza",
 			["Taiwanese"] = "附魔手套 - 威脅",
 		},
-		["ENCH38"] = {
+		["ENCH10038"] = {
 			["Chinese"] = "附魔手套 - 暗影能量",
 			["English"] = "Enchant Gloves - Shadow Power",
 			["French"] = "Enchantement de gants (Puissance de l'ombre)",
@@ -1780,7 +1804,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: poder de las Sombras",
 			["Taiwanese"] = "附魔手套 - 暗影能量",
 		},
-		["ENCH32"] = {
+		["ENCH10032"] = {
 			["Chinese"] = "附魔手套 - 冰霜能量",
 			["English"] = "Enchant Gloves - Frost Power",
 			["French"] = "Enchantement de gants (Puissance du givre)",
@@ -1792,7 +1816,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: poder de Escarcha",
 			["Taiwanese"] = "附魔手套 - 冰霜能量",
 		},
-		["ENCH31"] = {
+		["ENCH10031"] = {
 			["Chinese"] = "附魔手套 - 火焰能量",
 			["English"] = "Enchant Gloves - Fire Power",
 			["French"] = "Enchantement de gants (Puissance du feu)",
@@ -1804,7 +1828,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: poder de Fuego",
 			["Taiwanese"] = "附魔手套 - 火焰能量",
 		},
-		["ENCH35"] = {
+		["ENCH10035"] = {
 			["Chinese"] = "附魔手套 - 治疗能量",
 			["English"] = "Enchant Gloves - Healing Power",
 			["French"] = "Enchantement de gants (Pouvoir de guérison)",
@@ -1816,7 +1840,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: poder de curación",
 			["Taiwanese"] = "附魔手套 - 治療能量",
 		},
-		["ENCH39"] = {
+		["ENCH10039"] = {
 			["Chinese"] = "附魔手套 - 超强敏捷",
 			["English"] = "Enchant Gloves - Superior Agility",
 			["French"] = "Enchantement de gants (Agilité excellente)",
@@ -1828,7 +1852,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar guantes: agilidad excelente",
 			["Taiwanese"] = "附魔手套 - 超強敏捷",
 		},
-		["ENCH25"] = {
+		["ENCH10025"] = {
 			["Chinese"] = "附魔披风 - 强效火焰抗性",
 			["English"] = "Enchant Cloak - Greater Fire Resistance",
 			["French"] = "Ench. de cape (Résistance au Feu supérieure)",
@@ -1840,7 +1864,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia al Fuego superior",
 			["Taiwanese"] = "附魔披風 - 強效火焰抗性",
 		},
-		["ENCH26"] = {
+		["ENCH10026"] = {
 			["Chinese"] = "附魔披风 - 强效自然抗性",
 			["English"] = "Enchant Cloak - Greater Nature Resistance",
 			["French"] = "Ench. de cape (Résistance à la Nature supérieure)",
@@ -1852,7 +1876,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: resistencia a la naturaleza superior",
 			["Taiwanese"] = "附魔披風 - 強效自然抗性",
 		},
-		["ENCH28"] = {
+		["ENCH10028"] = {
 			["Chinese"] = "附魔披风 - 潜行",
 			["English"] = "Enchant Cloak - Stealth",
 			["French"] = "Enchantement de cape (Camouflage)",
@@ -1864,7 +1888,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: sigilo",
 			["Taiwanese"] = "附魔披風 - 潛行",
 		},
-		["ENCH29"] = {
+		["ENCH10029"] = {
 			["Chinese"] = "附魔披风 - 狡诈",
 			["English"] = "Enchant Cloak - Subtlety",
 			["French"] = "Enchantement de cape (Discrétion)",
@@ -1876,7 +1900,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: sutileza",
 			["Taiwanese"] = "附魔披風 - 狡詐",
 		},
-		["ENCH24"] = {
+		["ENCH10024"] = {
 			["Chinese"] = "附魔披风 - 躲闪",
 			["English"] = "Enchant Cloak - Dodge",
 			["French"] = "Enchantement de cape (Esquive)",
@@ -1888,7 +1912,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar capa: esquivar",
 			["Taiwanese"] = "附魔披風 - 躲閃",
 		},
-		["ENCH993"] = {
+		["ENCH100993"] = {
 			["Chinese"] = "初级巫师之油",
 			["English"] = "Minor Wizard Oil",
 			["French"] = "Huile de sorcier mineure",
@@ -1900,7 +1924,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite menor de zahorí",
 			["Taiwanese"] = "初級巫師之油",
 		},
-		["ENCH994"] = {
+		["ENCH100994"] = {
 			["Chinese"] = "初级法力之油",
 			["English"] = "Minor Mana Oil",
 			["French"] = "Huile de mana mineure",
@@ -1912,7 +1936,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite menor de maná",
 			["Taiwanese"] = "初級法力之油",
 		},
-		["ENCH995"] = {
+		["ENCH100995"] = {
 			["Chinese"] = "次级巫师之油",
 			["English"] = "Lesser Wizard Oil",
 			["French"] = "Huile de sorcier inférieure",
@@ -1924,7 +1948,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite inferior de zahorí",
 			["Taiwanese"] = "次級巫師之油",
 		},
-		["ENCH996"] = {
+		["ENCH100996"] = {
 			["Chinese"] = "次级法力之油",
 			["English"] = "Lesser Mana Oil",
 			["French"] = "Huile de mana inférieure",
@@ -1936,7 +1960,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite inferior de maná",
 			["Taiwanese"] = "次級法力之油",
 		},
-		["ENCH997"] = {
+		["ENCH100997"] = {
 			["Chinese"] = "巫师之油",
 			["English"] = "Wizard Oil",
 			["French"] = "Huile de sorcier",
@@ -1948,7 +1972,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite de zahorí",
 			["Taiwanese"] = "巫師之油",
 		},
-		["ENCH998"] = {
+		["ENCH100998"] = {
 			["Chinese"] = "卓越巫师之油",
 			["English"] = "Brilliant Wizard Oil",
 			["French"] = "Huile de sorcier brillante",
@@ -1960,7 +1984,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite brillante de zahorí",
 			["Taiwanese"] = "卓越巫師之油",
 		},
-		["ENCH999"] = {
+		["ENCH100999"] = {
 			["Chinese"] = "卓越法力之油",
 			["English"] = "Brilliant Mana Oil",
 			["French"] = "Huile de mana brillante",
@@ -1972,7 +1996,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Aceite de maná resplandeciente",
 			["Taiwanese"] = "卓越法力之油",
 		},
-		["ENCH1"] = {
+		["ENCH1001"] = {
 			["Chinese"] = "附魔双手武器 - 敏捷",
 			["English"] = "Enchant 2H Weapon - Agility",
 			["French"] = "Ench. d'arme 2M (Agilité)",
@@ -1984,7 +2008,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar arma 2M: agilidad",
 			["Taiwanese"] = "附魔雙手武器 - 敏捷",
 		},
-		["ENCH75"] = {
+		["ENCH10075"] = {
 			["Chinese"] = "附魔胸甲 - 惩刑人",
 			["English"] = "Enchant Chest - Retricutioner",
 			["French"] = "Enchantement de plastron (Électrocution vengeresse)",
@@ -1996,7 +2020,7 @@ PEenchantingLocales = {
 			["Spanish"] = "Encantar pechera: Retribucionismo",
 			["Taiwanese"] = "附魔胸甲 - 惩刑人",
 		},
-		["ENCH80"] = {
+		["ENCH10080"] = {
 			["Chinese"] = "附魔武器 - 拆卸",
 			["English"] = "Enchant Weapon - Dismantle",
 			["French"] = "Enchantement d’arme (Démantèlement)",
@@ -2007,6 +2031,66 @@ PEenchantingLocales = {
 			["Russian"] = "Чары для оружия: демонтаж",
 			["Spanish"] = "Encantar arma: desmantelar",
 			["Taiwanese"] = "附魔武器 - 拆卸",
+		},
+		["ENCH998"] = {
+			["Chinese"] = "附魔胸甲 - 活跃属性",
+			["English"] = "Enchant Chest - Living Stats",
+			["French"] = "Enchantement de plastron (Caractéristiques vivantes)",
+			["German"] = "Brust - Lebendige Werte",
+			["Korean"] = "가슴보호구 마법부여 - 살아있는 능력치",
+			["Mexican"] = "Encantar pechera: estadísticas vivientes",
+			["Portuguese"] = "Encantamento de Atributos Vivos - Torso",
+			["Russian"] = "Чары для нагрудника: характеристики живых",
+			["Spanish"] = "Encantar pechera: estadísticas vivientes",
+			["Taiwanese"] = "附魔胸甲 - 活跃属性",
+		},
+		["ENCH997"] = {
+			["Chinese"] = "附魔手套 - 神圣能量",
+			["English"] = "Enchant Gloves - Holy Power",
+			["French"] = "Enchantement de gants (Puissance sacrée)",
+			["German"] = "Handschuhe - Heilige Kraft",
+			["Korean"] = "장갑 마법부여 - 신성한 힘",
+			["Mexican"] = "Encantar guantes: poder sagrado",
+			["Portuguese"] = "Encantamento de Poder Sagrado - Luvas",
+			["Russian"] = "Чары для перчаток: священная сила",
+			["Spanish"] = "Encantar guantes: poder sagrado",
+			["Taiwanese"] = "附魔手套 - 神圣能量",
+		},
+		["ENCH996"] = {
+			["Chinese"] = "附魔手套 - 奥术强化",
+			["English"] = "Enchant Gloves - Arcane Power",
+			["French"] = "Enchantement de gants (Pouvoir des arcanes)",
+			["German"] = "Handschuhe - Arkane Macht",
+			["Korean"] = "장갑 마법부여 - 신비의 마법 강화",
+			["Mexican"] = "Encantar guantes: poder Arcano",
+			["Portuguese"] = "Encantamento de Poder Arcano - Luvas",
+			["Russian"] = "Чары для перчаток: мощь тайной магии",
+			["Spanish"] = "Encantar guantes: poder Arcano",
+			["Taiwanese"] = "附魔手套 - 奥术强化",
+		},
+		["ENCH995"] = {
+			["Chinese"] = "附魔护腕 - 敏捷",
+			["English"] = "Enchant Bracer - Agility",
+			["French"] = "Enchantement de brassards (Agilité)",
+			["German"] = "Armschiene - Beweglichkeit",
+			["Korean"] = "손목보호구 마법부여 - 민첩성",
+			["Mexican"] = "Encantar brazales: agilidad",
+			["Portuguese"] = "Encantamento de Agilidade - Braçadeiras",
+			["Russian"] = "Чары для наручей: ловкость",
+			["Spanish"] = "Encantar brazales: agilidad",
+			["Taiwanese"] = "附魔护腕 - 敏捷",
+		},
+		["ENCH994"] = {
+			["Chinese"] = "附魔护腕 - 法术能量",
+			["English"] = "Enchant Bracer - Spell Power",
+			["French"] = "Enchantement de brassards (Puissance des sorts)",
+			["German"] = "Armschiene - Zaubermacht",
+			["Korean"] = "손목보호구 마법부여 - 주문 강화",
+			["Mexican"] = "Encantar brazales: poder con hechizos",
+			["Portuguese"] = "Encantamento de Poder Mágico - Braçadeiras",
+			["Russian"] = "Чары для наручей: сила заклинаний",
+			["Spanish"] = "Encantar brazales: poder con hechizos",
+			["Taiwanese"] = "附魔护腕 - 法术能量",
 		},
 	}
 }
