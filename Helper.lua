@@ -2152,3 +2152,84 @@ function CheckIfAddonInvited(name)
     end
 	return false
 end
+
+-- afk sound setting mode
+
+local function GetCVarSafe(cvarname)
+    return tonumber(GetCVar(cvarname))
+end
+
+local function GetCVarSafeBool(cvarname)
+    if GetCVarSafe(cvarname) then
+        return true
+    end
+    return false
+end
+
+function PEafkMode(volume)
+    if type(ProEnchantersOptions["soundsettings"]) ~= "table" then
+        ProEnchantersOptions["soundsettings"] = {}
+    end
+
+    local vol = 1
+    if volume ~= nil then
+        vol = tonumber(volume)
+        if type(vol) == "number" then
+            vol = vol / 100
+        else
+            print("invalid number, setting volume to 100 percent, please choose between 1-100 next time")
+            vol = 1
+        end
+    end
+
+    if ProEnchantersOptions.soundsettings["afk"] == nil then
+        ProEnchantersOptions.soundsettings["afk"] = false
+    end
+
+    if ProEnchantersOptions.soundsettings["afk"] == false then
+        PESoundSettings = {
+        se = GetCVar("Sound_EnableAllSound"),
+        mv = GetCVarSafe("Sound_MasterVolume"),
+        msv = GetCVarSafe("Sound_MusicVolume"),
+        av = GetCVarSafe("Sound_AmbienceVolume"),
+        ev = GetCVarSafe("Sound_SFXVolume"),
+        dv = GetCVarSafe("Sound_DialogVolume"),
+        sib = GetCVar("Sound_EnableSoundWhenGameIsInBG"),
+        afk = true
+        }
+
+        if ProEnchantersOptions["DebugLevel"] >= 6 then
+            for n, v in pairs(PESoundSettings) do
+                print(n .. ": " .. tostring(v))
+            end
+        end
+
+        for n, v in pairs(PESoundSettings) do
+            ProEnchantersOptions.soundsettings[n] = v
+        end
+
+        SetCVar("Sound_EnableAllSound", true)
+        SetCVar("Sound_MasterVolume", vol)
+        SetCVar("Sound_MusicVolume", 0)
+        SetCVar("Sound_AmbienceVolume", 0)
+        SetCVar("Sound_SFXVolume", 0)
+        SetCVar("Sound_DialogVolume", 0)
+        SetCVar("Sound_EnableSoundWhenGameIsInBG", true)
+
+    elseif ProEnchantersOptions.soundsettings["afk"] == true then
+        if ProEnchantersOptions["DebugLevel"] >= 6 then
+            for n, v in pairs(ProEnchantersOptions.soundsettings) do
+                print(n .. ": " .. tostring(v))
+            end
+        end
+        SetCVar("Sound_EnableAllSound", ProEnchantersOptions.soundsettings.se)
+        SetCVar("Sound_MasterVolume", ProEnchantersOptions.soundsettings.mv)
+        SetCVar("Sound_MusicVolume", ProEnchantersOptions.soundsettings.msv)
+        SetCVar("Sound_AmbienceVolume", ProEnchantersOptions.soundsettings.av)
+        SetCVar("Sound_SFXVolume", ProEnchantersOptions.soundsettings.ev)
+        SetCVar("Sound_DialogVolume", ProEnchantersOptions.soundsettings.dv)
+        SetCVar("Sound_EnableSoundWhenGameIsInBG", ProEnchantersOptions.soundsettings.sib)
+        ProEnchantersOptions.soundsettings.afk = false
+
+    end
+end

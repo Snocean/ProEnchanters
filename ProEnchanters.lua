@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v8.9.8"
+local version = "v8.9.9"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -9,6 +9,7 @@ ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
 ProEnchantersOptions.recentwhispers = {}
 ProEnchantersOptions.tempignore = ProEnchantersOptions.tempignore or {}
 ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
+ProEnchantersOptions.soundsettings = ProEnchantersOptions.soundsettings or {}
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -1051,7 +1052,8 @@ PEFilteredWordsOriginal = {
 	"formula",
 	"every",
 	"work",
-	"sham"
+	"sham",
+	"|"
 }
 
 -- Trigger Words Table
@@ -9415,6 +9417,7 @@ SLASH_PROENCHANTERSDBG1 = "/pedebug"
 SLASH_PROENCHANTERSDBG2 = "/proenchantersdebug"
 SLASH_PROENCHANTERSCLEAR1 = "/peclearhistory"
 SLASH_PROENCHANTERSTEMPIGN1 = "/peignore"
+SLASH_PROENCHANTERSAFKMODE1 = "/peafkmode"
 
 -- Ensure ProEnchantersWorkOrderFrame is not nil before accessing it in your functions
 SlashCmdList["PROENCHANTERS"] = function(msg)
@@ -9486,7 +9489,15 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			ResetFrames()
 		end
 	else
-		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset available as options, /pehelp for more info")
+		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset/cleartempignores available as options, /pehelp for more info")
+	end
+end
+
+SlashCmdList["PROENCHANTERSAFKMODE"] = function(msg)
+	if msg ~= "" then
+		PEafkMode(msg)
+	else
+		PEafkMode()
 	end
 end
 

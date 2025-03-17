@@ -4,6 +4,15 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 8.9.9
+- **New** AFK Enchanting Mode (no this isnt a botting mode)
+- You can now toggle '/peafkmode' which will alter your sound settings to be as optimal as possible for getting alerted to potential customers while you're alt tabbed or doing other things
+- This sets all volume sliders to 0 except the Master Volume slider and it enables Sound In Background so that you'll get the alerts while alt tabbed
+- If you do '/peafkmode' by itself it will set the master volume to 100 percent, you can also do a number after the command to choose a specific master volume like '/peafkmode 77' will set the master volume to 77 (for those that 100 is too loud for)
+- Doing '/peafkmode' again will toggle it off and restore your sound settings to what they were before you enabled the afkmode
+- **Changed** Added the line "|" symbol to the default filtered list as it looks like formating advertisements with | as a seperator has become more popular(example: Enchants: 6 agi gloves | 4 all stats | etc )
+- This will only get added to new add-on installations, if you already have the addon installed I suggest adding the | yourself to the filters
+
 ## Update 8.9.7 and 8.9.8
 - **Fixed** Bug fixes revolving around the new addon invited functionality, testing showed no issues anymore but if you find any LUA errors please let me know in the discord
 - **Changed** Whisper invite keywords (when the customer whispers you 'inv') should no longer send the initial whisper contact message when the invite is sent or if the invite fails to send due to them being in a party
