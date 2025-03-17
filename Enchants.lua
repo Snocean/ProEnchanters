@@ -83,6 +83,97 @@ local ancientsandwormbile = "\124cffffffff\124Hitem:234010::::::::60:::::\124h[A
 local stratholmeholywater = "\124cffffffff\124Hitem:13180::::::::60:::::\124h[Stratholme Holy Water]\124h\124r"
 local frayedabominationstitching = "\124cff1eff00\124Hitem:12735::::::::60:::::\124h[Frayed Abomination Stitching]\124h\124r"
 local skinofshadow = "\124cff1eff00\124Hitem:12753::::::::60:::::\124h[Skin of Shadow]\124h\124r"
+-- Phase 7 items
+local bloodofheroes = "\124cffffffff\124Hitem:12938::::::::60:::::\124h[Blood of Heroes]\124h\124r"
+
+ProEnchantersItemCacheTable = {
+    -- Dust
+    strangedust = "10940",
+    souldust = "11083",
+    visiondust = "11137",
+    dreamdust = "11176",
+    illusiondust = "16204",
+
+    -- Shards
+    smallglimmeringshard = "10978",
+    largeglimmeringshard = "11084",
+    smallglowingshard = "11138",
+    largeglowingshard = "11139",
+    smallbrilliantshard = "14343",
+    largebrilliantshard = "14344",
+    smallradiantshard = "11177",
+    largeradiantshard = "11178",
+
+    -- Essence
+    lessermagicessence = "10938",
+    greatermagicessence = "10939",
+    lesserastralessence = "10998",
+    greaterastralessence = "11082",
+    lessermysticessence = "11134",
+    greatermysticessence = "11135",
+    lessereternalessence = "16202",
+    greatereternalessence = "16203",
+    lessernetheressence = "11174",
+    greaternetheressence = "11175",
+
+    -- Misc
+    aquamarine = "7909",
+    blackdiamond = "11754",
+    blacklotus = "13468",
+    blackmouthoil = "6370",
+    breathofwind = "7081",
+    coreofearth = "7075",
+    crystalvial = "8925",
+    elementalearth = "7067",
+    elementalfire = "7068",
+    elixirofdemonslayer = "9224",
+    emptyvial = "3371",
+    essenceofair = "7082",
+    essenceofearth = "7076",
+    essenceoffire = "7078",
+    essenceofundeath = "12808",
+    essenceofwater = "7080",
+    fireoil = "6371",
+    firebloom = "4625",
+    frostoil = "3829",
+    globeofwater = "7079",
+    goldenpearl = "13926",
+    greenwhelpscale = "7392",
+    guardianstone = "12809",
+    heartoffire = "7077",
+    icecap = "13467",
+    ichorofundeath = "7972",
+    imbuedvial = "18256",
+    ironore = "2772",
+    kingsblood = "3356",
+    largefang = "5637",
+    larvalacid = "18512",
+    leadedvial = "3372",
+    livingessence = "12803",
+    mapleseed = "17034",
+    nexuscrystal = "20725",
+    purplelotus = "8831",
+    righteousorb = "12811",
+    ruggedleather = "8170",
+    shadowprotectionpotion = "6048",
+    simplewood = "4470",
+    starwood = "11291",
+    stranglethornseed = "17035",
+    sungrass = "8838",
+    thoriumbar = "12359",
+    truesilverbar = "6037",
+    wildvine = "8153",
+    wintersbite = "3819",
+    -- phase 6 required items
+    greaternatureprotectionpotion = "13458",
+    qirajistalkervenom = "234011",
+    ancientsandwormbile = "234010",
+    stratholmeholywater = "13180",
+    frayedabominationstitching = "12735",
+    skinofshadow = "12753",
+    -- phase 7 required items
+    bloodofheroes = "12938"
+}
 
 CombinedEnchants = {
     ENCH1001 = {
@@ -1517,6 +1608,108 @@ CombinedEnchants = {
             "2x " .. essenceofwater,
             "2x " .. essenceoffire,
             "2x " .. essenceofair
+        },
+    },
+    ENCH993 = {
+        name = "Enchant 2H Weapon - Spellblasting",
+        slot = "Weapon",
+        spell_id = 1219580,
+        stats = " (+65 Spell Dmg)",
+        materials = {
+            "3x " .. nexuscrystal,
+            "24x " .. illusiondust,
+            "1x " .. bloodofheroes,
+            "6x " .. purplelotus
+        },
+    },
+    ENCH992 = {
+        name = "Enchant Off-Hand - Superior Intellect",
+        slot = "Weapon",
+        spell_id = 1219577,
+        stats = " (+9 Int)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "18x " .. illusiondust,
+            "2x " .. essenceofair
+        },
+    },
+    ENCH991 = {
+        name = "Enchant Off-Hand - Wisdom",
+        slot = "Weapon",
+        spell_id = 1219579,
+        stats = " (+6 Int, +5 Spirit)",
+        materials = {
+            "6x " .. largebrilliantshard,
+            "18x " .. illusiondust,
+            "1x " .. essenceofair,
+            "1x " .. essenceofwater
+        },
+    },
+    ENCH990 = {
+        name = "Enchant Off-Hand - Excellent Spirit",
+        slot = "Weapon",
+        spell_id = 1219578,
+        stats = " (+12 Spirit)",
+        materials = {
+            "2x " .. nexuscrystal,
+            "18x " .. illusiondust,
+            "2x " .. essenceofwater
+        },
+    },
+    ENCH989 = {
+        name = "Enchant Shield - Critical Strike",
+        slot = "Shield",
+        spell_id = 1220623,
+        stats = " (+1% Crit Chance)",
+        materials = {
+            "5x " .. largebrilliantshard,
+            "15x " .. illusiondust,
+            "1x " .. bloodofheroes
+        },
+    },
+    ENCH988 = {
+        name = "Enchant Shield - Excellent Stamina",
+        slot = "Shield",
+        spell_id = 1219581,
+        stats = " (+12 Stam)",
+        materials = {
+            "6x " .. largebrilliantshard,
+            "18x " .. illusiondust,
+            "2x " .. essenceofearth
+        },
+    },
+    ENCH987 = {
+        name = "Enchant Gloves - Superior Strength",
+        slot = "Gloves",
+        spell_id = 1219586,
+        stats = " (+15 Str)",
+        materials = {
+            "7x " .. greatereternalessence,
+            "21x " .. illusiondust,
+            "2x " .. essenceoffire
+        },
+    },
+    ENCH986 = {
+        name = "Enchant Cloak - Agility",
+        slot = "Cloak",
+        spell_id = 1219587,
+        stats = " (+5 Agi)",
+        materials = {
+            "3x " .. greatereternalessence,
+            "9x " .. illusiondust,
+            "1x " .. essenceoffire
+        },
+    },
+    ENCH985 = {
+        name = "Enchant Bracer - Greater Spellpower",
+        slot = "Bracer",
+        spell_id = 1220624,
+        stats = " (+16 Spell Dmg)",
+        materials = {
+            "3x " .. greatereternalessence,
+            "9x " .. illusiondust,
+            "12x " .. essenceofundeath,
+            "2x " .. purplelotus
         },
     },
 }

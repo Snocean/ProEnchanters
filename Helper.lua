@@ -1,89 +1,37 @@
-ProEnchantersItemCacheTable = {
-    -- Dust
-    strangedust = "10940",
-    souldust = "11083",
-    visiondust = "11137",
-    dreamdust = "11176",
-    illusiondust = "16204",
-
-    -- Shards
-    smallglimmeringshard = "10978",
-    largeglimmeringshard = "11084",
-    smallglowingshard = "11138",
-    largeglowingshard = "11139",
-    smallbrilliantshard = "14343",
-    largebrilliantshard = "14344",
-    smallradiantshard = "11177",
-    largeradiantshard = "11178",
-
-    -- Essence
-    lessermagicessence = "10938",
-    greatermagicessence = "10939",
-    lesserastralessence = "10998",
-    greaterastralessence = "11082",
-    lessermysticessence = "11134",
-    greatermysticessence = "11135",
-    lessereternalessence = "16202",
-    greatereternalessence = "16203",
-    lessernetheressence = "11174",
-    greaternetheressence = "11175",
-
-    -- Misc
-    aquamarine = "7909",
-    blackdiamond = "11754",
-    blacklotus = "13468",
-    blackmouthoil = "6370",
-    breathofwind = "7081",
-    coreofearth = "7075",
-    --crystalvial = "8925",
-    elementalearth = "7067",
-    elementalfire = "7068",
-    elixirofdemonslayer = "9224",
-    emptyvial = "3371",
-    essenceofair = "7082",
-    essenceofearth = "7076",
-    essenceoffire = "7078",
-    essenceofundeath = "12808",
-    essenceofwater = "7080",
-    fireoil = "6371",
-    --firebloom = "4625",
-    frostoil = "3829",
-    globeofwater = "7079",
-    goldenpearl = "13926",
-    greenwhelpscale = "7392",
-    guardianstone = "12809",
-    heartoffire = "7077",
-    icecap = "13467",
-    ichorofundeath = "7972",
-    imbuedvial = "18256",
-    ironore = "2772",
-    kingsblood = "3356",
-    largefang = "5637",
-    larvalacid = "18512",
-    leadedvial = "3372",
-    livingessence = "12803",
-    mapleseed = "17034",
-    nexuscrystal = "20725",
-    --purplelotus = "8831",
-    righteousorb = "12811",
-    --ruggedleather = "8170",
-    shadowprotectionpotion = "6048",
-    --simplewood = "4470",
-    --starwood = "11291",
-    --stranglethornseed = "17035",
-    sungrass = "8838",
-    --thoriumbar = "12359",
-    truesilverbar = "6037",
-    wildvine = "8153",
-    wintersbite = "3819",
-    -- phase 6 required items
-    greaternatureprotectionpotion = "13458",
-    qirajistalkervenom = "234011",
-    ancientsandwormbile = "234010",
-    stratholmeholywater = "13180",
-    frayedabominationstitching = "12735",
-    skinofshadow = "12753"
+-- PE Convertables
+PEConvertablesName = {
+	"Lesser Magic Essence",
+	"Greater Magic Essence",
+	"Lesser Astral Essence",
+	"Greater Astral Essence",
+	"Lesser Mystic Essence",
+	"Greater Mystic Essence",
+	"Lesser Eternal Essence",
+	"Greater Eternal Essence",
+	"Lesser Nether Essence",
+	"Greater Nether Essence"
 }
+
+PEConvertablesId = {
+	"10938",
+	"10939",
+	"10998",
+	"11082",
+	"11134",
+	"11135",
+	"16202",
+	"16203",
+	"11174",
+	"11175"
+}
+
+function GroupLeaderCheck()
+    if UnitIsGroupAssistant("player") == true then
+        return false
+    end
+    local check = UnitIsGroupLeader("player")
+    return check
+end
 
 function CapFirstLetter(word)
     if word == nil or word == "" then return word end -- Check for empty or nil word
@@ -127,6 +75,7 @@ end
 
 -- Get total mats required for a tradeskill
 function ProEnchants_GetReagentList(SpellID, reqQuantity)
+    --print(tostring(SpellID))
     local id = SpellID
     local AllMatsReq = ""
     if reqQuantity == nil then
@@ -138,9 +87,13 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
             -- Extract quantity and material name
             local quantity, material = matsReq:match("(%d+)x (.+)")
+           --print(tostring(quantity) .. " " .. tostring(material))
             local itemId = material:match(":(%d+):")
+            --print(tostring(itemId))
             local material = select(2, C_Item.GetItemInfo(itemId))
+            --print(tostring(material))
             quantity = tonumber(quantity) * reqQuantity
+            --print(tostring(quantity))
 
             -- Append to the AllMatsReq string
             if AllMatsReq ~= "" then
@@ -150,6 +103,7 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
             end
         end
     end
+    --print(tostring(AllMatsReq))
     return AllMatsReq
 end
 
@@ -354,7 +308,7 @@ function PEItemCache()
             CachedItems = CachedItems .. itemLink .. ", "
         end
     end
-    print("Item Cache complete")
+    -- print("Item Cache complete")
 end
 
 -- Forwarded Scan to Parse entire area (like AH, but more frequent in idle)
@@ -836,7 +790,7 @@ function LinkAllMissingMats(customerName)
     missingMats = missingMats or {}
 
     if check >= 1 then
-        print(missingMats[1])
+        --print(missingMats[1])
         return
     end
 
@@ -1612,35 +1566,37 @@ function FinishedEnchant(customerName, reqEnchant)
                         print("enchCompleted returned nil or blank")
                     end
                 end
-                local matsUsed = ProEnchants_GetReagentList(enchCompleted, reqQuantity)
-                for quantity, material in string.gmatch(matsUsed, "(%d+)x ([^,]+)") do
-                    quantity = tonumber(quantity)
-                    local itemId = material:match(":(%d+):")
-                    local material = select(2, C_Item.GetItemInfo(itemId))
-                    if frameInfo.ItemsTradedIn[material] ~= nil then
-                        local tradedQuantity = frameInfo.ItemsTradedIn[material]
-                        local newQuantity = tradedQuantity - quantity
+                if enchCompleted ~= nil then
+                    local matsUsed = ProEnchants_GetReagentList(enchCompleted, reqQuantity)
+                    for quantity, material in string.gmatch(matsUsed, "(%d+)x ([^,]+)") do
+                        quantity = tonumber(quantity)
+                        local itemId = material:match(":(%d+):")
+                        local material = select(2, C_Item.GetItemInfo(itemId))
+                        if frameInfo.ItemsTradedIn[material] ~= nil then
+                            local tradedQuantity = frameInfo.ItemsTradedIn[material]
+                            local newQuantity = tradedQuantity - quantity
 
-                        if newQuantity <= 0 then
-                            frameInfo.ItemsTradedIn[material] = nil -- Remove the item if quantity becomes 0 or negative
+                            if newQuantity <= 0 then
+                                frameInfo.ItemsTradedIn[material] = nil -- Remove the item if quantity becomes 0 or negative
 
-                            local deficitQuantity = math.abs(newQuantity)
-                            if deficitQuantity > 0 then -- Handle case where tradeQuantity exceeds currentQuantity
-                                frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
-                                frameInfo.ItemsTradedOut[material] = (frameInfo.ItemsTradedOut[material] or 0) +
-                                    deficitQuantity
+                                local deficitQuantity = math.abs(newQuantity)
+                                if deficitQuantity > 0 then -- Handle case where tradeQuantity exceeds currentQuantity
+                                    frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
+                                    frameInfo.ItemsTradedOut[material] = (frameInfo.ItemsTradedOut[material] or 0) +
+                                        deficitQuantity
+                                end
+                            else
+                                frameInfo.ItemsTradedIn[material] = newQuantity -- Update with the new quantity
                             end
+                        elseif frameInfo.ItemsTradedOut[material] ~= nil then
+                            local currentQuantity = frameInfo.ItemsTradedOut[material]
+                            local newTradeQuantity = quantity
+                            local newQuantity = currentQuantity + newTradeQuantity
+                            frameInfo.ItemsTradedOut[material] = newQuantity
                         else
-                            frameInfo.ItemsTradedIn[material] = newQuantity -- Update with the new quantity
+                            frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
+                            frameInfo.ItemsTradedOut[material] = quantity
                         end
-                    elseif frameInfo.ItemsTradedOut[material] ~= nil then
-                        local currentQuantity = frameInfo.ItemsTradedOut[material]
-                        local newTradeQuantity = quantity
-                        local newQuantity = currentQuantity + newTradeQuantity
-                        frameInfo.ItemsTradedOut[material] = newQuantity
-                    else
-                        frameInfo.ItemsTradedOut = frameInfo.ItemsTradedOut or {}
-                        frameInfo.ItemsTradedOut[material] = quantity
                     end
                 end
             end
@@ -1872,7 +1828,7 @@ function PEdoTrade()
                     DoEmote(ProEnchantersOptions["TipEmote"], PEtradeWho)
                     --string.gsub(meResponseSender, "PLAYER", function(mePlayer2) table.insert(mePlayer, mePlayer2) return sender end)
                     if tipMsg == "" then
-                        print(PEtradeWho .. " tipped " .. tip)
+                        --print(PEtradeWho .. " tipped " .. tip)
                     else
                         if CheckIfPartyMember(PEtradeWho) == true then
                             SendChatMessage(newTipMsg2, IsInRaid() and "RAID" or "PARTY")
@@ -2063,4 +2019,136 @@ function WarnWhisperCounter()
     if ProEnchantersOptions["whispercountwarn"] == true then
         print("You have sent " .. string(GetWhisperCount()) .. " whispers in the last 5 minutes")
     end
+end
+
+-- Temp Ignore Functions
+
+function ClearTempIgnored(name)
+	for i, n in ipairs(ProEnchantersOptions.tempignore) do
+		if name == n then
+			table.remove(ProEnchantersOptions.tempignore, i)
+		end
+	end
+	for i, n in ipairs(ProEnchantersOptions.filteredwords) do
+		if name == n then
+			table.remove(ProEnchantersOptions.filteredwords, i)
+		end
+	end
+    ProEnchantersTriggersFrame.FilteredWords:SetText(SetFilteredEditBox())
+end
+
+function ClearAllTempIgnored()
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print("Attempting to clear all temp ignored")
+    end
+    if type(ProEnchantersOptions["tempignore"]) == "table" then
+        for i = #ProEnchantersOptions.tempignore, 1, -1 do  -- Iterate backwards
+            local name = ProEnchantersOptions.tempignore[i]
+            if ProEnchantersOptions["DebugLevel"] >= 6 then
+                print("index " .. i .. " Attempting to clear " .. name .. " from temp ignore and filtered words")
+            end
+            for i2, n2 in pairs(ProEnchantersOptions.filteredwords) do
+                if name == n2 then
+                    if ProEnchantersOptions["DebugLevel"] >= 6 then
+                        print("index " .. i2 .. " " .. name .. " found, removing from filtered words")
+                    end
+                    table.remove(ProEnchantersOptions.filteredwords, i2)
+                    if ProEnchantersOptions["DebugLevel"] >= 6 then
+                        print("index " .. i .. " " .. name .. " found, removing from tempignore")
+                    end
+                    table.remove(ProEnchantersOptions.tempignore, i)
+                    --break -- Exit the inner loop after removal to avoid issues
+                end
+            end
+        end
+    end
+    -- Clear any leftover entries (if not removed in the loop above)
+    ProEnchantersOptions["tempignore"] = {}
+    ProEnchantersTriggersFrame.FilteredWords:SetText(SetFilteredEditBox())
+end
+
+
+function AddToTempIgnored(name)
+    if type(ProEnchantersOptions["tempignore"]) ~= "table" then
+        ProEnchantersOptions["tempignore"] = {}
+    end
+	table.insert(ProEnchantersOptions.filteredwords, name)
+	table.insert(ProEnchantersOptions.tempignore, name)
+    ProEnchantersTriggersFrame.FilteredWords:SetText(SetFilteredEditBox())
+end
+
+function CheckIfTempIgnored(name)
+    if ProEnchantersOptions.tempignore then
+        for i, n in ipairs(ProEnchantersOptions.tempignore) do
+            if n == name then
+                return true
+            end
+        end
+    end
+	return false
+end
+
+-- Addon Invite Functions
+
+function RemoveFromAddonInvited(name)
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print("Checking to remove " .. name .. " from addon invited table")
+    end
+    for n, _ in pairs(ProEnchantersOptions.addoninvited) do
+        if n == name then
+            if ProEnchantersOptions["DebugLevel"] >= 6 then
+                print("Removing " .. name .. " from addon invited table")
+            end
+            ProEnchantersOptions.addoninvited[n] = nil
+        end
+    end
+end
+
+function AddToAddonInvited(name, invtype)
+    local invtype = invtype
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print("adding " .. name .. " to addon invited table")
+    end
+    if invtype == nil then
+        invtype = "customerinvite"
+    end
+    if ProEnchantersOptions.addoninvited[name] then
+	    return
+    else
+        ProEnchantersOptions.addoninvited[name] = invtype
+    end
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        for n, t in pairs(ProEnchantersOptions.addoninvited) do
+            if n == name then
+                print(name .. " added with reason " .. t)
+            end
+        end
+    end    
+end
+
+function ClearAllAddonInvited()
+	ProEnchantersOptions["addoninvited"] = {}
+end
+
+function CheckIfAddonInvited(name)
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print("checking to remove " .. name .. " from addon invited table")
+    end
+    if ProEnchantersOptions.addoninvited then
+        if ProEnchantersOptions["DebugLevel"] >= 6 then
+            print("starting check loop")
+        end
+        for n, t in pairs(ProEnchantersOptions.addoninvited) do
+            if n == name then
+                if ProEnchantersOptions["DebugLevel"] >= 6 then
+                    print(name .. " found, returning true with type " .. t)
+                end
+                return true, t
+            end
+        end
+    end
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print(name .. " not found, returning false")
+    end
+	return false
 end

@@ -4,6 +4,55 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 8.9.7 and 8.9.8
+- **Fixed** Bug fixes revolving around the new addon invited functionality, testing showed no issues anymore but if you find any LUA errors please let me know in the discord
+- **Changed** Whisper invite keywords (when the customer whispers you 'inv') should no longer send the initial whisper contact message when the invite is sent or if the invite fails to send due to them being in a party
+
+## Update 8.9.5 and 8.9.6
+- **New and Changed** Added a 'Pause Invites' checkbox to the main window and the minimap button, this disables the invite pop ups/auto invites being sent out for potential customers, it does not stop whisper 'inv' messages. Modified the checkboxes on the main window to be smaller, shortened the text displayed by the checkboxes and added a tooltip when hovering the checkboxes to make it clear what each box is.
+- **Changed** When a player is invited by the add-on and it fails and then the player whispers you an "inv" to join after the fact the add-on should not replace the 'invited by message' in the workorder with the 'inv' line anymore
+- **Fixed** Players not being properly removed from the Temp Ignore and Filtered Words tables upon reloads doing the clear command.
+- **Changed** The Party/Raid join welcome message can be set to send regardless of if the addon sent the invite or not. The Initial whisper sent for when a player would be invited to the party or if the invite fails is now only sent if the addon sent the message.
+
+## Update 8.9.3 Beta and 8.9.4
+- **Changed** Minimap button text for Auto Invite and Work While Closed will now update without having to re-hover the minimap button
+- **New** Setting option for Hiding/Showing the minimap button (no longer have to do /pe minimap as the only way to get it back)
+- **New** Work While Closed checkbox on the main window for ease of access
+- **New** Ability to add players to a temporary ignore list for the current session -> Right click context menu or by '/peignore name', also a temp ignore button is now available on the pop-up if you are not using auto invites. Any action that reloads the addon like /reload or moving between zones that cause a loading screen will wipe the temporary ignore list. Can also use '/pe cleartempignores'
+- **Changed** The way the add-on handles Add-on based invites versus manual invites has been changed to be more reliable for sending messages properly if you have the "Don't send messages on manual invites" setting turned on.
+
+## Update 8.9.2
+- **Fixed** Added check for raid assistant to new Party/Raid join welcome message so that it does not get sent if you are a raid assistant.
+
+## Update 8.9.1
+- **Changed** Party/Raid join welcome message will now only send if you are the party or raid leader (let me know if this is not working properly for raid, should be working for party but did not test for raid)
+- **Fixed** On new add-on launches there was an issue with UI Color table creation
+
+## Update 8.8
+- **Fixed** UI colors when add-on is loaded for the first time were setting the wrong "Settings" background color causing UI navigation to be harder since things were the same color. The scroll bar color was also set to the same so I've brightened the scroll bar slightly so it stands out more to make it more apparent that you can scroll. Added a check when the add-on is launched to see if the Settings background or scroll bar color is set to "22" for the first value which was the wrong default and if so will set those to the proper defaults. Note - if you use a custom color setup and by some small chance use 22 as the first value for those two fields it will reset those colors, you can change it to either 21 or 23 to avoid this.
+
+## Update 8.7
+- **Fixed** Dependency issues (finally)
+- **Fixed** Cleaned up Addon Load events to not spam the chat window on game launch
+- **New** Added .toc files for TBC/Wrath/Cata/Retail, please note that although the addon will load on those flavors of wow the recipes are still vanilla based at the moment so beyond using the addon for auto inviting a lot of things will probably fail if you attempt to use it for actual enchanting.
+
+## Update 8.6
+- **Fixed** Blood of Heroes and Purple Lotus not being recognized by the addon should be fixed, if not please let me know
+
+## Update 8.5.1
+- **New** Phase 7 Enchants added for SoD
+- **Potential Fix** Library issue with the addon not recognizing the LibSharedMedia library *should* be fixed, untested
+- **Fixed** Greater Spellpower bracers changed to 16 (previously was wrongly showing as 12)
+
+## Update 8.4
+- **Changeed** Tooltips are now enabled by default for fresh installs and there is a message when tooltips are enabled and the add-on is first loaded for turning them off and usage.
+
+## Update 8.3
+- **Fixed** Max character limit set to 20 for customer name box (previously if you filled the text in a large amount like 50+ and hit an enchant button it would crash the client)
+
+## Update 8.2
+- **New** Checkbox to disable sending the 'Welcome Message' when a player joins the party from a manual invite. If you have players joining very quickly from the addon invites while manually inviting someone it may act a little funky and send the welcome message still but slightly out of place. Un-tested change, please let me know if there are any issues.
+
 ## Update 8.0.1
 - **Changed** Default tip message now displays as g, s, c (example: 123g, 456s, 789c) instead your game clients language of Gold, Silver, Copper. This is more a change for those who use non-english versions of WoW and currently have their tip responses formatting as "12 Or, 10 Argent" etc. There is now a checkbox that lets you toggle this as well, by default it is on but by turning it off it will go back to the previous formatting of "Gold, Silver, Copper" in your game clients language. Fixed the tip showing a comma when its not neccesary
 

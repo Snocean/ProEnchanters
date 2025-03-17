@@ -1,12 +1,14 @@
 -- First Initilizations
-local version = "v7.2"
+local version = "v8.9.8"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
-ProEnchantersOptions.filters = {}
+ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
 ProEnchantersWorkOrderFrames = {}
-ProEnchantersOptions.favorites = {}
+ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
 ProEnchantersOptions.recentwhispers = {}
+ProEnchantersOptions.tempignore = ProEnchantersOptions.tempignore or {}
+ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -14,9 +16,9 @@ PETriggerWords = {}
 PEtradeWhoItems = PEtradeWhoItems or {}
 PEtradeWhoItems.player = PEtradeWhoItems.player or {}
 PEtradeWhoItems.target = PEtradeWhoItems.target or {}
-local AddonInvite = false
+-- local AddonInvite = false
 local selfPlayerName = GetUnitName("player")
-local NonAddonInvite = true
+-- local NonAddonInvite = true
 local LocalLanguage = PELocales[GetLocale()]
 local FontSize = 12
 PEPlayerInvited = {}
@@ -43,11 +45,48 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 			if IsControlKeyDown() then
 				addon.db.profile.minimap.hide = true
 				icon:Hide("ProEnchanters")
+				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.ShowMinimapButton then
+					ProEnchantersSettingsFrame.ShowMinimapButton:SetChecked(addon.db.profile.minimap.hide)
+				end
+			elseif IsAltKeyDown() then
+				ProEnchantersOptions["PauseInvites"] = not ProEnchantersOptions["PauseInvites"]
+				print("|cFF800080ProEnchanters|r: \"Pause Invites\" is now " ..
+					(ProEnchantersOptions["PauseInvites"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+				-- Update Tooltip
+				GameTooltip:ClearLines()
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+				local autoInviteColor = ProEnchantersOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
+				local pauseInviteColor = ProEnchantersOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
+				local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
+				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+				-- Update the checkbox state
+				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
+					ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersOptions["PauseInvites"])
+				end
 			elseif IsShiftKeyDown() then
 				ProEnchantersOptions["AutoInvite"] = not ProEnchantersOptions["AutoInvite"]
 				AutoInvite = ProEnchantersOptions["AutoInvite"]
 				print("|cFF800080ProEnchanters|r: \"Auto Invite\" is now " ..
 					(ProEnchantersOptions["AutoInvite"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
+				-- Update Tooltip
+				GameTooltip:ClearLines()
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+				local autoInviteColor = ProEnchantersOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
+				local pauseInviteColor = ProEnchantersOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
+				local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
+				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
 				-- Update the checkbox state
 				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.AutoInviteCheckbox then
 					ProEnchantersWorkOrderFrame.AutoInviteCheckbox:SetChecked(ProEnchantersOptions["AutoInvite"])
@@ -78,9 +117,25 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
 				print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
 					(ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-				-- Update the checkbox state
+				-- Refresh Tooltip
+				GameTooltip:ClearLines()
+				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+				GameTooltip:AddLine(" ");
+				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+				local autoInviteColor = ProEnchantersOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
+				local pauseInviteColor = ProEnchantersOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
+				local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
+				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+				-- Update the checkbox states
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
 					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+				end
+				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.WWCCheckbox then
+					ProEnchantersWorkOrderFrame.WWCCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
 				end
 			end
 		end
@@ -92,6 +147,8 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 		GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
 		local autoInviteColor = ProEnchantersOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
 		GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
+		local pauseInviteColor = ProEnchantersOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
+		GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
 		local workClosedColor = ProEnchantersOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
 		GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
 		GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
@@ -227,7 +284,7 @@ local function findEnchantByKeyAndLanguage(msg)
 end
 
 
-function InviteUnitPEAddon(name)
+function InviteUnitPEAddon(name, invtype)
 	local nameCheck = string.lower(name)
 	local selfnameCheck = string.lower(selfPlayerName)
 	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
@@ -235,6 +292,8 @@ function InviteUnitPEAddon(name)
 	local isInGroup = IsInGroup()
 	local raidConvert = false
 	local nametrim = string.gsub(name, "%-.*", "")
+	local capPlayerName = CapFirstLetter(nametrim)
+	--local invtype = "disabled"
 
 	if isInGroup == true then
 		currentPartySize = tonumber(GetNumGroupMembers())
@@ -253,17 +312,29 @@ function InviteUnitPEAddon(name)
 				if raidConvert == true then
 					if not string.find(selfnameCheck, nameCheck, 1, true) then
 						if ProEnchantersOptions["TrimServerName"] == true then
-							C_Timer.After(1, function() InviteUnit(nametrim) end)
+							C_Timer.After(1, function() 
+								InviteUnit(nametrim)
+								--print(nametrim)
+								AddToAddonInvited(capPlayerName, invtype)
+							end)
 						else
-							C_Timer.After(1, function() InviteUnit(name) end)
+							C_Timer.After(1, function()
+								InviteUnit(name)
+								--print(name)
+								AddToAddonInvited(capPlayerName, invtype)
+							end)
 						end
 					end
 				else
 					if not string.find(selfnameCheck, nameCheck, 1, true) then
 						if ProEnchantersOptions["TrimServerName"] == true then
 							InviteUnit(nametrim)
+							--print(nametrim)
+							AddToAddonInvited(capPlayerName, invtype)
 						else
 							InviteUnit(name)
+							--print(name)
+							AddToAddonInvited(capPlayerName, invtype)
 						end
 					end
 				end
@@ -283,17 +354,29 @@ function InviteUnitPEAddon(name)
 			if raidConvert == true then
 				if not string.find(selfnameCheck, nameCheck, 1, true) then
 					if ProEnchantersOptions["TrimServerName"] == true then
-						C_Timer.After(1, function() InviteUnit(nametrim) end)
+						C_Timer.After(1, function()
+							InviteUnit(nametrim)
+							--print(nametrim)
+							AddToAddonInvited(capPlayerName, invtype)
+						end)
 					else
-						C_Timer.After(1, function() InviteUnit(name) end)
+						C_Timer.After(1, function()
+							InviteUnit(name)
+							--print(name)
+							AddToAddonInvited(capPlayerName, invtype)
+						end)
 					end
 				end
 			else
 				if not string.find(selfnameCheck, nameCheck, 1, true) then
 					if ProEnchantersOptions["TrimServerName"] == true then
 						InviteUnit(nametrim)
+						--print(nametrim)
+						AddToAddonInvited(capPlayerName, invtype)
 					else
 						InviteUnit(name)
+						--print(name)
+						AddToAddonInvited(capPlayerName, invtype)
 					end
 				end
 			end
@@ -311,13 +394,18 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 	text = "Player %s potential customer: %s",
 	button1 = "Invite",
 	button2 = "Cancel",
+	button3 = "Temp Ignore",
 	OnAccept = function(self, data)
 		local playerName, msg, author2 = unpack(data)
-		AddonInvite = true
+		local nametrim = string.gsub(author2, "%-.*", "")
+		-- AddonInvite = true
 		PEPlayerInvited[playerName] = msg
-		if AddonInvite == true then
-			InviteUnitPEAddon(author2)
-		end
+		InviteUnitPEAddon(author2)
+	end,
+	OnAlt = function(self, data)
+		local playerName, msg, author2 = unpack(data)
+		local nametrim = string.gsub(author2, "%-.*", "")
+		AddToTempIgnored(nametrim)
 	end,
 	timeout = 0,
 	whileDead = true,
@@ -366,13 +454,32 @@ local function DelayedWorkOrder(playerName)
 			local playerName = string.lower(playerName)
 			CreateCusWorkOrder(playerName)
 		elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
-			SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+			if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+				local addonInviteCheck, addonInviteType = CheckIfAddonInvited(capPlayerName)
+				if addonInviteCheck == true then
+					SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+					RemoveFromAddonInvited(capPlayerName)
+				end
+			else
+				SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+			end
 			local playerName = string.lower(playerName)
 			CreateCusWorkOrder(playerName)
 		else
-			SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
-			local playerName = string.lower(playerName)
-			CreateCusWorkOrder(playerName)
+			if ProEnchantersOptions["NoWelcomeManualInvites"] == true then -- and NonAddonInvite == true then
+				-- NonAddonInvite = false
+				local addonInviteCheck, addonInviteType = CheckIfAddonInvited(capPlayerName)
+				if addonInviteCheck == true then
+					SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+					RemoveFromAddonInvited(capPlayerName)
+				end
+				local playerName = string.lower(playerName)
+				CreateCusWorkOrder(playerName)
+			else
+				SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+				local playerName = string.lower(playerName)
+				CreateCusWorkOrder(playerName)
+			end
 		end
 	end
 end
@@ -461,12 +568,33 @@ local function createWorkOrderButton(menuButton, contextData)
 	end)
 end
 
+local function createTempIgnoreButton(menuButton, contextData)
+	menuButton:CreateButton("Add Temp Ignore", function()
+		AddToTempIgnored(contextData.name)
+	end)
+end
+
+local function createTempUnIgnoreButton(menuButton, contextData)
+	menuButton:CreateButton("Remove Temp Ignore", function()
+		ClearTempIgnored(contextData.name)
+	end)
+end
+
+-- New Menu System in Retail 11.0.0
+        -- https://warcraft.wiki.gg/wiki/Patch_11.0.0/API_changes
+        -- https://www.townlong-yak.com/framexml/latest/Blizzard_Menu/11_0_0_MenuImplementationGuide.lua
+        -- Retail 10.0.2 https://wowpedia.fandom.com/wiki/Patch_10.0.2/API_changes#Tooltip_Changes
 -- Add custom Pro Enchanters options to various menus
 local function addProEnchantersMenu(menuName)
 	Menu.ModifyMenu(menuName, function(_, menuButton, contextData)
 		menuButton:CreateDivider()
 		menuButton:CreateTitle("Pro Enchanters")
 		createWorkOrderButton(menuButton, contextData)
+		if CheckIfTempIgnored(contextData.name) == true then
+			createTempUnIgnoreButton(menuButton, contextData)
+		else
+			createTempIgnoreButton(menuButton, contextData)
+		end
 	end)
 end
 
@@ -535,7 +663,7 @@ local r9, g9, b9 = unpack(SettingsWindowBackground)
 local SettingsWindowBackgroundOpaque = { r9, g9, b9, 1 }
 local SettingsWindowBackgroundTrans = { r9, g9, b9, OpacityAmount }
 
-local ScrollBarColors = { 49 / 255, 48 / 255, 77 / 255 }
+local ScrollBarColors = { 75 / 255, 75 / 255, 120 / 255 }
 local r10, g10, b10 = unpack(ScrollBarColors)
 local ButtonStandardAndThumb = { r10, g10, b10, 1 }
 local r10P, r10DH = ((r10 * 255) / 4) / 255, ((r10 * 255) / 2) / 255
@@ -883,7 +1011,10 @@ PESupporters = {
 	"Paulallen",
 	"Artyrus",
 	"Grrgg",
-	"John S"
+	"John S",
+	"NezzKillz",
+	"EmptyProfile",
+	"Threatco"
 }
 
 -- Filtered Words Table
@@ -917,6 +1048,7 @@ PEFilteredWordsOriginal = {
 	"lfg",
 	"your mats",
 	"recipe",
+	"formula",
 	"every",
 	"work",
 	"sham"
@@ -1010,32 +1142,7 @@ EnchantsSortedSlot = getSortedKeys(slotSort)
 -- Table for sorting by stat
 EnchantsSortedStat = getSortedKeys(statSort)
 
--- PE Convertables
-PEConvertablesName = {
-	"Lesser Magic Essence",
-	"Greater Magic Essence",
-	"Lesser Astral Essence",
-	"Greater Astral Essence",
-	"Lesser Mystic Essence",
-	"Greater Mystic Essence",
-	"Lesser Eternal Essence",
-	"Greater Eternal Essence",
-	"Lesser Nether Essence",
-	"Greater Nether Essence"
-}
 
-PEConvertablesId = {
-	"10938",
-	"10939",
-	"10998",
-	"11082",
-	"11134",
-	"11135",
-	"16202",
-	"16203",
-	"11174",
-	"11175"
-}
 
 --- DropDown Menu Creation by Jordan Benge
 --- Opts:
@@ -1069,7 +1176,7 @@ local function createDropdown(opts)
 		-- Hide textures of the dropdown button itself
 		if child:GetName() then
 			--hideTextureRegions(child)
-			print(tostring(child:GetName()))
+			--print(tostring(child:GetName()))
 			-- Additionally, if you want to access and modify the child of this button, you can do so here
 		end
 	end
@@ -1500,20 +1607,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	titleBg:SetPoint("TOPLEFT", WorkOrderFrame, "TOPLEFT", 0, 0)
 	titleBg:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", 0, 0)
 
-	-- Auto Invite Checkbox
-	local autoInviteCb = CreateFrame("CheckButton", nil, WorkOrderFrame, "ChatConfigCheckButtonTemplate")
-	autoInviteCb:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -6, 0)
-	--autoInviteCb:SetFrameLevel(9001)
-	autoInviteCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
-	autoInviteCb:SetHitRectInsets(0, 0, 0, 0)
-	autoInviteCb:SetChecked(ProEnchantersOptions["AutoInvite"])
-	autoInviteCb:SetScript("OnClick", function(self)
-		ProEnchantersOptions["AutoInvite"] = self:GetChecked()
-		AutoInvite = ProEnchantersOptions["AutoInvite"]
-	end)
-
-	-- Store the checkbox in the settings frame for later reference
-	ProEnchantersWorkOrderFrame.AutoInviteCheckbox = autoInviteCb
+	
 
 	-- Expand enchants button
 	local enchantsShowButton = CreateFrame("Button", nil, WorkOrderFrame) --, "GameMenuButtonTemplate")
@@ -1534,11 +1628,97 @@ function ProEnchantersCreateWorkOrderFrame()
 
 	ProEnchantersWorkOrderFrame.enchantsShowButton = enchantsShowButton
 
+	-- Pause Invite Checkbox
+	local pauseInvCb = CreateFrame("CheckButton", nil, WorkOrderFrame, "ChatConfigCheckButtonTemplate")
+	pauseInvCb:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -1, -4)
+	--autoInviteCb:SetFrameLevel(9001)
+	pauseInvCb:SetSize(20, 20) -- Set the size of the checkbox to 24x24 pixels
+	pauseInvCb:SetHitRectInsets(0, 0, 0, 0)
+	pauseInvCb:SetChecked(ProEnchantersOptions["PauseInvites"])
+	pauseInvCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["PauseInvites"] = self:GetChecked()
+	end)
+	pauseInvCb:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Pause Invites")
+		GameTooltip:Show()
+	end)
+	pauseInvCb:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
+	-- Store the checkbox in the settings frame for later reference
+	ProEnchantersWorkOrderFrame.PauseInviteCheckbox = pauseInvCb
+
+	-- Auto Invite text
+	local pauseInvHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
+	pauseInvHeader:SetFontObject(UIFontBasic)
+	pauseInvHeader:SetPoint("RIGHT", pauseInvCb, "LEFT", -1, 0)
+	pauseInvHeader:SetText("PI")
+
+	-- Auto Invite Checkbox
+	local autoInviteCb = CreateFrame("CheckButton", nil, WorkOrderFrame, "ChatConfigCheckButtonTemplate")
+	autoInviteCb:SetPoint("RIGHT", pauseInvHeader, "LEFT", -5, 0)
+	--autoInviteCb:SetFrameLevel(9001)
+	autoInviteCb:SetSize(20, 20) -- Set the size of the checkbox to 24x24 pixels
+	autoInviteCb:SetHitRectInsets(0, 0, 0, 0)
+	autoInviteCb:SetChecked(ProEnchantersOptions["AutoInvite"])
+	autoInviteCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["AutoInvite"] = self:GetChecked()
+		AutoInvite = ProEnchantersOptions["AutoInvite"]
+	end)
+	autoInviteCb:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Auto Invite")
+		GameTooltip:Show()
+	end)
+	autoInviteCb:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
+	-- Store the checkbox in the settings frame for later reference
+	ProEnchantersWorkOrderFrame.AutoInviteCheckbox = autoInviteCb
+
 	-- Auto Invite text
 	local autoinviteHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
 	autoinviteHeader:SetFontObject(UIFontBasic)
-	autoinviteHeader:SetPoint("RIGHT", autoInviteCb, "LEFT", -5, 0)
-	autoinviteHeader:SetText("Auto Invite?")
+	autoinviteHeader:SetPoint("RIGHT", autoInviteCb, "LEFT", -1, 0)
+	autoinviteHeader:SetText("AI")
+
+	-- Work While Closed CB
+	local WWCCb = CreateFrame("CheckButton", nil, WorkOrderFrame, "ChatConfigCheckButtonTemplate")
+	WWCCb:SetPoint("RIGHT", autoinviteHeader, "LEFT", -5, 0)
+	--autoInviteCb:SetFrameLevel(9001)
+	WWCCb:SetSize(20, 20) -- Set the size of the checkbox to 24x24 pixels
+	WWCCb:SetHitRectInsets(0, 0, 0, 0)
+	WWCCb:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+	WWCCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["WorkWhileClosed"] = self:GetChecked()
+		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+			ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
+	end)
+	WWCCb:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("Work While Closed")
+			GameTooltip:Show()
+	end)
+	WWCCb:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
+	-- Store the checkbox in the settings frame for later reference
+	ProEnchantersWorkOrderFrame.WWCCheckbox = WWCCb
+	
+	-- WWC Text
+	local autoinviteHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
+	autoinviteHeader:SetFontObject(UIFontBasic)
+	autoinviteHeader:SetPoint("RIGHT", WWCCb, "LEFT", -1, 0)
+	autoinviteHeader:SetText("WWC")
+
+
+
+
 
 	local newcustomerBg = WorkOrderFrame:CreateTexture(nil, "BACKGROUND")
 	newcustomerBg:SetColorTexture(unpack(SecondaryBarColorOpaque)) -- Set RGBA values for your preferred color and alpha
@@ -1595,6 +1775,7 @@ function ProEnchantersCreateWorkOrderFrame()
 		target = customerNameEditBox:GetText()
 		targetButton:SetAttribute("macrotext", "/tar " .. target)
 	end)
+	customerNameEditBox:SetMaxLetters(20)
 
 	-- Create a header for the customer name input
 	local customerHeader = WorkOrderFrame:CreateFontString(nil, "OVERLAY")
@@ -2734,6 +2915,9 @@ function ProEnchantersCreateOptionsFrame()
 	WorkWhileClosedCb:SetScript("OnClick", function(self)
 		ProEnchantersOptions["WorkWhileClosed"] = self:GetChecked()
 		WorkWhileClosed = ProEnchantersOptions["WorkWhileClosed"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.WWCCheckbox then
+			ProEnchantersWorkOrderFrame.WWCCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
 	end)
 	-- Store the checkbox in the settings frame for later reference
 	ProEnchantersSettingsFrame = ProEnchantersSettingsFrame or {}
@@ -3104,10 +3288,33 @@ function ProEnchantersCreateOptionsFrame()
 		end
 	end)
 
+	-- Create a header for Minimap toggle
+	local MinimapButtonEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	MinimapButtonEnableHeader:SetFontObject(UIFontBasic)
+	MinimapButtonEnableHeader:SetPoint("TOPLEFT", EscCloseHeader, "TOPLEFT", 0, -30)
+	MinimapButtonEnableHeader:SetText("Hide Minimap Button?")
+
+	local MinimapButtonEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	MinimapButtonEnableCb:SetPoint("LEFT", MinimapButtonEnableHeader, "RIGHT", 10, 0)
+	MinimapButtonEnableCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	MinimapButtonEnableCb:SetHitRectInsets(0, 0, 0, 0)
+	MinimapButtonEnableCb:SetChecked(addon.db.profile.minimap.hide)
+	MinimapButtonEnableCb:SetScript("OnClick", function(self)
+		addon.db.profile.minimap.hide = self:GetChecked()
+		if addon.db.profile.minimap.hide == true then
+			icon:Hide("ProEnchanters")
+		else
+			icon:Show("ProEnchanters")
+		end
+	end)
+
+	ProEnchantersSettingsFrame = ProEnchantersSettingsFrame or {}
+	ProEnchantersSettingsFrame.ShowMinimapButton = MinimapButtonEnableCb
+
 	-- Create a header for Tooltips
 	local TooltipsEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	TooltipsEnableHeader:SetFontObject(UIFontBasic)
-	TooltipsEnableHeader:SetPoint("TOPLEFT", EscCloseHeader, "TOPLEFT", 0, -30)
+	TooltipsEnableHeader:SetPoint("TOPLEFT", MinimapButtonEnableHeader, "TOPLEFT", 0, -30)
 	TooltipsEnableHeader:SetText("Enable tooltips? (Work in progress)")
 
 	local TooltipsEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -3190,10 +3397,26 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["WhisperWelcomeMsg"] = self:GetChecked()
 	end)
 
+	-- Create a header for no welcome msg to manually invited players
+	local NoWelcomeManualInviteHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	NoWelcomeManualInviteHeader:SetFontObject(UIFontBasic)
+	NoWelcomeManualInviteHeader:SetPoint("TOPLEFT", WhisperWelcomeMsgHeader, "TOPLEFT", 0, -30)
+	NoWelcomeManualInviteHeader:SetText("Do not send a message when a player is manually invited?")
+
+	-- 
+	local NoWelcomeManualInviteCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	NoWelcomeManualInviteCb:SetPoint("LEFT", NoWelcomeManualInviteHeader, "RIGHT", 10, 0)
+	NoWelcomeManualInviteCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	NoWelcomeManualInviteCb:SetHitRectInsets(0, 0, 0, 0)
+	NoWelcomeManualInviteCb:SetChecked(ProEnchantersOptions["NoWelcomeManualInvites"])
+	NoWelcomeManualInviteCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["NoWelcomeManualInvites"] = self:GetChecked()
+	end)
+
 	-- Create a header for simple tip money
 	local SimplifyTipsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	SimplifyTipsHeader:SetFontObject(UIFontBasic)
-	SimplifyTipsHeader:SetPoint("TOPLEFT", WhisperWelcomeMsgHeader, "TOPLEFT", 0, -30)
+	SimplifyTipsHeader:SetPoint("TOPLEFT", NoWelcomeManualInviteHeader, "TOPLEFT", 0, -30)
 	SimplifyTipsHeader:SetText("Format the tip value as 123g, 456s, 789c instead of Gold, Silver, Copper?")
 
 	-- Create cb for simple tip moneycheckbox
@@ -3535,6 +3758,14 @@ function ProEnchantersCreateOptionsFrame()
 			end
 			local localEnchantingName = PEenchantingLocales["Enchanting"][LocalLanguage]
 			if name == localEnchantingName then
+				-- Clear previous table
+				if ProEnchantersOptions and ProEnchantersOptions.filters then
+					-- Iterate over the table and remove all key-value pairs
+					for key in pairs(ProEnchantersOptions.filters) do
+						ProEnchantersOptions.filters[key] = nil
+					end
+				end
+
 				-- Assume all enchantments are not available initially
 				for enchKey, _ in pairs(EnchantsName) do
 					ProEnchantersOptions.filters[enchKey] = false
@@ -3554,7 +3785,7 @@ function ProEnchantersCreateOptionsFrame()
 						for enchKey, _ in pairs(EnchantsName) do
 							local enchValue = PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
 							if enchValue == skillName then
-								print(enchValue .. " found, setting to true")
+								--print(enchValue .. " found, setting to true")
 								ProEnchantersOptions.filters[enchKey] = true
 								local enchantButton = enchantButtons[enchKey]
 								if enchantButton then
@@ -3571,10 +3802,13 @@ function ProEnchantersCreateOptionsFrame()
 				-- Print out enchantments that are set to false (not found)
 				for enchKey, isVisible in pairs(ProEnchantersOptions.filters) do
 					if not isVisible then
-						local enchValue = PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
-						print(enchValue .. " not found, set to false")
+						if enchKey  then
+							local enchValue = PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
+							--print(enchValue .. " not found, set to false")
+						end
 					end
 				end
+				print("Sync Completed")
 			else
 				print(RED .. "Enchanting Trade Skill Window needs to be open to sync to skill list." .. ColorClose)
 			end
@@ -5123,7 +5357,7 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundR:SetText(tostring(140))
 		SettingsWindowBackgroundG:SetText(tostring(48))
 		SettingsWindowBackgroundB:SetText(tostring(50))
-		ScrollBarColorsR:SetText(tostring(100))
+		ScrollBarColorsR:SetText(tostring(150))
 		ScrollBarColorsG:SetText(tostring(2))
 		ScrollBarColorsB:SetText(tostring(2))
 		OpacityAmountR:SetText(tostring(50))
@@ -5166,7 +5400,7 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundG:SetText(tostring(140))
 		SettingsWindowBackgroundB:SetText(tostring(50))
 		ScrollBarColorsR:SetText(tostring(2))
-		ScrollBarColorsG:SetText(tostring(100))
+		ScrollBarColorsG:SetText(tostring(150))
 		ScrollBarColorsB:SetText(tostring(2))
 		OpacityAmountR:SetText(tostring(50))
 	end)
@@ -5209,7 +5443,7 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundB:SetText(tostring(140))
 		ScrollBarColorsR:SetText(tostring(2))
 		ScrollBarColorsG:SetText(tostring(2))
-		ScrollBarColorsB:SetText(tostring(100))
+		ScrollBarColorsB:SetText(tostring(150))
 		OpacityAmountR:SetText(tostring(50))
 	end)
 
@@ -5249,9 +5483,9 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundR:SetText(tostring(20))
 		SettingsWindowBackgroundG:SetText(tostring(0))
 		SettingsWindowBackgroundB:SetText(tostring(20))
-		ScrollBarColorsR:SetText(tostring(90))
+		ScrollBarColorsR:SetText(tostring(140))
 		ScrollBarColorsG:SetText(tostring(0))
-		ScrollBarColorsB:SetText(tostring(90))
+		ScrollBarColorsB:SetText(tostring(140))
 		OpacityAmountR:SetText(tostring(80))
 	end)
 
@@ -5291,9 +5525,9 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundR:SetText(tostring(190))
 		SettingsWindowBackgroundG:SetText(tostring(190))
 		SettingsWindowBackgroundB:SetText(tostring(190))
-		ScrollBarColorsR:SetText(tostring(255))
-		ScrollBarColorsG:SetText(tostring(255))
-		ScrollBarColorsB:SetText(tostring(255))
+		ScrollBarColorsR:SetText(tostring(180))
+		ScrollBarColorsG:SetText(tostring(180))
+		ScrollBarColorsB:SetText(tostring(180))
 		OpacityAmountR:SetText(tostring(50))
 	end)
 
@@ -5333,9 +5567,9 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundR:SetText(tostring(40))
 		SettingsWindowBackgroundG:SetText(tostring(40))
 		SettingsWindowBackgroundB:SetText(tostring(40))
-		ScrollBarColorsR:SetText(tostring(50))
-		ScrollBarColorsG:SetText(tostring(50))
-		ScrollBarColorsB:SetText(tostring(50))
+		ScrollBarColorsR:SetText(tostring(75))
+		ScrollBarColorsG:SetText(tostring(75))
+		ScrollBarColorsB:SetText(tostring(75))
 		OpacityAmountR:SetText(tostring(75))
 	end)
 
@@ -5422,9 +5656,9 @@ function ProEnchantersCreateColorsFrame()
 		SettingsWindowBackgroundR:SetText(tostring(49))
 		SettingsWindowBackgroundG:SetText(tostring(48))
 		SettingsWindowBackgroundB:SetText(tostring(77))
-		ScrollBarColorsR:SetText(tostring(22))
-		ScrollBarColorsG:SetText(tostring(26))
-		ScrollBarColorsB:SetText(tostring(48))
+		ScrollBarColorsR:SetText(tostring(75))
+		ScrollBarColorsG:SetText(tostring(75))
+		ScrollBarColorsB:SetText(tostring(120))
 		OpacityAmountR:SetText(tostring(50))
 	end)
 
@@ -5786,7 +6020,6 @@ function ProEnchantersCreateTriggersFrame()
 
 	-- Create an EditBox for Filtered Words
 	local FilteredWordsEditBox = CreateFrame("EditBox", "ProEnchantersFilteredWordsEditBox", scrollChild)
-
 	FilteredWordsEditBox:SetSize(602, 20)
 	FilteredWordsEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 	FilteredWordsEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0)
@@ -5825,6 +6058,7 @@ function ProEnchantersCreateTriggersFrame()
 		FilteredWordsEditBox:ClearFocus()
 	end)
 
+	ProEnchantersTriggersFrame.FilteredWords = FilteredWordsEditBox
 
 	local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	TriggerWordsHeader:SetFontObject(UIFontBasic)
@@ -7494,11 +7728,13 @@ function CreateCusWorkOrder(customerName, bypass)
 	ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName] or {}
 	--Input auto invite message if applicable
 	if PEPlayerInvited[customerName] then
+		--print(customerName)
 		local firstline = PEPlayerInvited[customerName]
 		firstline = ORANGE .. "Invited from message: " .. ColorClose .. firstline
 		local formattedLine = string.gsub(firstline, "%[", "") -- Remove '['
 		formattedLine = string.gsub(formattedLine, "%]", "")
 		table.insert(ProEnchantersTradeHistory[customerName], formattedLine)
+		PEPlayerInvited[customerName] = nil
 	end
 
 	local minButton = CreateFrame("Button", nil, frame)
@@ -8640,8 +8876,8 @@ local function LoadColorTables()
 	initializeColorTable("EnchantsButtonColorInactive", { 22 / 255, 26 / 255, 48 / 255 })
 	initializeColorTable("BorderColor", { 49 / 255, 48 / 255, 77 / 255 })
 	initializeColorTable("MainButtonColor", { 22 / 255, 26 / 255, 48 / 255 })
-	initializeColorTable("SettingsWindowBackground", { 22 / 255, 26 / 255, 48 / 255 })
-	initializeColorTable("ScrollBarColors", { 22 / 255, 26 / 255, 48 / 255 })
+	initializeColorTable("SettingsWindowBackground", { 49 / 255, 48 / 255, 77 / 255 })
+	initializeColorTable("ScrollBarColors", { 75 / 255, 75 / 255, 120 / 255 })
 
 	if ProEnchantersOptions.Colors.OpacityAmount == nil then
 		ProEnchantersOptions.Colors.OpacityAmount = 0.5
@@ -8705,7 +8941,7 @@ local function LoadColorVariables3()
 	SettingsWindowBackgroundOpaque = { r9, g9, b9, 1 }
 	SettingsWindowBackgroundTrans = { r9, g9, b9, OpacityAmount }
 
-	ScrollBarColors = ProEnchantersOptions.Colors.ScrollBarColors or { 49 / 255, 48 / 255, 77 / 255 }
+	ScrollBarColors = ProEnchantersOptions.Colors.ScrollBarColors or { 75 / 255, 75 / 255, 120 / 255 }
 	r10, g10, b10 = unpack(ScrollBarColors)
 	ButtonStandardAndThumb = { r10, g10, b10, 1 }
 	r10P, r10DH = ((r10 * 255) / 4) / 255, ((r10 * 255) / 2) / 255
@@ -8730,6 +8966,14 @@ local function OnAddonLoaded()
 	LoadColorVariables1()
 	LoadColorVariables2()
 	LoadColorVariables3()
+
+	if ProEnchantersOptions.Colors.ScrollBarColors[1] == 22 / 255 then
+		ProEnchantersOptions.Colors.ScrollBarColors = { 75 / 255, 75 / 255, 120 / 255}
+	end
+
+	if ProEnchantersOptions.Colors.SettingsWindowBackground[1] == 22 / 255 then
+		ProEnchantersOptions.Colors.SettingsWindowBackground = { 49 / 255, 48 / 255, 77 / 255}
+	end
 
 	-- Now safe to register the events that use ProEnchantersWorkOrderFrame
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_SAY")
@@ -8899,8 +9143,8 @@ local function OnAddonLoaded()
 		tinsert(UISpecialFrames, "ProEnchantersWorkOrderFrame")
 	end
 
-	if ProEnchantersOptions["EnableTooltips"] == nil then
-		ProEnchantersOptions["EnableTooltips"] = false
+	if ProEnchantersOptions["EnableTooltips"] ~= false then
+		ProEnchantersOptions["EnableTooltips"] = true
 	end
 
 	if ProEnchantersOptions["PartyJoinSound"] == nil then
@@ -8971,6 +9215,14 @@ local function OnAddonLoaded()
 
 	if ProEnchantersOptions["WhisperWelcomeMsg"] ~= true then
 		ProEnchantersOptions["WhisperWelcomeMsg"] = false
+	end
+
+	if ProEnchantersOptions["NoWelcomeManualInvites"] ~= true then
+		ProEnchantersOptions["NoWelcomeManualInvites"] = false
+	end
+
+	if ProEnchantersOptions["PauseInvites"] ~= true then
+		ProEnchantersOptions["PauseInvites"] = false
 	end
 
 	if ProEnchantersOptions["DisableWhisperCommands"] ~= true then
@@ -9125,10 +9377,16 @@ local function OnAddonLoaded()
 		ProEnchantersMinimapButton:Hide()
 	end]]
 
-	print("|cff00ff00Thank's for using Pro Enchanters! Type /pehelp or /proenchantershelp for more info!|r")
+	print("|cff00ff00Thank's for using Pro Enchanters! Type /pe to start or /pehelp for more info!|r")
+	--[[if ProEnchantersOptions["EnableTooltips"] == true then
+		print("|cff00ff00Tooltip's for the Pro Enchanters add-on are currently enabled, you can disable them in the settings window.")
+		print("|cff00ff00While hovering a button you can also press modifier keys (shift, ctrl, shift+ctrl) to see additional functions of the buttons.")
+	end]]
 	--CreatePEMacros()
 	--FullResetFrames()
 	ShowOpenWorkOrders()
+	ClearAllTempIgnored()
+	ClearAllAddonInvited()
 end
 
 -- Move the ADDON_LOADED event registration to the top
@@ -9136,7 +9394,7 @@ ProEnchanters.frame:RegisterEvent("ADDON_LOADED")
 
 ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 	if event == "ADDON_LOADED" and select(1, ...) == "ProEnchanters" then
-		print("ProEnchanters Addon Loaded Event Registered")
+		--print("ProEnchanters Addon Loaded Event Registered")
 		OnAddonLoaded()
 	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)
@@ -9156,6 +9414,7 @@ SLASH_PROENCHANTERSFS2 = "/proenchantersfontsize"
 SLASH_PROENCHANTERSDBG1 = "/pedebug"
 SLASH_PROENCHANTERSDBG2 = "/proenchantersdebug"
 SLASH_PROENCHANTERSCLEAR1 = "/peclearhistory"
+SLASH_PROENCHANTERSTEMPIGN1 = "/peignore"
 
 -- Ensure ProEnchantersWorkOrderFrame is not nil before accessing it in your functions
 SlashCmdList["PROENCHANTERS"] = function(msg)
@@ -9171,7 +9430,53 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			icon:Hide("ProEnchanters")
 			addon.db.profile.minimap.hide = true
 		end
-	else
+		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.ShowMinimapButton then
+			ProEnchantersSettingsFrame.ShowMinimapButton:SetChecked(addon.db.profile.minimap.hide)
+		end
+	elseif msg == "cleartempignores" then
+		ClearAllTempIgnored()
+	elseif msg == "wwc" then
+		ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+			ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.WWCCheckbox then
+			ProEnchantersWorkOrderFrame.WWCCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
+	elseif msg == "workwhileclosed" then
+		ProEnchantersOptions["WorkWhileClosed"] = not ProEnchantersOptions["WorkWhileClosed"]
+		if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
+			ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.WWCCheckbox then
+			ProEnchantersWorkOrderFrame.WWCCheckbox:SetChecked(ProEnchantersOptions["WorkWhileClosed"])
+		end
+	elseif msg == "ai" then
+		ProEnchantersOptions["AutoInvite"] = not ProEnchantersOptions["AutoInvite"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.AutoInviteCheckbox then
+			ProEnchantersWorkOrderFrame.AutoInviteCheckbox:SetChecked(ProEnchantersOptions["AutoInvite"])
+		end
+	elseif msg == "autoinvite" then
+		ProEnchantersOptions["AutoInvite"] = not ProEnchantersOptions["AutoInvite"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.AutoInviteCheckbox then
+			ProEnchantersWorkOrderFrame.AutoInviteCheckbox:SetChecked(ProEnchantersOptions["AutoInvite"])
+		end
+	elseif msg == "pi" then
+		ProEnchantersOptions["PauseInvites"] = not ProEnchantersOptions["PauseInvites"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
+			ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersOptions["PauseInvites"])
+		end
+	elseif msg == "pauseinvites" then
+		ProEnchantersOptions["PauseInvites"] = not ProEnchantersOptions["PauseInvites"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
+			ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersOptions["PauseInvites"])
+		end
+	elseif msg == "pause" then
+		ProEnchantersOptions["PauseInvites"] = not ProEnchantersOptions["PauseInvites"]
+		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
+			ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersOptions["PauseInvites"])
+		end
+	elseif msg == "" then
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
 			ProEnchantersWorkOrderFrame:Hide()
 			ProEnchantersWorkOrderEnchantsFrame:Hide()
@@ -9180,6 +9485,20 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			ProEnchantersWorkOrderEnchantsFrame:Show()
 			ResetFrames()
 		end
+	else
+		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset available as options, /pehelp for more info")
+	end
+end
+
+SlashCmdList["PROENCHANTERSTEMPIGN"] = function(msg)
+	local lowermsg = string.lower(msg)
+	local capmsg = CapFirstLetter(lowermsg)
+	if CheckIfTempIgnored(capmsg) == true then
+		ClearTempIgnored(capmsg)
+		print(CYAN .. capmsg .. ColorClose .. " " .. LIGHTGREEN .. "removed " .. ColorClose .. "from temp ignore list")
+	else
+		AddToTempIgnored(capmsg)
+		print(CYAN .. capmsg .. ColorClose .. " " .. LIGHTRED .. "added " .. ColorClose .. "to temp ignore list")
 	end
 end
 
@@ -9411,15 +9730,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local localPlayerJoinsRaid = PEenchantingLocales["PlayerJoinsRaidText"][LocalLanguage]
 		local localPlayerInGroup = PEenchantingLocales["PlayerAlreadyInGroupText"][LocalLanguage]
 		if string.find(text, localInvitedText, 1, true) then
-			if AddonInvite == false then
-				NonAddonInvite = true
-			end
-			if AddonInvite == true then
-				AddonInvite = false
+			--if AddonInvite == false then
+			--	NonAddonInvite = true
+			--end
+			--if AddonInvite == true then
+				--AddonInvite = false
+
 				local matchString = string.gsub(localInvitedTextSpecific, "PLAYER", "(.+)")
 				local playerName = string.match(text, matchString)
 				local autoInvMsg = AutoInviteMsg
 				local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", playerName)
+
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
 					if autoInvMsg2 == "" then
 						print("Inviting " .. playerName)
@@ -9433,7 +9754,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 										WarnWhisperCounter()
 									end
 									-- proceed with whisper strings
-									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									end
 								end
 							end)
 						else
@@ -9444,7 +9768,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									WarnWhisperCounter()
 								end
 								-- proceed with whisper strings
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 						end
 					end
@@ -9461,7 +9788,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 										WarnWhisperCounter()
 									end
 									-- proceed with whisper strings
-									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									end
 								end
 							end)
 						else
@@ -9472,13 +9802,19 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									WarnWhisperCounter()
 								end
 								-- proceed with whisper strings
-								SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 						end
 					end
 				end
-			end
+			--end
 		elseif string.find(text, localPlayerJoinsParty, 1, true) then
+			if GroupLeaderCheck() == false then
+				return
+			end
 			local matchString = ""
 			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 				matchString = "(.+)" .. localPlayerJoinsParty
@@ -9492,8 +9828,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
-				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
-					NonAddonInvite = false
+				if ProEnchantersOptions["DelayWorkOrder"] == true then --and NonAddonInvite == true then
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
@@ -9503,11 +9838,24 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
-						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							--NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
-						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+							SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
@@ -9530,8 +9878,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
-				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
-					NonAddonInvite = false
+				if ProEnchantersOptions["DelayWorkOrder"] == true then-- and NonAddonInvite == true then
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
@@ -9541,11 +9888,26 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
-						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then-- and NonAddonInvite == true then
+							-- NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
-						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+							SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
@@ -9563,8 +9925,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			end
-			NonAddonInvite = false
+			--NonAddonInvite = false
 		elseif string.find(text, localPlayerJoinsRaid, 1, true) then
+			if GroupLeaderCheck() == false then
+				return
+			end
 			local matchString = ""
 			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 				matchString = "(.+)" .. localPlayerJoinsRaid
@@ -9578,8 +9943,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
-				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
-					NonAddonInvite = false
+				if ProEnchantersOptions["DelayWorkOrder"] == true then --and NonAddonInvite == true then
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
@@ -9589,11 +9953,27 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
-						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							--NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
-						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then -- and NonAddonInvite == true then
+							--NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
@@ -9616,8 +9996,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
-				if ProEnchantersOptions["DelayWorkOrder"] == true and NonAddonInvite == true then
-					NonAddonInvite = false
+				if ProEnchantersOptions["DelayWorkOrder"] == true then --and NonAddonInvite == true then
 					WorkOrderPopup(playerName)
 				elseif ProEnchantersOptions["WelcomeMsg"] then
 					local WelcomeMsg = ProEnchantersOptions["WelcomeMsg"]
@@ -9627,11 +10006,27 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
-						SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							--NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					else
-						SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
+							--NonAddonInvite = false
+							if CheckIfAddonInvited(capPlayerName) == true then
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+								RemoveFromAddonInvited(capPlayerName)
+							end
+						else
+								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
+						end
 						local playerName = string.lower(playerName)
 						CreateCusWorkOrder(playerName)
 					end
@@ -9649,13 +10044,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			end
-			NonAddonInvite = false
+			--NonAddonInvite = false
 		elseif string.find(text, localPlayerInGroup, 1, true) then
-			if AddonInvite == false then
-				NonAddonInvite = true
-			end
-			if AddonInvite == true then
-				AddonInvite = false
+			--if AddonInvite == false then -- Not sure if this is still needed with the new NoWelcomeManualInvites setting
+			--	NonAddonInvite = true
+			--end
+			--if AddonInvite == true then
+				--AddonInvite = false
 				local matchString = ""
 				if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 					matchString = "(.+)" .. localPlayerInGroup
@@ -9665,6 +10060,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				local playerName = string.match(text, matchString)
 				local FailInvMsg = ProEnchantersOptions["FailInvMsg"]
 				local FailInvMsg2 = string.gsub(FailInvMsg, "CUSTOMER", playerName)
+
 				if ProEnchantersOptions["WorkWhileClosed"] == true then
 					if FailInvMsg2 == "" then
 						print("Invite failed for " .. playerName)
@@ -9678,7 +10074,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 										WarnWhisperCounter()
 									end
 									-- proceed with whisper strings
-									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+										SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									end
+									
 								end
 							end)
 						else
@@ -9689,7 +10089,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									WarnWhisperCounter()
 								end
 								-- proceed with whisper strings
-								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 						end
 					end
@@ -9706,7 +10109,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 										WarnWhisperCounter()
 									end
 									-- proceed with whisper strings
-									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+										SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									end
 								end
 							end)
 						else
@@ -9717,12 +10123,15 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									WarnWhisperCounter()
 								end
 								-- proceed with whisper strings
-								SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+								end
 							end
 						end
 					end
 				end
-			end
+			--end
 		end
 	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_YELL" then
 		-- Check for matching Emote
@@ -9807,15 +10216,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
 							end
@@ -9828,11 +10243,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
 							end
@@ -9906,15 +10321,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -9927,11 +10348,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10005,15 +10426,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10026,11 +10453,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10104,15 +10531,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10125,11 +10558,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10203,15 +10636,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10224,11 +10663,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10302,15 +10741,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if ProEnchantersOptions["DebugLevel"] >= 8 then
 						print("All checks passed, continuing with potential customer invite or pop-up")
 					end
+					if ProEnchantersOptions["PauseInvites"] == true then
+						if ProEnchantersOptions["DebugLevel"] >= 8 then
+							print("Pause invites enabled, ending loop")
+						end
+						return
+					end
 					local playerName = author3
 					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 					if ProEnchantersOptions["WorkWhileClosed"] == true then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10323,11 +10768,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 						if AutoInviteFlag == true then
-							AddonInvite = true
-							if AddonInvite == true then
+							--AddonInvite = true
+							--if AddonInvite == true then
 								InviteUnitPEAddon(author2)
 								PEPlayerInvited[playerName] = msg
-							end
+							--end
 							PlaySound(SOUNDKIT.MAP_PING)
 							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 								PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10403,15 +10848,21 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						if ProEnchantersOptions["DebugLevel"] >= 8 then
 							print("All checks passed, continuing with potential customer invite or pop-up")
 						end
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] >= 8 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
 						local playerName = author3
 						local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
 						if ProEnchantersOptions["WorkWhileClosed"] == true then
 							if AutoInviteFlag == true then
-								AddonInvite = true
-								if AddonInvite == true then
+								--AddonInvite = true
+								--if AddonInvite == true then
 									InviteUnitPEAddon(author2)
 									PEPlayerInvited[playerName] = msg
-								end
+								--end
 								PlaySound(SOUNDKIT.MAP_PING)
 								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 									PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10425,11 +10876,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 							if AutoInviteFlag == true then
-								AddonInvite = true
-								if AddonInvite == true then
+								--AddonInvite = true
+								--if AddonInvite == true then
 									InviteUnitPEAddon(author2)
 									PEPlayerInvited[playerName] = msg
-								end
+								--end
 								PlaySound(SOUNDKIT.MAP_PING)
 								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
 									PESound(ProEnchantersOptions["PotentialCustomerSound"])
@@ -10894,19 +11345,22 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					if isPartyFull ~= true then
 						local playerName = author3
 						local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
+						local invtype = "whisperinvite"
 						if ProEnchantersOptions["WorkWhileClosed"] == true then
 							--if AutoInviteFlag == true then
-							InviteUnitPEAddon(author2)
-							PEPlayerInvited[playerName] = msg
+							-- AddonInvite = true
+							InviteUnitPEAddon(author2, invtype)
+							--PEPlayerInvited[playerName] = msg
 							PlaySound(SOUNDKIT.MAP_PING)
 							--elseif AutoInviteFlag == false then
 							--	StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 							--end
 						elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 							--if AutoInviteFlag == true then
-							InviteUnitPEAddon(author2)
+							-- AddonInvite = true
+							InviteUnitPEAddon(author2, invtype)
 							PlaySound(SOUNDKIT.MAP_PING)
-							PEPlayerInvited[playerName] = msg
+							--PEPlayerInvited[playerName] = msg
 							--elseif AutoInviteFlag == false then
 							--	StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = {playerName, msg, author2}
 							--end
@@ -10914,7 +11368,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					elseif isPartyFull == true then
 						PlaySound(SOUNDKIT.MAP_PING)
 						local playerName = author3
-						PEPlayerInvited[playerName] = msg
+						--PEPlayerInvited[playerName] = msg
 						local partyFullMsg = string.gsub(FullInvMsg, "CUSTOMER", playerName)
 						if ProEnchantersOptions["WorkWhileClosed"] == true then
 							if partyFullMsg == "" then
@@ -11187,7 +11641,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			end
 			if ProEnchantersOptions["TradeMsg"] then
 				if ProEnchantersOptions["TradeMsg"] == "" then
-					print("Now trading " .. customerName)
+					--print("Now trading " .. customerName)
 				else
 					local tradeMsg = ProEnchantersOptions["TradeMsg"]
 					local capPlayerName = CapFirstLetter(customerName)
@@ -11309,8 +11763,7 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				PEtradeWhoItems.target[slot] = {
 					link = targetItemLink,
 					quantity = targetQuantity,
-					enchant =
-						targetEnchant
+					enchant = targetEnchant
 				}
 				ItemsTraded = true
 			end
@@ -11357,7 +11810,7 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 	if event == "PLAYER_REGEN_DISABLED" then
 		HideAllFrames()
 	elseif event == "ADDON_LOADED" and select(1, ...) == "ProEnchanters" then
-		print("ProEnchanters Addon Loaded Event Registered")
+		--print("ProEnchanters Addon Loaded Event Registered")
 		OnAddonLoaded()
 	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)

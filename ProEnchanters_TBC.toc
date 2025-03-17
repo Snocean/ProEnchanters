@@ -1,4 +1,4 @@
-## Interface: 110100
+## Interface: 20504
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better work flow while running enchanting services for other players
 ## IconTexture: Interface\AddOns\ProEnchanters\custom_icon.tga
