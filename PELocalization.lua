@@ -39,6 +39,18 @@ PEenchantingLocales = {
 		["Spanish"] = "Encantamiento",
 		["Taiwanese"] = "附魔"
 	},
+	["Reagents"] = {
+		["Chinese"] = "材料：",
+		["English"] = "Reagents: ",
+		["French"] = "Composants : ",
+		["German"] = "Reagenzien: ",
+		["Korean"] = "재료: ",
+		["Mexican"] = "Componentes: ",
+		["Portuguese"] = "Reagentes: ",
+		["Russian"] = "Реагенты: ",
+		["Spanish"] = "Componentes: ",
+		["Taiwanese"] = "材料："
+	},
 	["LFGChannelName"] = {
 		["Chinese"] = "寻求组队",
 		["English"]="LookingForGroup",

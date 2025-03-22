@@ -1,11 +1,12 @@
 -- First Initilizations
-local version = "v8.9.9"
+local version = "v9.4"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
 ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
 ProEnchantersWorkOrderFrames = {}
 ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
+ProEnchantersOptions.favoritecrafts = ProEnchantersOptions.favoritecrafts or {}
 ProEnchantersOptions.recentwhispers = {}
 ProEnchantersOptions.tempignore = ProEnchantersOptions.tempignore or {}
 ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
@@ -236,9 +237,16 @@ function PESound(soundname)
 end
 
 -- Fonts
+local peFontString = "Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF"
+
+if LocalLanguage == "Chinese" or LocalLanguage == "Taiwanese" or LocalLanguage == "Korean" then
+	--print("local language returned as chinese or taiwanese or korean")
+	peFontString = ""
+end
+
 local UIFontBasic = CreateFont("ProEnchantersUIFont")
 UIFontBasic:CopyFontObject(GameFontHighlight)
-UIFontBasic:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+UIFontBasic:SetFont(peFontString, FontSize, "")
 UIFontBasic:SetTextColor(1, 1, 1)
 
 function CreatePEMacros()
@@ -401,7 +409,22 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 		local nametrim = string.gsub(author2, "%-.*", "")
 		-- AddonInvite = true
 		PEPlayerInvited[playerName] = msg
-		InviteUnitPEAddon(author2)
+		if ProEnchantersOptions["PopUpWhispersOnly"] == true then
+			local autoInvMsg = AutoInviteMsg
+			local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", playerName)
+			if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+				ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
+				AddWhisperCount()
+				if GetWhisperCount() > 60 then
+					WarnWhisperCounter()
+				end
+				-- proceed with whisper strings
+				SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+				AddToAddonInvited(playerName, "msgsent")
+			end
+		else
+			InviteUnitPEAddon(author2)
+		end
 	end,
 	OnAlt = function(self, data)
 		local playerName, msg, author2 = unpack(data)
@@ -557,6 +580,12 @@ end
 	end)
 end)]]
 
+local function createCusFocusButton(menuButton, contextData)
+	menuButton:CreateButton("Focus Player", function()
+		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
+	end)
+end
+
 local function createWorkOrderButton(menuButton, contextData)
 	menuButton:CreateButton("Create Work Order", function()
 		CreateCusWorkOrder(contextData.name)
@@ -591,6 +620,7 @@ local function addProEnchantersMenu(menuName)
 		menuButton:CreateDivider()
 		menuButton:CreateTitle("Pro Enchanters")
 		createWorkOrderButton(menuButton, contextData)
+		createCusFocusButton(menuButton, contextData)
 		if CheckIfTempIgnored(contextData.name) == true then
 			createTempUnIgnoreButton(menuButton, contextData)
 		else
@@ -1293,12 +1323,12 @@ local function createScrollableDropdown(opts)
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local scrollChild = CreateFrame("Frame", nil, scrollFrame)
@@ -1316,7 +1346,7 @@ local function createScrollableDropdown(opts)
 		button:SetPoint("TOP", scrollChild, "TOP", 10, -(i - 1) * itemHeight)
 		button:SetText(item)
 		local buttonText = button:GetFontString()
-		buttonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		buttonText:SetFont(peFontString, FontSize, "")
 		button:SetNormalFontObject("GameFontHighlight")
 		button:SetHighlightFontObject("GameFontNormal")
 		button:SetScript("OnClick", function()
@@ -1458,6 +1488,13 @@ local function tooltipFormat(enchValue)
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine("|cFFFFFFFFMinimize/Maximize|r")
+		GameTooltip:Show()
+	end
+
+	if mouseFocus == "crafttitleButton" then
+		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("Click to Show/Hide Crafts missing required mats")
 		GameTooltip:Show()
 	end
 
@@ -1618,7 +1655,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	enchantsShowButton:SetPoint("TOPRIGHT", titleBg, "BOTTOMRIGHT", 0, -5)
 	enchantsShowButton:SetText(">")
 	local enchantsShowButtonText = enchantsShowButton:GetFontString()
-	enchantsShowButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 4, "")
+	enchantsShowButtonText:SetFont(peFontString, FontSize + 4, "")
 	enchantsShowButton:SetNormalFontObject("GameFontHighlight")
 	enchantsShowButton:SetHighlightFontObject("GameFontNormal")
 	enchantsShowButton:SetScript("OnClick", function()
@@ -1739,7 +1776,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	targetButton:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -15, -33)
 	targetButton:SetText("Target")
 	local targetButtonText = targetButton:GetFontString()
-	targetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	targetButtonText:SetFont(peFontString, FontSize, "")
 	targetButton:SetNormalFontObject("GameFontHighlight")
 	targetButton:SetHighlightFontObject("GameFontNormal")
 	targetButton:SetScript("OnEnter", function(self)
@@ -1797,7 +1834,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	createButton:SetPoint("LEFT", customerNameEditBox, "RIGHT", 10, 0)
 	createButton:SetText("Create")
 	local createButtonText = createButton:GetFontString()
-	createButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	createButtonText:SetFont(peFontString, FontSize, "")
 	createButton:SetNormalFontObject("GameFontHighlight")
 	createButton:SetHighlightFontObject("GameFontNormal")
 	createButton:SetScript("OnEnter", function(self)
@@ -1909,12 +1946,12 @@ function ProEnchantersCreateWorkOrderFrame()
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 
@@ -1948,7 +1985,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 5, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -1964,7 +2001,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	settingsButton:SetPoint("LEFT", closeButton, "RIGHT", 2, 0) -- Adjust position as needed
 	settingsButton:SetText("Settings")
 	local settingsButtonText = settingsButton:GetFontString()
-	settingsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	settingsButtonText:SetFont(peFontString, FontSize, "")
 	settingsButton:SetNormalFontObject("GameFontHighlight")
 	settingsButton:SetHighlightFontObject("GameFontNormal")
 	settingsButton:SetScript("OnClick", function()
@@ -1980,7 +2017,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	ClearAllButton:SetPoint("LEFT", settingsButton, "RIGHT", 8, 0) -- Adjust position as needed
 	ClearAllButton:SetText("Finish All Work Orders")
 	local ClearAllButtonText = ClearAllButton:GetFontString()
-	ClearAllButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ClearAllButtonText:SetFont(peFontString, FontSize, "")
 	ClearAllButton:SetNormalFontObject("GameFontHighlight")
 	ClearAllButton:SetHighlightFontObject("GameFontNormal")
 	if wofSize < 240 then
@@ -2026,7 +2063,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
 	GoldTradedDisplay:SetSize(string.len(GoldTradedDisplay:GetText()) + 25, 25) -- Adjust size as needed
 	local GoldTradedDisplayText = GoldTradedDisplay:GetFontString()
-	GoldTradedDisplayText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	GoldTradedDisplayText:SetFont(peFontString, FontSize, "")
 	GoldTradedDisplay:SetNormalFontObject("GameFontHighlight")
 	GoldTradedDisplay:SetHighlightFontObject("GameFontNormal")
 	if wofSize < 240 then
@@ -2136,7 +2173,7 @@ function ProEnchantersCreateWorkOrderFrame()
 	titleButton:SetPoint("TOP", titleBg, "TOP", 0, 0) -- Adjust position as needed
 	titleButton:SetText("Pro Enchanters - Work Orders")
 	local titleButtonText = titleButton:GetFontString()
-	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	titleButtonText:SetFont(peFontString, FontSize, "")
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
 
@@ -2217,7 +2254,6 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	titleBg:SetSize(230, 25)                        -- Adjust size as needed
 	titleBg:SetPoint("TOP", WorkOrderEnchantsFrame, "TOP", 0, 0)
 
-
 	local filterBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
 	filterBg:SetColorTexture(unpack(SecondaryBarColorOpaque)) -- Set RGBA values for your preferred color and alpha
 	filterBg:SetSize(230, 35)                              -- Adjust size as needed
@@ -2253,7 +2289,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	SortByDD:SetPoint("LEFT", filterHeader, "RIGHT", -25, -2)
 
 	-- Create an EditBox for the customer name
-	filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
+	local filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
 		"InputBoxTemplate")
 	filterEditBox:SetSize(50, 20)
 	filterEditBox:SetPoint("LEFT", SortByDD, "RIGHT", -8, 3)
@@ -2277,7 +2313,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	clearButton:SetPoint("LEFT", filterEditBox, "RIGHT", 5, 0)
 	clearButton:SetText("Clear")
 	local clearButtonText = clearButton:GetFontString()
-	clearButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	clearButtonText:SetFont(peFontString, FontSize, "")
 	clearButton:SetNormalFontObject("GameFontHighlight")
 	clearButton:SetHighlightFontObject("GameFontNormal")
 	clearButton:SetScript("OnClick", function()
@@ -2356,12 +2392,12 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	-- Scroll child frame where elements are actually placed
@@ -2420,10 +2456,12 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					local filterCheck = string.lower(enchantName .. enchantStats3)
 					if filterText == "" or filterCheck:find(filterText, 1, true) then
 						-- Show and position the button
-						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
-						enchantInfo.button:Show()
 						enchantInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 						enchantInfo.background:Show()
+						enchantInfo.inficon:Show()
+						enchantInfo.infbtn:Show()
+						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.button:Show()
 						enchantInfo.favicon:Show()
 						enchyOffset = enchyOffset + 35
 					else
@@ -2431,6 +2469,8 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 						enchantInfo.button:Hide()
 						enchantInfo.background:Hide()
 						enchantInfo.favicon:Hide()
+						enchantInfo.inficon:Hide()
+						enchantInfo.infbtn:Hide()
 					end
 				end
 			end
@@ -2447,10 +2487,12 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					local filterCheck = string.lower(enchantName .. enchantStats3)
 					if filterText == "" or filterCheck:find(filterText, 1, true) then
 						-- Show and position the button
-						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
-						enchantInfo.button:Show()
 						enchantInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 						enchantInfo.background:Show()
+						enchantInfo.inficon:Show()
+						enchantInfo.infbtn:Show()
+						enchantInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						enchantInfo.button:Show()
 						enchantInfo.favicon:Hide()
 						enchyOffset = enchyOffset + 35
 					else
@@ -2458,6 +2500,8 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 						enchantInfo.button:Hide()
 						enchantInfo.background:Hide()
 						enchantInfo.favicon:Hide()
+						enchantInfo.inficon:Hide()
+						enchantInfo.infbtn:Hide()
 					end
 				end
 			end
@@ -2486,12 +2530,42 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		enchantButtonBg:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 
 		-- Create a button
+		local spellId = CombinedEnchants[key].spell_id
+		local enchantInfoBtnBg =  ScrollChild:CreateTexture(nil, "OVERLAY")
+		enchantInfoBtnBg:SetTexture("Interface\\COMMON\\help-i.blp")
+		enchantInfoBtnBg:SetSize(20, 20) -- Adjust the size as needed
+		enchantInfoBtnBg:SetPoint("LEFT", enchantButtonBg, "LEFT", -4, 0)
+		local enchantInfoBtn = CreateFrame("Button", key, ScrollChild)
+		enchantInfoBtn:SetSize(20, 30) -- Adjust the size as needed
+		enchantInfoBtn:SetPoint("LEFT", enchantButtonBg, "LEFT", 0, 0)
+		enchantInfoBtn:Hide()
+		enchantInfoBtnBg:Hide()
+		-- OnEnter handler
+		enchantInfoBtn:SetScript("OnEnter", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				local spell = Spell:CreateFromSpellID(spellId)
+				spell:ContinueOnSpellLoad(function()
+					GameTooltip:AddSpellByID(spellId)
+				end)
+				
+			end
+		end)
+		-- OnLeave handler
+		enchantInfoBtn:SetScript("OnLeave", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:Hide()
+			end
+		end)
+
+		-- Create a button
 		local enchantButton = CreateFrame("Button", key, ScrollChild)
 		enchantButton:SetSize(195, 30) -- Adjust the size as needed
 		enchantButton:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
 		enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
-		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		enchantButtonText:SetFont(peFontString, FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
 
@@ -2506,6 +2580,8 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		else
 			enchantFavIcon:Hide()
 		end
+
+		
 
 		local lastModifierState = {}
 
@@ -2648,7 +2724,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		enchyOffset = enchyOffset + 35 -- Adjust the offset increment as needed
 
 		-- Store the button and its background in the table
-		enchantButtons[key] = { button = enchantButton, background = enchantButtonBg, favicon = enchantFavIcon }
+		enchantButtons[key] = { button = enchantButton, background = enchantButtonBg, favicon = enchantFavIcon, inficon = enchantInfoBtnBg, infbtn = enchantInfoBtn }
 		if ProEnchantersOptions.filters[key] == false then
 			enchantButton:Hide()
 			enchantButtonBg:Hide()
@@ -2663,15 +2739,15 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	local snapBg = WorkOrderEnchantsFrame:CreateTexture(nil, "BACKGROUND")
 	snapBg:SetColorTexture(0.14, 0.05, 0.2, 0) -- Set RGBA values for your preferred color and alpha
 	snapBg:SetSize(25, 25)                  -- Adjust size as needed
-	snapBg:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPRIGHT", 0, 0)
+	snapBg:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPRIGHT", -30, 0)
 	snapBg:Hide()
 	-- Create a Snap button at the bottom
 	local snapButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
-	snapButton:SetSize(25, 25)                         -- Adjust size as needed
+	snapButton:SetSize(5, 25)                         -- Adjust size as needed
 	snapButton:SetPoint("BOTTOM", snapBg, "BOTTOM", 1, 0) -- Adjust position as needed
 	snapButton:SetText("<")
 	local snapButtonText = snapButton:GetFontString()
-	snapButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	snapButtonText:SetFont(peFontString, FontSize, "")
 	snapButton:SetNormalFontObject("GameFontHighlight")
 	snapButton:SetHighlightFontObject("GameFontNormal")
 	snapButton:Hide()
@@ -2679,6 +2755,14 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		RepositionEnchantsFrame(WorkOrderEnchantsFrame)
 		snapBg:Hide()
 		snapButton:Hide()
+	end)
+	snapButton:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Snap to Main Window")
+		GameTooltip:Show()
+	end)
+	snapButton:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
 	end)
 
 	WorkOrderEnchantsFrame:SetScript("OnDragStop", function(self)
@@ -2733,7 +2817,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	cusreqButton:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 0) -- Adjust position as needed
 	cusreqButton:SetText("Custom Request")
 	local cusreqButtonText = cusreqButton:GetFontString()
-	cusreqButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	cusreqButtonText:SetFont(peFontString, FontSize, "")
 	cusreqButton:SetNormalFontObject("GameFontHighlight")
 	cusreqButton:SetHighlightFontObject("GameFontNormal")
 	cusreqButton:SetScript("OnEnter", function(self)
@@ -2760,13 +2844,819 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	titleButton:SetPoint("BOTTOM", titleBg, "BOTTOM", 1, 0) -- Adjust position as needed
 	titleButton:SetText("Enchants")
 	local titleButtonText = titleButton:GetFontString()
-	titleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	titleButtonText:SetFont(peFontString, FontSize, "")
 	titleButton:SetNormalFontObject("GameFontHighlight")
 	titleButton:SetHighlightFontObject("GameFontNormal")
 	local _, normHeight = WorkOrderEnchantsFrame:GetSize()
+	
+	--------------------------------------------- Crafting Mode Stuff ----------------------------------------------
+	
+	---Create Buttons
+	---- Button Filtering
+	local profCount = #PEProfessionsOrder
+	local currentProfShown = 1
+	local currentProf = PEProfessionsOrder[currentProfShown]
+	local cmProf = currentProf
+	local key = PEProfessionsOrder[1]
+	local profData = PEProfessionsCombined[key]
+	local profLocalizedName = PEGetSpellName(profData.profSpellId)
+	local craftablesButtons = {}
+	local spellToCastId = 1
+	WorkOrderEnchantsFrame:EnableMouse(true)
+
+local craftMacro1 = [=[
+/cast CRAFTNAME
+]=]
+
+local craftMacro2 = [=[
+/cast PROFNAME
+/run CloseTradeSkill()
+/run ClearFocus()
+/run for i=1,GetNumTradeSkills() do if GetTradeSkillInfo(i)=="CRAFTNAME" then DoTradeSkill(i, AMOUNT) end end
+]=]
+
+function PEResetCraftMacros()
+craftMacro1 = [=[
+/cast CRAFTNAME
+]=]
+
+--craftMacro1Sub = string.gsub(craftMacro1, "CRAFTNAME", "blank")
+
+craftMacro2 = [=[
+/cast PROFNAME
+/run CloseTradeSkill()
+/run ClearFocus()
+/run for i=1,GetNumTradeSkills() do if GetTradeSkillInfo(i)=="CRAFTNAME" then DoTradeSkill(i, AMOUNT) end end
+]=]
+
+--craftMacro2Sub1 = string.gsub(craftMacro1, "PROFNAME", "blank")
+--craftMacro2Sub2 = string.gsub(craftMacro1, "CRAFTNAME", "blank")
+--craftMacro2Sub3 = string.gsub(craftMacro2Sub1, "AMOUNT", "blank")
+end
+
+local craftMacro1Sub = string.gsub(craftMacro1, "CRAFTNAME", "Enchant Boots - Minor Speed")
+local craftMacro2Sub1 = string.gsub(craftMacro1, "PROFNAME", "blank")
+local craftMacro2Sub2 = string.gsub(craftMacro1, "CRAFTNAME", "blank")
+local craftMacro2Sub3 = string.gsub(craftMacro2Sub1, "AMOUNT", "blank")
+local craftTooltip = "Enter amount, Click craftable name, Click craft button"
+local craftTooltip2 = ""
+
+local craftBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
+	craftBg:SetColorTexture(unpack(MainButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	craftBg:SetSize(35, 20)                             -- Adjust size as needed
+	craftBg:SetPoint("TOPLEFT", filterBg, "TOPLEFT", 10, -10)
+	
+	-- Create a "Craft" button
+	local craftButton = CreateFrame("Button", "ProEnchantersCraftButton", WorkOrderEnchantsFrame, "SecureActionButtonTemplate") --, "GameMenuButtonTemplate")
+	craftButton:SetPoint("TOPLEFT", WorkOrderEnchantsFrame, "TOPLEFT", 10, -35)
+	craftButton:SetText("Craft")
+	craftButton:SetSize(35, 20)
+	local craftButtonText = craftButton:GetFontString()
+	craftButtonText:SetFont(peFontString, FontSize, "")
+	craftButton:SetNormalFontObject("GameFontHighlight")
+	craftButton:SetHighlightFontObject("GameFontNormal")
+	craftButton:RegisterForClicks("AnyUp")
+	craftButton:SetScript("OnEnter", function(self) -- bookmark
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine(craftTooltip)
+			if craftTooltip2 ~= "" then
+				GameTooltip:AddLine(craftTooltip2)
+			end
+			GameTooltip:Show()
+		end
+	end)
+	craftButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
+	craftButton:SetAttribute("type", "macro")
+	craftButton:SetAttribute("macrotext", craftMacro1Sub)
+
+	-- Create an EditBox for the customer name
+	local craftNumBox = CreateFrame("EditBox", "ProEnchantersCraftNumEditBox", WorkOrderEnchantsFrame, "InputBoxTemplate")
+	craftNumBox:SetSize(32, 20)
+	craftNumBox:SetPoint("LEFT", craftButton, "RIGHT", 10, 0)
+	craftNumBox:SetAutoFocus(false)
+	craftNumBox:SetMaxLetters(3)
+	craftNumBox:SetNumeric(true)
+	craftNumBox:SetText("1")
+	-- Set Text
+	craftNumBox:SetFontObject("GameFontHighlight")
+	-- Scripts
+	craftNumBox:SetScript("OnMouseUp", function(self) craftNumBox:HighlightText() end)
+	craftNumBox:SetScript("OnEnterPressed", craftNumBox.ClearFocus)
+	--craftNumBox:SetScript("OnLeave", craftNumBox.ClearFocus)
+	craftNumBox:SetScript("OnTextChanged", function()
+		local num = tonumber(craftNumBox:GetText())
+		if num == nil then
+			craftNumBox:SetText("1")
+		elseif num < 1 then
+			craftNumBox:SetText("1")
+		end
+				local spellToCast, amount = PETestCastable(spellToCastId)
+				local num = tonumber(craftNumBox:GetText())
+				local key2 = PEProfessionsOrder[currentProfShown]
+				local profDataCur = PEProfessionsCombined[key2]
+				local curprofLocalizedName = PEGetSpellName(profDataCur.profSpellId)
+				if tonumber(num) > tonumber(amount) then
+					num = tostring(amount)
+				end
+				if ProEnchantersOptions["DebugLevel"] >= 4 then
+					print(profLocalizedName .. " set as localized enchanting name")
+					print(curprofLocalizedName .. " to be compared with localized name")
+				end
+				if spellToCast ~= nil then
+					craftMacro1Sub = string.gsub(craftMacro1, "CRAFTNAME", spellToCast)
+					craftMacro2Sub1 = string.gsub(craftMacro2, "PROFNAME", curprofLocalizedName)
+					craftMacro2Sub2 = string.gsub(craftMacro2Sub1, "CRAFTNAME", spellToCast)
+					craftMacro2Sub3 = string.gsub(craftMacro2Sub2, "AMOUNT", tostring(num))
+				end
+				if profLocalizedName == curprofLocalizedName then
+					--craftNumBox:SetText("1")
+					craftButton:SetAttribute("macrotext", craftMacro1Sub)
+					craftTooltip2 = "Currently set to " .. craftMacro1Sub
+					if ProEnchantersOptions["DebugLevel"] >= 4 then
+						print(spellToCast .. " set to cast")
+					end
+				else
+					craftButton:SetAttribute("macrotext", craftMacro2Sub3)
+					craftTooltip2 = "Currently set to craft " .. tostring(num) .. "x " .. spellToCast
+					if ProEnchantersOptions["DebugLevel"] >= 4 then
+						print(craftMacro2Sub3)
+						print(spellToCast .. " set to craft " .. num .. " times")
+					end
+				end
+	end)
+	craftNumBox:Hide()
+
+	-- Craft Mode Filter Header
+
+	local cmFilterHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
+	cmFilterHeader:SetFontObject(UIFontBasic)
+	cmFilterHeader:SetPoint("LEFT", craftNumBox, "RIGHT", 5, 0)
+	cmFilterHeader:SetText("Filter:")
+
+	-- Create an EditBox for the customer name
+	local cmfilterEditBox = CreateFrame("EditBox", "ProEnchantersCraftEditBox", WorkOrderEnchantsFrame,
+		"InputBoxTemplate")
+		cmfilterEditBox:SetSize(50, 20)
+		cmfilterEditBox:SetPoint("LEFT", cmFilterHeader, "RIGHT", 11, 0)
+		cmfilterEditBox:SetAutoFocus(false)
+	-- Set Text
+	cmfilterEditBox:SetFontObject("GameFontHighlight")
+	-- Scripts
+	cmfilterEditBox:SetScript("OnEnterPressed", cmfilterEditBox.ClearFocus)
+	cmfilterEditBox:SetScript("OnTextChanged", function()
+		LoadCraftablesButtons()
+	end)
+
+	local cmclearBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
+	cmclearBg:SetColorTexture(unpack(MainButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	cmclearBg:SetSize(40, 20)                             -- Adjust size as needed
+	cmclearBg:SetPoint("LEFT", cmfilterEditBox, "RIGHT", 5, 0)
+
+	-- Create a "Create" button
+	local cmclearButton = CreateFrame("Button", nil, WorkOrderEnchantsFrame) --, "GameMenuButtonTemplate")
+	cmclearButton:SetSize(40, 20)
+	cmclearButton:SetPoint("LEFT", cmfilterEditBox, "RIGHT", 5, 0)
+	cmclearButton:SetText("Clear")
+	local cmclearButtonText = cmclearButton:GetFontString()
+	cmclearButtonText:SetFont(peFontString, FontSize, "")
+	cmclearButton:SetNormalFontObject("GameFontHighlight")
+	cmclearButton:SetHighlightFontObject("GameFontNormal")
+	cmclearButton:SetScript("OnClick", function()
+		cmfilterEditBox:SetText("")
+		LoadCraftablesButtons()
+		cmfilterEditBox.ClearFocus(cmfilterEditBox)
+	end)
+	cmclearButton:Hide()
+	cmclearBg:Hide()
+	cmfilterEditBox:Hide()
+	cmFilterHeader:Hide()
+
+	--[[ Crafting Count Down
+	local craftingCountDownHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
+	craftingCountDownHeader:SetFontObject(UIFontBasic)
+	craftingCountDownHeader:SetPoint("LEFT", craftNumBox, "RIGHT", 15, 0)
+	local craftCountDownRemaining = "0"
+	craftingCountDownHeader:SetText(craftCountDownRemaining .. " Crafts Remaining")
+	craftingCountDownHeader:Hide()]]
+
+	craftButton:Hide()
+	craftBg:Hide()
+
+--REPLACE: 'CRAFTNAME' with Full Localized Name, 'n' with number to do, 1 time or multiple
+	local loadCheck = 1
+	function LoadCraftablesButtons()
+		local currentProfTable = ProEnchantersOptions.craftables[cmProf]
+		local enchyOffset = 5
+		local enchxOffset = 5
+		local filterText = cmfilterEditBox:GetText():lower()
+
+		for b, craftableBtnInfo in pairs(craftablesButtons) do
+			craftableBtnInfo.button:Hide()
+			craftableBtnInfo.background:Hide()
+			craftableBtnInfo.favbtn:Hide()
+			craftableBtnInfo.favbg:Hide()
+		end
+
+		-- Favorites
+		for _, spellID in ipairs(currentProfTable.SpellIDs) do
+			if ProEnchantersOptions.favoritecrafts[spellID] == true then
+				local name, amt = PETestCastable(spellID)
+				local craftableBtnInfo = craftablesButtons[spellID]
+				local filterCheck = "temporarytext"
+				if name ~= nil then
+					filterCheck = string.lower(name)
+				end
+				
+				if amt >= loadCheck then
+					if filterText == "" or filterCheck:find(filterText, 1, true) then
+						if spellToCastId == 1 then
+							spellToCastId = spellID
+						end
+						-- Show and position the button
+						craftableBtnInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						craftableBtnInfo.button:SetText(amt .. "x " .. name)
+						local width = craftableBtnInfo.button:GetTextWidth()
+						local widthpass = false
+						local FontReSize = FontSize
+						while widthpass == false do
+							if LocalLanguage == "Chinese" or LocalLanguage == "Taiwanese" or LocalLanguage == "Korean" then
+								width = 194
+							end
+							if width < 195 then
+								widthpass = true
+							else
+								--print(name .. " too long, reducing font size by 1")
+								FontReSize = FontReSize - 1
+								local craftableButtonText = craftableBtnInfo.button:GetFontString()
+								craftableButtonText:SetFont(peFontString, FontReSize, "")
+								width = craftableBtnInfo.button:GetTextWidth()
+							end
+						end
+						if spellToCastId == spellID then
+							craftableBtnInfo.button:SetNormalFontObject("GameFontNormal")
+						else
+							craftableBtnInfo.button:SetNormalFontObject("GameFontHighlight")
+						end
+						craftableBtnInfo.favbtn:Show()
+						craftableBtnInfo.favbg:Show()
+						craftableBtnInfo.favbg:SetTexture("Interface\\COMMON\\FavoritesIcon.blp") --Fav Icon
+						craftableBtnInfo.button:Show()
+						craftableBtnInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						craftableBtnInfo.background:Show()
+						enchyOffset = enchyOffset + 35
+					else
+						-- Hide the button
+						craftableBtnInfo.button:Hide()
+						craftableBtnInfo.background:Hide()
+						craftableBtnInfo.favbtn:Hide()
+						craftableBtnInfo.favbg:Hide()
+					end
+				end
+			end
+		end
+
+		-- Not Favorites
+		for _, spellID in ipairs(currentProfTable.SpellIDs) do
+			if ProEnchantersOptions.favoritecrafts[spellID] ~= true then
+				local name, amt = PETestCastable(spellID)
+				local craftableBtnInfo = craftablesButtons[spellID]
+				local filterCheck = "temporarytext"
+				if name ~= nil then
+					filterCheck = string.lower(name)
+				end
+				
+				if amt >= loadCheck then
+					if filterText == "" or filterCheck:find(filterText, 1, true) then
+						if spellToCastId == 1 then
+							spellToCastId = spellID
+						end
+						-- Show and position the button
+						craftableBtnInfo.button:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						craftableBtnInfo.button:SetText(amt .. "x " .. name)
+						local width = craftableBtnInfo.button:GetTextWidth()
+						local widthpass = false
+						local FontReSize = FontSize
+						while widthpass == false do
+							if LocalLanguage == "Chinese" or LocalLanguage == "Taiwanese" or LocalLanguage == "Korean" then
+								width = 194
+							end
+							if width < 195 then
+								widthpass = true
+							else
+								--print(name .. " too long, reducing font size by 1")
+								FontReSize = FontReSize - 1
+								local craftableButtonText = craftableBtnInfo.button:GetFontString()
+								craftableButtonText:SetFont(peFontString, FontReSize, "")
+								width = craftableBtnInfo.button:GetTextWidth()
+							end
+						end
+						if spellToCastId == spellID then
+							craftableBtnInfo.button:SetNormalFontObject("GameFontNormal")
+						else
+							craftableBtnInfo.button:SetNormalFontObject("GameFontHighlight")
+						end
+						craftableBtnInfo.favbtn:Show()
+						craftableBtnInfo.favbg:Show()
+						craftableBtnInfo.favbg:SetTexture("Interface\\AddOns\\ProEnchanters\\FavoritesIconDisabled.blp") --NotFav Icon
+						craftableBtnInfo.button:Show()
+						craftableBtnInfo.background:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+						craftableBtnInfo.background:Show()
+						enchyOffset = enchyOffset + 35
+					else
+						-- Hide the button
+						craftableBtnInfo.button:Hide()
+						craftableBtnInfo.background:Hide()
+						craftableBtnInfo.favbtn:Hide()
+						craftableBtnInfo.favbg:Hide()
+					end
+				end
+			end
+		end
+
+		-- Adjust the height of ScrollChild based on the yOffset
+		ScrollChild:SetHeight(enchyOffset)
+	end
+	
+
+	-- Create Buttons
+for _, profType in ipairs(PEProfessionsOrder) do
+	for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
+		
+		local spellName = PEGetSpellName(spellId)
+		if spellName ~= nil then
+			
+			-- Create button Bg
+			local craftableButtonBg = ScrollChild:CreateTexture(nil, "ARTWORK")
+			craftableButtonBg:SetColorTexture(unpack(EnchantsButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
+			craftableButtonBg:SetSize(195, 30)                             -- Adjust size as needed
+			craftableButtonBg:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+
+			-- Create a fav button
+			local craftablesFvBg =  ScrollChild:CreateTexture(nil, "OVERLAY")
+			if ProEnchantersOptions.favoritecrafts[spellID] == true then
+				craftablesFvBg:SetTexture("Interface\\COMMON\\FavoritesIcon.blp")
+			else
+				craftablesFvBg:SetTexture("Interface\\AddOns\\ProEnchanters\\FavoritesIconDisabled.blp") -- non fav
+			end
+			craftablesFvBg:SetSize(24, 24) -- Adjust the size as needed
+			craftablesFvBg:SetPoint("TOPRIGHT", craftableButtonBg, "TOPRIGHT", 6, 3)
+			local craftablesFvBtn = CreateFrame("Button", key, ScrollChild)
+			craftablesFvBtn:SetSize(24, 30) -- Adjust the size as needed
+			craftablesFvBtn:SetPoint("TOPRIGHT", craftableButtonBg, "TOPRIGHT", 0, 0)
+			craftablesFvBtn:Hide()
+			craftablesFvBg:Hide()
+			-- OnEnter handler
+			craftablesFvBtn:SetScript("OnEnter", function(self)
+			if ProEnchantersOptions["EnableTooltips"] == true then
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				GameTooltip:AddLine("Click to toggle as a favorite")
+				GameTooltip:Show()
+			end
+			end)
+			-- OnLeave handler
+			craftablesFvBtn:SetScript("OnLeave", function(self)
+				if ProEnchantersOptions["EnableTooltips"] == true then
+					GameTooltip:Hide()
+				end
+			end)
+			craftablesFvBtn:SetScript("OnClick", function(self)
+				if ProEnchantersOptions.favoritecrafts[spellId] == true then
+					ProEnchantersOptions.favoritecrafts[spellId] = nil
+					--print(spellId .. " removed from fav")
+				else
+					ProEnchantersOptions.favoritecrafts[spellId] = true
+					--print(spellId .. " added to fav")
+				end
+				LoadCraftablesButtons()
+			end)
+
+			-- Create a button
+			local craftableButton = CreateFrame("Button", spellName, ScrollChild)
+			craftableButton:SetSize(195, 30) -- Adjust the size as needed
+			craftableButton:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", enchxOffset, -enchyOffset)
+			craftableButton:SetText(spellName)
+			local craftableButtonText = craftableButton:GetFontString()
+			craftableButtonText:SetFont(peFontString, FontSize, "")
+			craftableButton:SetNormalFontObject("GameFontHighlight")
+			craftableButton:SetHighlightFontObject("GameFontNormal")
+			craftableButtonBg:Hide()
+			craftableButton:Hide()
+			-- OnEnter handler
+			craftableButton:SetScript("OnEnter", function(self)
+				if ProEnchantersOptions["EnableTooltips"] == true then
+
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					local spell = Spell:CreateFromSpellID(spellId)
+					spell:ContinueOnSpellLoad(function()
+						GameTooltip:AddSpellByID(spellId)
+					end)
+					
+				end
+			end)
+
+			-- OnLeave handler
+			craftableButton:SetScript("OnLeave", function(self)
+				if ProEnchantersOptions["EnableTooltips"] == true then
+					GameTooltip:Hide()
+				end
+			end)
+
+
+			-- Set the script for the button's OnClick event
+			craftableButton:RegisterForClicks("RightButtonUp", "LeftButtonUp")
+			craftableButton:SetScript("OnMouseUp", function(self, button)
+				spellToCastId = spellId
+				LoadCraftablesButtons()
+				PEResetCraftMacros()
+				craftNumBox:ClearFocus()
+				local spellToCast, amount = PETestCastable(spellId)
+				local num = tonumber(craftNumBox:GetText())
+
+				if button == "RightButton" then
+					if IsShiftKeyDown() then
+						if num < amount then
+							craftNumBox:SetText(tostring(tonumber(num) + 1))
+							num = tonumber(craftNumBox:GetText())
+						end
+					elseif IsControlKeyDown() then
+						if num > 1 then
+							craftNumBox:SetText(tostring(tonumber(num) - 1))
+							num = tonumber(craftNumBox:GetText())
+						end
+					elseif IsAltKeyDown() then
+						craftNumBox:SetText(1)
+						num = 1
+					else
+						craftNumBox:SetText(tostring(amount))
+						num = amount
+					end
+				elseif button == "LeftButton" then
+					local currentFocus = ProEnchantersCustomerNameEditBox:GetText()
+					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+					local craftmsg = ""
+					local msg = ""
+					local tempitemName = ""
+					local amtreq = tonumber(craftNumBox:GetText())
+						local spell = Spell:CreateFromSpellID(spellId)
+						spell:ContinueOnSpellLoad(function()
+							GameTooltip:AddSpellByID(spellId)
+							end)
+							msg = PEReplaceItemNamesWithLinks(spellId, amtreq)
+							craftmsg = _G["GameTooltipTextLeft"..1]:GetText() .. " x " .. tostring(amtreq)
+							--[[if msg == nil then
+								for i=1, GameTooltip:NumLines() do
+									local text = _G["GameTooltipTextLeft"..i]:GetText()
+									print(text)
+									local filterCheck = "reagents"
+									if text ~= nil then
+										local filtertext = string.lower(text)
+											if filtertext:find(filterCheck, 1, true) then
+												msg = PEStripColourCodes(text)
+												msg = string.gsub( msg, "Reagents: ", "" )
+												for id, t in pairs(ProEnchantersOptions.reagents) do
+													--print(t.itemName)
+													if t.itemName then
+														tempitemName = t.itemName
+														--print(tempitemName)
+													else
+														tempitemName = "skipthisone"
+													end
+													if msg:find(tempitemName, 1, true) then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
+														--print(t.itemName .. " found in " .. msg)
+														local material = select(2, C_Item.GetItemInfo(id))
+														--print(material)
+														msg = string.gsub(msg, t.itemName, material)
+														-- print(msg)
+													end
+												end
+												
+												craftmsg = _G["GameTooltipTextLeft"..1]:GetText()
+												local doubledMsg = string.gsub(msg, "%((%d+)%)", function(num)
+													local doubled = tonumber(num) * tonumber(craftNumBox:GetText())
+													return "(" .. doubled .. ")"
+												end)
+
+											end
+										end
+								end
+							end]]
+
+							if IsShiftKeyDown() and IsControlKeyDown() then
+							local currentFocus = ProEnchantersCustomerNameEditBox:GetText()
+								if currentFocus and currentFocus ~= "" then
+									SendChatMessage(craftmsg .. " mats req:", "WHISPER", nil, currentFocus)
+									SendChatMessage(msg, "WHISPER", nil, currentFocus)
+								end
+							elseif IsShiftKeyDown() then
+								if ProEnchantersOptions["WhisperMats"] == true and currentFocus and currentFocus ~= "" then
+									SendChatMessage(craftmsg .. " mats req:", "WHISPER", nil, currentFocus)
+									SendChatMessage(msg, "WHISPER", nil, currentFocus)
+								elseif CheckIfPartyMember(currentFocus) == true then
+									SendChatMessage(craftmsg .. " mats req:", IsInRaid() and "RAID" or "PARTY")
+									SendChatMessage(msg, IsInRaid() and "RAID" or "PARTY")
+								elseif currentFocus and currentFocus ~= "" then
+									SendChatMessage(craftmsg .. " mats req:", "WHISPER", nil, currentFocus)
+									SendChatMessage(msg, "WHISPER", nil, currentFocus)
+								else
+									SendChatMessage(craftmsg .. " mats req:", IsInRaid() and "RAID" or "PARTY")
+									SendChatMessage(msg, IsInRaid() and "RAID" or "PARTY")
+								end
+							end
+
+				local key2 = PEProfessionsOrder[currentProfShown]
+				local profDataCur = PEProfessionsCombined[key2]
+				local curprofLocalizedName = PEGetSpellName(profDataCur.profSpellId)
+				if tonumber(num) > tonumber(amount) then
+					num = tostring(amount)
+				end
+				if ProEnchantersOptions["DebugLevel"] >= 4 then
+					print(profLocalizedName .. " set as localized enchanting name")
+					print(curprofLocalizedName .. " to be compared with localized name")
+				end
+				if spellToCast ~= nil then
+					craftMacro1Sub = string.gsub(craftMacro1, "CRAFTNAME", spellToCast)
+					craftMacro2Sub1 = string.gsub(craftMacro2, "PROFNAME", curprofLocalizedName)
+					craftMacro2Sub2 = string.gsub(craftMacro2Sub1, "CRAFTNAME", spellToCast)
+					craftMacro2Sub3 = string.gsub(craftMacro2Sub2, "AMOUNT", tostring(num))
+				end
+				if profLocalizedName == curprofLocalizedName then
+					craftButton:SetAttribute("macrotext", craftMacro1Sub)
+					craftTooltip2 = "Currently set to " .. craftMacro1Sub
+					if ProEnchantersOptions["DebugLevel"] >= 4 then
+						print(spellToCast .. " set to cast")
+					end
+				else
+					craftButton:SetAttribute("macrotext", craftMacro2Sub3)
+					craftTooltip2 = "Currently set to craft " .. tostring(num) .. "x " .. spellToCast
+					if ProEnchantersOptions["DebugLevel"] >= 4 then
+						print(craftMacro2Sub3)
+						print(spellToCast .. " set to craft " .. num .. " times")
+					end
+				end
+			end
+			end)
+
+			-- Increase yOffset for the next button
+			enchyOffset = enchyOffset + 35 -- Adjust the offset increment as needed
+
+			-- Store the button and its background in the table
+			craftablesButtons[spellId] = { button = craftableButton, background = craftableButtonBg, profType = profType, favbtn = craftablesFvBtn, favbg = craftablesFvBg }
+
+			--[[if ProEnchantersOptions.filters[key] == false then
+				enchantButton:Hide()
+				enchantButtonBg:Hide()
+			end]]
+		end
+	end
+end
+
+	
+	for n, t in pairs(PEProfessionsCombined) do
+		if currentProf == n then
+			cmProf = PEGetSpellName(t.profSpellId)
+		end
+	end
+
+	local prevProfBtn = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
+	prevProfBtn:SetPoint("LEFT", titleButton, "LEFT", 3, 0) -- Adjust position as needed
+	prevProfBtn:SetText("| <")
+	local prevBtnSize = prevProfBtn:GetTextWidth()
+	prevProfBtn:SetSize(prevBtnSize + 15, 25)
+	local prevProfBtnText = prevProfBtn:GetFontString()
+	prevProfBtnText:SetFont(peFontString, FontSize, "")
+	prevProfBtn:SetNormalFontObject("GameFontHighlight")
+	prevProfBtn:SetHighlightFontObject("GameFontNormal")
+	prevProfBtn:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("Prev Profession")
+			GameTooltip:Show()
+		end
+	end)
+	prevProfBtn:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+	
+
+	local nextProfBtn = CreateFrame("Button", nil, WorkOrderEnchantsFrame)
+	nextProfBtn:SetPoint("LEFT", prevProfBtn, "LEFT", 2, 0) -- Adjust position as needed
+	nextProfBtn:SetText("> |")
+	local nextBtnSize = nextProfBtn:GetTextWidth()
+	nextProfBtn:SetSize(nextBtnSize + 15, 25) 
+	local nextProfBtnText = nextProfBtn:GetFontString()
+	nextProfBtnText:SetFont(peFontString, FontSize, "")
+	nextProfBtn:SetNormalFontObject("GameFontHighlight")
+	nextProfBtn:SetHighlightFontObject("GameFontNormal")
+	nextProfBtn:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("Next Profession")
+			GameTooltip:Show()
+		end
+	end)
+	nextProfBtn:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
+	local dropdown_items = {}
+
+	for i = 1, #PEProfessionsOrder do
+		local key = PEProfessionsOrder[i]
+		local profData = PEProfessionsCombined[key]
+		local profLocalizedName = PEGetSpellName(profData.profSpellId)
+		if profLocalizedName ~= nil then
+			dropdown_items[i] = profLocalizedName
+		end
+	end
+
+	local craftwin_opts = {
+		['name'] = 'craftwin',
+		['parent'] = WorkOrderEnchantsFrame,
+		['title'] = '',
+		['items'] = dropdown_items, --{ "None", "Star", "Circle", "Diamond", "Triangle", "Moon", "Square", "Cross", "Skull" },
+		['defaultVal'] = dropdown_items[1],
+		['changeFunc'] = function(dropdown_frame, dropdown_val)
+			for i, n in pairs(PEProfessionsOrder) do
+				local key = PEProfessionsOrder[i]
+				local profData = PEProfessionsCombined[key]
+				local profLocalizedName = PEGetSpellName(profData.profSpellId)
+                if profLocalizedName == dropdown_val then
+					cmProf = profLocalizedName
+                    currentProfShown = i
+                end
+		    end
+			LoadCraftablesButtons()
+        end
+	}
+
+	local CraftWinDD = createDropdown(craftwin_opts)
+	-- Don't forget to set your dropdown's points, we don't do this in the creation method for simplicities sake.
+	CraftWinDD:SetPoint("LEFT", titleButton, "RIGHT", 0, 0)
+	CraftWinDD:Hide()
+
+	-- Crafting Mode CB
+	local CraftingModeCB = CreateFrame("CheckButton", nil, WorkOrderEnchantsFrame, "ChatConfigCheckButtonTemplate")
+	CraftingModeCB:SetPoint("TOPRIGHT", WorkOrderEnchantsFrame, "TOPRIGHT", -1, -4)
+	CraftingModeCB:SetSize(20, 20) -- Set the size of the checkbox to 24x24 pixels
+	CraftingModeCB:SetHitRectInsets(0, 0, 0, 0)
+	CraftingModeCB:SetChecked(ProEnchantersOptions["CraftingMode"])
+	CraftingModeCB:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Crafting Mode")
+		GameTooltip:Show()
+	end)
+	CraftingModeCB:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
+	-- Crafting Mode Cb Header
+	local craftingModeHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
+	craftingModeHeader:SetFontObject(UIFontBasic)
+	craftingModeHeader:SetPoint("RIGHT", CraftingModeCB, "LEFT", -1, 0)
+	craftingModeHeader:SetText("CM")
+
+	-- Button Scripts
+	CraftingModeCB:SetScript("OnClick", function(self)
+		ProEnchantersOptions["CraftingMode"] = self:GetChecked()
+		if ProEnchantersOptions["CraftingMode"] then
+			-- Hide Enchants Stuff
+			filterEditBox:SetText("disabled for crafting mode")
+			FilterEnchantButtons()
+			filterEditBox.ClearFocus(filterEditBox)
+			filterEditBox:Hide()
+			clearButton:Hide()
+			clearBg:Hide()
+			filterEditBox:Hide()
+			SortByDD:Hide()
+			filterHeader:Hide()
+			-- Update Title and Show Craftable Stuff
+			if loadCheck == 1 then
+				titleButton:SetText("Show") -- .. cmProf)
+				local titlewidth = titleButton:GetTextWidth()
+				titleButton:SetSize(titlewidth + 5, 25)
+				titleButton:ClearAllPoints()
+				titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, -1) -- Adjust position as needed
+			else
+				titleButton:SetText("Hide") -- .. cmProf)
+				local titlewidth = titleButton:GetTextWidth()
+				titleButton:SetSize(titlewidth + 5, 25)
+				titleButton:ClearAllPoints()
+				titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, -1) -- Adjust position as needed
+			end
+			
+			CraftWinDD:ClearAllPoints()
+			CraftWinDD:SetPoint("RIGHT", craftingModeHeader, "LEFT", 0, -2)
+			--nextProfBtn:ClearAllPoints()
+			--nextProfBtn:SetPoint("RIGHT", craftingModeHeader, "LEFT", -8, 0) -- Adjust position as needed
+			--prevProfBtn:ClearAllPoints()
+			--prevProfBtn:SetPoint("RIGHT", nextProfBtn, "LEFT", 0, 0) -- Adjust position as needed
+			--nextProfBtn:Show()
+			--prevProfBtn:Show()
+			craftButton:Show()
+			craftBg:Show()
+			craftNumBox:Show()
+			CraftWinDD:Show()
+			cmclearButton:Show()
+			cmclearBg:Show()
+			cmfilterEditBox:Show()
+			cmFilterHeader:Show()
+			LoadCraftablesButtons()
+			--print("Beta Crafting Mode Activated")
+		else
+			-- Show Enchants Stuff
+			filterEditBox:SetText("")
+			FilterEnchantButtons()
+			filterEditBox.ClearFocus(filterEditBox)
+			filterEditBox:Show()
+			clearButton:Show()
+			clearBg:Show()
+			filterEditBox:Show()
+			SortByDD:Show()
+			filterHeader:Show()
+			titleButton:SetText("Enchants")
+			titleButton:SetSize(60, 25)  
+			titleButton:ClearAllPoints()
+			titleButton:SetPoint("BOTTOM", titleBg, "BOTTOM", 1, 0) -- Adjust position as needed
+			-- Hide Craftables Stuff
+			nextProfBtn:Hide()
+			prevProfBtn:Hide()
+			craftButton:Hide()
+			craftBg:Hide()
+			craftNumBox:Hide()
+			CraftWinDD:Hide()
+			cmclearButton:Hide()
+			cmclearBg:Hide()
+			cmfilterEditBox:Hide()
+			cmFilterHeader:Hide()
+			--craftingCountDownHeader:Hide()
+			for b, craftableBtnInfo in pairs(craftablesButtons) do
+				craftableBtnInfo.button:Hide()
+				craftableBtnInfo.background:Hide()
+				craftableBtnInfo.favbtn:Hide()
+				craftableBtnInfo.favbg:Hide()
+			end
+		end
+	end)
+	nextProfBtn:SetScript("OnClick", function()
+			if currentProfShown >= 1 and currentProfShown < profCount then
+				currentProfShown = currentProfShown + 1
+			else
+				currentProfShown = 1
+			end
+			currentProf = PEProfessionsOrder[currentProfShown]
+			for n, t in pairs(PEProfessionsCombined) do
+				if currentProf == n then
+					cmProf = PEGetSpellName(t.profSpellId)
+				end
+			end
+			titleButton:SetText("CM - " .. cmProf)
+			local titlewidth = titleButton:GetTextWidth()
+			titleButton:SetSize(titlewidth + 5, 25)
+			titleButton:ClearAllPoints()
+			titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, 0) -- Adjust position as needed
+			LoadCraftablesButtons()
+	end)
+
+	prevProfBtn:SetScript("OnClick", function()
+			if currentProfShown > 1 and currentProfShown <= profCount then
+				currentProfShown = currentProfShown - 1
+			else
+				currentProfShown = profCount
+			end
+			currentProf = PEProfessionsOrder[currentProfShown]
+			for n, t in pairs(PEProfessionsCombined) do
+				if currentProf == n then
+					cmProf = PEGetSpellName(t.profSpellId)
+				end
+			end
+			titleButton:SetText("CM - " .. cmProf)
+			local titlewidth = titleButton:GetTextWidth()
+			titleButton:SetSize(titlewidth + 5, 25)
+			titleButton:ClearAllPoints()
+			titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, 0) -- Adjust position as needed
+			LoadCraftablesButtons()
+	end)
+	prevProfBtn:Hide()
+	nextProfBtn:Hide()
+	----------------------------------------------------------------------------------------------------------------
+	
 	titleButton:SetScript("OnEnter", function(self)
 		if ProEnchantersOptions["EnableTooltips"] == true then
-			mouseFocus = "titleButton"
+			if ProEnchantersOptions["CraftingMode"] then
+				mouseFocus = "crafttitleButton"
+			else
+				mouseFocus = "titleButton"
+			end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 			tooltipFormat()
 		end
@@ -2780,8 +3670,27 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	end)
 
 	titleButton:SetScript("OnClick", function()
-		WorkOrderEnchantsFrame:Hide()
-		ProEnchantersWorkOrderFrame.enchantsShowButton:Show()
+		if ProEnchantersOptions["CraftingMode"] then
+			if loadCheck == 1 then
+				loadCheck = 0
+				titleButton:SetText("Hide") -- .. cmProf)
+				local titlewidth = titleButton:GetTextWidth()
+				titleButton:SetSize(titlewidth + 5, 25)
+				titleButton:ClearAllPoints()
+				titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, -1) -- Adjust position as needed
+			else
+				loadCheck = 1
+				titleButton:SetText("Show") -- .. cmProf)
+				local titlewidth = titleButton:GetTextWidth()
+				titleButton:SetSize(titlewidth + 5, 25)
+				titleButton:ClearAllPoints()
+				titleButton:SetPoint("LEFT", titleBg, "LEFT", 5, -1) -- Adjust position as needed
+			end
+			LoadCraftablesButtons()
+		else
+			WorkOrderEnchantsFrame:Hide()
+			ProEnchantersWorkOrderFrame.enchantsShowButton:Show()
+		end
 	end)
 
 	RepositionEnchantsFrame(WorkOrderEnchantsFrame)
@@ -2886,12 +3795,12 @@ function ProEnchantersCreateOptionsFrame()
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 
@@ -2952,7 +3861,7 @@ function ProEnchantersCreateOptionsFrame()
 	soundsButton:SetPoint("CENTER", soundsButtonBg, "CENTER", 0, 0) -- Adjust position as needed
 	soundsButton:SetText("Click here to set sounds")
 	local soundsButtonText = soundsButton:GetFontString()
-	soundsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	soundsButtonText:SetFont(peFontString, FontSize, "")
 	soundsButton:SetNormalFontObject("GameFontHighlight")
 	soundsButton:SetHighlightFontObject("GameFontNormal")
 	soundsButton:SetScript("OnClick", function()
@@ -3093,7 +4002,7 @@ function ProEnchantersCreateOptionsFrame()
 	maxPartySizeEditBox:EnableMouse(true)
 	maxPartySizeEditBox:EnableKeyboard(true)
 	maxPartySizeEditBox:SetFontObject("GameFontHighlight")
-	maxPartySizeEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	maxPartySizeEditBox:SetFont(peFontString, FontSize, "")
 	maxPartySizeEditBox:SetText(tostring(ProEnchantersOptions["MaxPartySize"]))
 	maxPartySizeEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	maxPartySizeEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -3130,7 +4039,7 @@ function ProEnchantersCreateOptionsFrame()
 	DelayInviteEditBox:EnableMouse(true)
 	DelayInviteEditBox:EnableKeyboard(true)
 	DelayInviteEditBox:SetFontObject("GameFontHighlight")
-	DelayInviteEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	DelayInviteEditBox:SetFont(peFontString, FontSize, "")
 	DelayInviteEditBox:SetText(tostring(ProEnchantersOptions["DelayInviteTime"] * 1000))
 	DelayInviteEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	DelayInviteEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -3167,7 +4076,7 @@ function ProEnchantersCreateOptionsFrame()
 	DelayInviteMsgEditBox:EnableMouse(true)
 	DelayInviteMsgEditBox:EnableKeyboard(true)
 	DelayInviteMsgEditBox:SetFontObject("GameFontHighlight")
-	DelayInviteMsgEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	DelayInviteMsgEditBox:SetFont(peFontString, FontSize, "")
 	DelayInviteMsgEditBox:SetText(tostring(ProEnchantersOptions["DelayInviteMsgTime"] * 1000))
 	DelayInviteMsgEditBox:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	DelayInviteMsgEditBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -3317,7 +4226,7 @@ function ProEnchantersCreateOptionsFrame()
 	local TooltipsEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	TooltipsEnableHeader:SetFontObject(UIFontBasic)
 	TooltipsEnableHeader:SetPoint("TOPLEFT", MinimapButtonEnableHeader, "TOPLEFT", 0, -30)
-	TooltipsEnableHeader:SetText("Enable tooltips? (Work in progress)")
+	TooltipsEnableHeader:SetText("Enable tooltips?")
 
 	local TooltipsEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
 	TooltipsEnableCb:SetPoint("LEFT", TooltipsEnableHeader, "RIGHT", 10, 0)
@@ -3340,7 +4249,7 @@ function ProEnchantersCreateOptionsFrame()
 	filtersButton2:SetPoint("CENTER", filtersButtonBg, "CENTER", 0, 0) -- Adjust position as needed
 	filtersButton2:SetText("Click here to set triggered words and filtered words")
 	local filtersButtonText2 = filtersButton2:GetFontString()
-	filtersButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	filtersButtonText2:SetFont(peFontString, FontSize, "")
 	filtersButton2:SetNormalFontObject("GameFontHighlight")
 	filtersButton2:SetHighlightFontObject("GameFontNormal")
 	filtersButton2:SetScript("OnClick", function()
@@ -3359,7 +4268,7 @@ function ProEnchantersCreateOptionsFrame()
 	whisperTriggersButton:SetPoint("CENTER", whisperTriggersBg, "CENTER", 0, 0) -- Adjust position as needed
 	whisperTriggersButton:SetText("Click here to set custom whisper !commands")
 	local whisperTriggersButtonText = whisperTriggersButton:GetFontString()
-	whisperTriggersButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	whisperTriggersButtonText:SetFont(peFontString, FontSize, "")
 	whisperTriggersButton:SetNormalFontObject("GameFontHighlight")
 	whisperTriggersButton:SetHighlightFontObject("GameFontNormal")
 	whisperTriggersButton:SetScript("OnClick", function()
@@ -3415,10 +4324,26 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["NoWelcomeManualInvites"] = self:GetChecked()
 	end)
 
+	-- Create a header for Whisper Only on Invite Pop up - ProEnchantersOptions["PopUpWhispersOnly"]
+	local PopUpWhispersOnlyHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	PopUpWhispersOnlyHeader:SetFontObject(UIFontBasic)
+	PopUpWhispersOnlyHeader:SetPoint("TOPLEFT", NoWelcomeManualInviteHeader, "TOPLEFT", 0, -30)
+	PopUpWhispersOnlyHeader:SetText("Pop Up Invite button to ONLY send whisper and disable the invite functionality?")
+
+	-- 
+	local PopUpWhispersOnlyCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	PopUpWhispersOnlyCb:SetPoint("LEFT", PopUpWhispersOnlyHeader, "RIGHT", 10, 0)
+	PopUpWhispersOnlyCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	PopUpWhispersOnlyCb:SetHitRectInsets(0, 0, 0, 0)
+	PopUpWhispersOnlyCb:SetChecked(ProEnchantersOptions["PopUpWhispersOnly"])
+	PopUpWhispersOnlyCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["PopUpWhispersOnly"] = self:GetChecked()
+	end)
+
 	-- Create a header for simple tip money
 	local SimplifyTipsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	SimplifyTipsHeader:SetFontObject(UIFontBasic)
-	SimplifyTipsHeader:SetPoint("TOPLEFT", NoWelcomeManualInviteHeader, "TOPLEFT", 0, -30)
+	SimplifyTipsHeader:SetPoint("TOPLEFT", PopUpWhispersOnlyHeader, "TOPLEFT", 0, -30)
 	SimplifyTipsHeader:SetText("Format the tip value as 123g, 456s, 789c instead of Gold, Silver, Copper?")
 
 	-- Create cb for simple tip moneycheckbox
@@ -3725,7 +4650,7 @@ function ProEnchantersCreateOptionsFrame()
 	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	resetButton:SetText("Reset Msgs")
 	local resetButtonText = resetButton:GetFontString()
-	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButtonText:SetFont(peFontString, FontSize, "")
 	resetButton:SetNormalFontObject("GameFontHighlight")
 	resetButton:SetHighlightFontObject("GameFontNormal")
 	resetButton:SetScript("OnClick", function()
@@ -3749,7 +4674,7 @@ function ProEnchantersCreateOptionsFrame()
 	syncButton:SetPoint("RIGHT", resetButton, "LEFT", -10, 0) -- Adjust position as needed
 	syncButton:SetText("Sync Recipes")
 	local syncButtonText = syncButton:GetFontString()
-	syncButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	syncButtonText:SetFont(peFontString, FontSize, "")
 	syncButton:SetNormalFontObject("GameFontHighlight")
 	syncButton:SetHighlightFontObject("GameFontNormal")
 	syncButton:SetScript("OnClick", function()
@@ -3825,7 +4750,7 @@ function ProEnchantersCreateOptionsFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -3837,7 +4762,7 @@ function ProEnchantersCreateOptionsFrame()
 	creditsButton:SetPoint("LEFT", closeButton, "RIGHT", 10, 0) -- Adjust position as needed
 	creditsButton:SetText("Credits")
 	local creditsButtonText = creditsButton:GetFontString()
-	creditsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	creditsButtonText:SetFont(peFontString, FontSize, "")
 	creditsButton:SetNormalFontObject("GameFontHighlight")
 	creditsButton:SetHighlightFontObject("GameFontNormal")
 	creditsButton:SetScript("OnClick", function()
@@ -3849,7 +4774,7 @@ function ProEnchantersCreateOptionsFrame()
 	colorsButton:SetPoint("LEFT", creditsButton, "RIGHT", 10, 0) -- Adjust position as needed
 	colorsButton:SetText("Colors")
 	local colorsButtonText = colorsButton:GetFontString()
-	colorsButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	colorsButtonText:SetFont(peFontString, FontSize, "")
 	colorsButton:SetNormalFontObject("GameFontHighlight")
 	colorsButton:SetHighlightFontObject("GameFontNormal")
 	colorsButton:SetScript("OnClick", function()
@@ -3861,7 +4786,7 @@ function ProEnchantersCreateOptionsFrame()
 	helpReminderHeader:SetFontObject("GameFontGreen")
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 5)
 	helpReminderHeader:SetText(STEELBLUE .. "Use /pehelp for more info" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	helpReminderHeader:SetFont(peFontString, FontSize, "")
 
 	-- OptionsFrame On Show Script
 	OptionsFrame:SetScript("OnShow", function()
@@ -3944,14 +4869,14 @@ function ProEnchantersCreateCreditsFrame()
 	MainCreditsHeader:SetPoint("TOP", PFP, "BOTTOM", 0, -10)
 	MainCreditsHeader:SetText("Pro Enchanters add-on created by" ..
 		STEELBLUE .. " EffinOwen" .. ColorClose .. ".\nCome say Hello on discord!")
-	MainCreditsHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	MainCreditsHeader:SetFont(peFontString, FontSize + 2, "")
 
 	local discordButton = CreateFrame("Button", nil, CreditsFrame)
 	discordButton:SetSize(150, 25)                                 -- Adjust size as needed
 	discordButton:SetPoint("TOP", MainCreditsHeader, "BOTTOM", 0, -2) -- Adjust position as needed
 	discordButton:SetText("https://discord.gg/qT6bRk4eUa")
 	local discordButtonText = discordButton:GetFontString()
-	discordButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	discordButtonText:SetFont(peFontString, FontSize, "")
 	discordButton:SetNormalFontObject("GameFontHighlight")
 	discordButton:SetHighlightFontObject("GameFontNormal")
 	discordButton:SetScript("OnClick", function()
@@ -3967,7 +4892,7 @@ function ProEnchantersCreateCreditsFrame()
 	SupportersHeader:SetPoint("TOP", discordButton, "BOTTOM", 0, -10)
 	SupportersHeader:SetText(SEAGREEN ..
 		"~" .. ColorClose .. DARKGOLDENROD .. " Supporters " .. ColorClose .. SEAGREEN .. "~" .. ColorClose)
-	SupportersHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 4, "")
+	SupportersHeader:SetFont(peFontString, FontSize + 4, "")
 
 	-- Create a close button background
 	local CreditsScrollBg = CreditsFrame:CreateTexture(nil, "OVERLAY")
@@ -4012,7 +4937,7 @@ function ProEnchantersCreateCreditsFrame()
 	SupportersEditBox:EnableMouse(false)
 	SupportersEditBox:EnableKeyboard(false)
 	SupportersEditBox:SetFontObject("GameFontHighlight")
-	SupportersEditBox:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 4, "")
+	SupportersEditBox:SetFont(peFontString, FontSize + 4, "")
 	SupportersEditBox:SetText(SetSupportersEditBox())
 
 
@@ -4028,7 +4953,7 @@ function ProEnchantersCreateCreditsFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -4040,14 +4965,14 @@ function ProEnchantersCreateCreditsFrame()
 	helpReminderHeader:SetFontObject("GameFontGreen")
 	helpReminderHeader:SetPoint("BOTTOM", closeBg, "BOTTOM", 0, 6)
 	helpReminderHeader:SetText(STEELBLUE .. "Thanks for using Pro Enchanters!" .. ColorClose)
-	helpReminderHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	helpReminderHeader:SetFont(peFontString, FontSize, "")
 
 	-- version number
 	local versionHeader = CreditsFrame:CreateFontString(nil, "OVERLAY")
 	versionHeader:SetFontObject("GameFontGreen")
 	versionHeader:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 6)
 	versionHeader:SetText(STEELBLUE .. version .. ColorClose)
-	versionHeader:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	versionHeader:SetFont(peFontString, FontSize, "")
 
 	return CreditsFrame
 end
@@ -4144,14 +5069,14 @@ function ProEnchantersCreateColorsFrame()
 	TopBarColorExample:SetPoint("TOPLEFT", colorsExamples, "TOPLEFT", 6, -8)
 	local TopBarColorHex = RGBToWoWColorCode(TopBarColorR1, TopBarColorG1, TopBarColorB1)
 	TopBarColorExample:SetText(TopBarColorHex .. "EXAMPLE" .. ColorClose)
-	TopBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	TopBarColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local SecondaryBarColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	SecondaryBarColorExample:SetFontObject("GameFontHighlight")
 	SecondaryBarColorExample:SetPoint("TOPLEFT", TopBarColorExample, "BOTTOMLEFT", 0, -23)
 	local SecondaryBarColorHex = RGBToWoWColorCode(SecondaryBarColorR1, SecondaryBarColorG1, SecondaryBarColorB1)
 	SecondaryBarColorExample:SetText(SecondaryBarColorHex .. "EXAMPLE" .. ColorClose)
-	SecondaryBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	SecondaryBarColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local MainWindowBackgroundExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	MainWindowBackgroundExample:SetFontObject("GameFontHighlight")
@@ -4159,21 +5084,21 @@ function ProEnchantersCreateColorsFrame()
 	local MainWindowBackgroundHex = RGBToWoWColorCode(MainWindowBackgroundR1, MainWindowBackgroundG1,
 		MainWindowBackgroundB1)
 	MainWindowBackgroundExample:SetText(MainWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
-	MainWindowBackgroundExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	MainWindowBackgroundExample:SetFont(peFontString, FontSize + 2, "")
 
 	local BottomBarColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	BottomBarColorExample:SetFontObject("GameFontHighlight")
 	BottomBarColorExample:SetPoint("TOPLEFT", MainWindowBackgroundExample, "BOTTOMLEFT", 0, -23)
 	local BottomBarColorHex = RGBToWoWColorCode(BottomBarColorR1, BottomBarColorG1, BottomBarColorB1)
 	BottomBarColorExample:SetText(BottomBarColorHex .. "EXAMPLE" .. ColorClose)
-	BottomBarColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	BottomBarColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local EnchantsButtonColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	EnchantsButtonColorExample:SetFontObject("GameFontHighlight")
 	EnchantsButtonColorExample:SetPoint("TOPLEFT", BottomBarColorExample, "BOTTOMLEFT", 0, -23)
 	local EnchantsButtonColorHex = RGBToWoWColorCode(EnchantsButtonColorR1, EnchantsButtonColorG1, EnchantsButtonColorB1)
 	EnchantsButtonColorExample:SetText(EnchantsButtonColorHex .. "EXAMPLE" .. ColorClose)
-	EnchantsButtonColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	EnchantsButtonColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local EnchantsButtonColorInactiveExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	EnchantsButtonColorInactiveExample:SetFontObject("GameFontHighlight")
@@ -4181,7 +5106,7 @@ function ProEnchantersCreateColorsFrame()
 	local EnchantsButtonColorInactiveHex = RGBToWoWColorCode(EnchantsButtonColorInactiveR1, EnchantsButtonColorInactiveG1,
 		EnchantsButtonColorInactiveB1)
 	EnchantsButtonColorInactiveExample:SetText(EnchantsButtonColorInactiveHex .. "EXAMPLE" .. ColorClose)
-	EnchantsButtonColorInactiveExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2,
+	EnchantsButtonColorInactiveExample:SetFont(peFontString, FontSize + 2,
 		"")
 
 	local BorderColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
@@ -4189,14 +5114,14 @@ function ProEnchantersCreateColorsFrame()
 	BorderColorExample:SetPoint("TOPLEFT", EnchantsButtonColorInactiveExample, "BOTTOMLEFT", 0, -23)
 	local BorderColorHex = RGBToWoWColorCode(BorderColorR1, BorderColorG1, BorderColorB1)
 	BorderColorExample:SetText(BorderColorHex .. "EXAMPLE" .. ColorClose)
-	BorderColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	BorderColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local MainButtonColorExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	MainButtonColorExample:SetFontObject("GameFontHighlight")
 	MainButtonColorExample:SetPoint("TOPLEFT", BorderColorExample, "BOTTOMLEFT", 0, -23)
 	local MainButtonColorHex = RGBToWoWColorCode(MainButtonColorR1, MainButtonColorG1, MainButtonColorB1)
 	MainButtonColorExample:SetText(MainButtonColorHex .. "EXAMPLE" .. ColorClose)
-	MainButtonColorExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	MainButtonColorExample:SetFont(peFontString, FontSize + 2, "")
 
 	local SettingsWindowBackgroundExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	SettingsWindowBackgroundExample:SetFontObject("GameFontHighlight")
@@ -4204,14 +5129,14 @@ function ProEnchantersCreateColorsFrame()
 	local SettingsWindowBackgroundHex = RGBToWoWColorCode(SettingsWindowBackgroundR1, SettingsWindowBackgroundG1,
 		SettingsWindowBackgroundB1)
 	SettingsWindowBackgroundExample:SetText(SettingsWindowBackgroundHex .. "EXAMPLE" .. ColorClose)
-	SettingsWindowBackgroundExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	SettingsWindowBackgroundExample:SetFont(peFontString, FontSize + 2, "")
 
 	local ScrollBarColorsExample = ColorsFrame:CreateFontString(nil, "OVERLAY")
 	ScrollBarColorsExample:SetFontObject("GameFontHighlight")
 	ScrollBarColorsExample:SetPoint("TOPLEFT", SettingsWindowBackgroundExample, "BOTTOMLEFT", 0, -23)
 	local ScrollBarColorsHex = RGBToWoWColorCode(ScrollBarColorsR1, ScrollBarColorsG1, ScrollBarColorsB1)
 	ScrollBarColorsExample:SetText(ScrollBarColorsHex .. "EXAMPLE" .. ColorClose)
-	ScrollBarColorsExample:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize + 2, "")
+	ScrollBarColorsExample:SetFont(peFontString, FontSize + 2, "")
 
 
 	-- Color EditBoxes
@@ -4235,7 +5160,7 @@ function ProEnchantersCreateColorsFrame()
 	TopBarColorR:EnableMouse(true)
 	TopBarColorR:EnableKeyboard(true)
 	TopBarColorR:SetFontObject("GameFontHighlight")
-	TopBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorR:SetFont(peFontString, FontSize, "")
 	TopBarColorR:SetText(tostring(TopBarColorR1 * 255))
 	TopBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	TopBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4268,7 +5193,7 @@ function ProEnchantersCreateColorsFrame()
 	TopBarColorG:EnableMouse(true)
 	TopBarColorG:EnableKeyboard(true)
 	TopBarColorG:SetFontObject("GameFontHighlight")
-	TopBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorG:SetFont(peFontString, FontSize, "")
 	TopBarColorG:SetText(tostring(TopBarColorG1 * 255))
 	TopBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	TopBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4301,7 +5226,7 @@ function ProEnchantersCreateColorsFrame()
 	TopBarColorB:EnableMouse(true)
 	TopBarColorB:EnableKeyboard(true)
 	TopBarColorB:SetFontObject("GameFontHighlight")
-	TopBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	TopBarColorB:SetFont(peFontString, FontSize, "")
 	TopBarColorB:SetText(tostring(TopBarColorB1 * 255))
 	TopBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	TopBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4339,7 +5264,7 @@ function ProEnchantersCreateColorsFrame()
 	SecondaryBarColorR:EnableMouse(true)
 	SecondaryBarColorR:EnableKeyboard(true)
 	SecondaryBarColorR:SetFontObject("GameFontHighlight")
-	SecondaryBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorR:SetFont(peFontString, FontSize, "")
 	SecondaryBarColorR:SetText(tostring(SecondaryBarColorR1 * 255))
 	SecondaryBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SecondaryBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4372,7 +5297,7 @@ function ProEnchantersCreateColorsFrame()
 	SecondaryBarColorG:EnableMouse(true)
 	SecondaryBarColorG:EnableKeyboard(true)
 	SecondaryBarColorG:SetFontObject("GameFontHighlight")
-	SecondaryBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorG:SetFont(peFontString, FontSize, "")
 	SecondaryBarColorG:SetText(tostring(SecondaryBarColorG1 * 255))
 	SecondaryBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SecondaryBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4405,7 +5330,7 @@ function ProEnchantersCreateColorsFrame()
 	SecondaryBarColorB:EnableMouse(true)
 	SecondaryBarColorB:EnableKeyboard(true)
 	SecondaryBarColorB:SetFontObject("GameFontHighlight")
-	SecondaryBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SecondaryBarColorB:SetFont(peFontString, FontSize, "")
 	SecondaryBarColorB:SetText(tostring(SecondaryBarColorB1 * 255))
 	SecondaryBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SecondaryBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4443,7 +5368,7 @@ function ProEnchantersCreateColorsFrame()
 	MainWindowBackgroundR:EnableMouse(true)
 	MainWindowBackgroundR:EnableKeyboard(true)
 	MainWindowBackgroundR:SetFontObject("GameFontHighlight")
-	MainWindowBackgroundR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundR:SetFont(peFontString, FontSize, "")
 	MainWindowBackgroundR:SetText(tostring(MainWindowBackgroundR1 * 255))
 	MainWindowBackgroundR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainWindowBackgroundR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4478,7 +5403,7 @@ function ProEnchantersCreateColorsFrame()
 	MainWindowBackgroundG:EnableMouse(true)
 	MainWindowBackgroundG:EnableKeyboard(true)
 	MainWindowBackgroundG:SetFontObject("GameFontHighlight")
-	MainWindowBackgroundG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundG:SetFont(peFontString, FontSize, "")
 	MainWindowBackgroundG:SetText(tostring(MainWindowBackgroundG1 * 255))
 	MainWindowBackgroundG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainWindowBackgroundG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4513,7 +5438,7 @@ function ProEnchantersCreateColorsFrame()
 	MainWindowBackgroundB:EnableMouse(true)
 	MainWindowBackgroundB:EnableKeyboard(true)
 	MainWindowBackgroundB:SetFontObject("GameFontHighlight")
-	MainWindowBackgroundB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainWindowBackgroundB:SetFont(peFontString, FontSize, "")
 	MainWindowBackgroundB:SetText(tostring(MainWindowBackgroundB1 * 255))
 	MainWindowBackgroundB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainWindowBackgroundB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4553,7 +5478,7 @@ function ProEnchantersCreateColorsFrame()
 	BottomBarColorR:EnableMouse(true)
 	BottomBarColorR:EnableKeyboard(true)
 	BottomBarColorR:SetFontObject("GameFontHighlight")
-	BottomBarColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorR:SetFont(peFontString, FontSize, "")
 	BottomBarColorR:SetText(tostring(BottomBarColorR1 * 255))
 	BottomBarColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BottomBarColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4586,7 +5511,7 @@ function ProEnchantersCreateColorsFrame()
 	BottomBarColorG:EnableMouse(true)
 	BottomBarColorG:EnableKeyboard(true)
 	BottomBarColorG:SetFontObject("GameFontHighlight")
-	BottomBarColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorG:SetFont(peFontString, FontSize, "")
 	BottomBarColorG:SetText(tostring(BottomBarColorG1 * 255))
 	BottomBarColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BottomBarColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4619,7 +5544,7 @@ function ProEnchantersCreateColorsFrame()
 	BottomBarColorB:EnableMouse(true)
 	BottomBarColorB:EnableKeyboard(true)
 	BottomBarColorB:SetFontObject("GameFontHighlight")
-	BottomBarColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BottomBarColorB:SetFont(peFontString, FontSize, "")
 	BottomBarColorB:SetText(tostring(BottomBarColorB1 * 255))
 	BottomBarColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BottomBarColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4658,7 +5583,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorR:EnableMouse(true)
 	EnchantsButtonColorR:EnableKeyboard(true)
 	EnchantsButtonColorR:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorR:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorR:SetText(tostring(EnchantsButtonColorR1 * 255))
 	EnchantsButtonColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4693,7 +5618,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorG:EnableMouse(true)
 	EnchantsButtonColorG:EnableKeyboard(true)
 	EnchantsButtonColorG:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorG:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorG:SetText(tostring(EnchantsButtonColorG1 * 255))
 	EnchantsButtonColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4728,7 +5653,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorB:EnableMouse(true)
 	EnchantsButtonColorB:EnableKeyboard(true)
 	EnchantsButtonColorB:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorB:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorB:SetText(tostring(EnchantsButtonColorB1 * 255))
 	EnchantsButtonColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4768,7 +5693,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorInactiveR:EnableMouse(true)
 	EnchantsButtonColorInactiveR:EnableKeyboard(true)
 	EnchantsButtonColorInactiveR:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorInactiveR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveR:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorInactiveR:SetText(tostring(EnchantsButtonColorInactiveR1 * 255))
 	EnchantsButtonColorInactiveR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorInactiveR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4803,7 +5728,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorInactiveG:EnableMouse(true)
 	EnchantsButtonColorInactiveG:EnableKeyboard(true)
 	EnchantsButtonColorInactiveG:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorInactiveG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveG:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorInactiveG:SetText(tostring(EnchantsButtonColorInactiveG1 * 255))
 	EnchantsButtonColorInactiveG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorInactiveG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4838,7 +5763,7 @@ function ProEnchantersCreateColorsFrame()
 	EnchantsButtonColorInactiveB:EnableMouse(true)
 	EnchantsButtonColorInactiveB:EnableKeyboard(true)
 	EnchantsButtonColorInactiveB:SetFontObject("GameFontHighlight")
-	EnchantsButtonColorInactiveB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	EnchantsButtonColorInactiveB:SetFont(peFontString, FontSize, "")
 	EnchantsButtonColorInactiveB:SetText(tostring(EnchantsButtonColorInactiveB1 * 255))
 	EnchantsButtonColorInactiveB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	EnchantsButtonColorInactiveB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4878,7 +5803,7 @@ function ProEnchantersCreateColorsFrame()
 	BorderColorR:EnableMouse(true)
 	BorderColorR:EnableKeyboard(true)
 	BorderColorR:SetFontObject("GameFontHighlight")
-	BorderColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorR:SetFont(peFontString, FontSize, "")
 	BorderColorR:SetText(tostring(BorderColorR1 * 255))
 	BorderColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BorderColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4911,7 +5836,7 @@ function ProEnchantersCreateColorsFrame()
 	BorderColorG:EnableMouse(true)
 	BorderColorG:EnableKeyboard(true)
 	BorderColorG:SetFontObject("GameFontHighlight")
-	BorderColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorG:SetFont(peFontString, FontSize, "")
 	BorderColorG:SetText(tostring(BorderColorG1 * 255))
 	BorderColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BorderColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4944,7 +5869,7 @@ function ProEnchantersCreateColorsFrame()
 	BorderColorB:EnableMouse(true)
 	BorderColorB:EnableKeyboard(true)
 	BorderColorB:SetFontObject("GameFontHighlight")
-	BorderColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	BorderColorB:SetFont(peFontString, FontSize, "")
 	BorderColorB:SetText(tostring(BorderColorB1 * 255))
 	BorderColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	BorderColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -4982,7 +5907,7 @@ function ProEnchantersCreateColorsFrame()
 	MainButtonColorR:EnableMouse(true)
 	MainButtonColorR:EnableKeyboard(true)
 	MainButtonColorR:SetFontObject("GameFontHighlight")
-	MainButtonColorR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorR:SetFont(peFontString, FontSize, "")
 	MainButtonColorR:SetText(tostring(MainButtonColorR1 * 255))
 	MainButtonColorR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainButtonColorR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5015,7 +5940,7 @@ function ProEnchantersCreateColorsFrame()
 	MainButtonColorG:EnableMouse(true)
 	MainButtonColorG:EnableKeyboard(true)
 	MainButtonColorG:SetFontObject("GameFontHighlight")
-	MainButtonColorG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorG:SetFont(peFontString, FontSize, "")
 	MainButtonColorG:SetText(tostring(MainButtonColorG1 * 255))
 	MainButtonColorG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainButtonColorG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5048,7 +5973,7 @@ function ProEnchantersCreateColorsFrame()
 	MainButtonColorB:EnableMouse(true)
 	MainButtonColorB:EnableKeyboard(true)
 	MainButtonColorB:SetFontObject("GameFontHighlight")
-	MainButtonColorB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	MainButtonColorB:SetFont(peFontString, FontSize, "")
 	MainButtonColorB:SetText(tostring(MainButtonColorB1 * 255))
 	MainButtonColorB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	MainButtonColorB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5086,7 +6011,7 @@ function ProEnchantersCreateColorsFrame()
 	SettingsWindowBackgroundR:EnableMouse(true)
 	SettingsWindowBackgroundR:EnableKeyboard(true)
 	SettingsWindowBackgroundR:SetFontObject("GameFontHighlight")
-	SettingsWindowBackgroundR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundR:SetFont(peFontString, FontSize, "")
 	SettingsWindowBackgroundR:SetText(tostring(SettingsWindowBackgroundR1 * 255))
 	SettingsWindowBackgroundR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SettingsWindowBackgroundR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5121,7 +6046,7 @@ function ProEnchantersCreateColorsFrame()
 	SettingsWindowBackgroundG:EnableMouse(true)
 	SettingsWindowBackgroundG:EnableKeyboard(true)
 	SettingsWindowBackgroundG:SetFontObject("GameFontHighlight")
-	SettingsWindowBackgroundG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundG:SetFont(peFontString, FontSize, "")
 	SettingsWindowBackgroundG:SetText(tostring(SettingsWindowBackgroundG1 * 255))
 	SettingsWindowBackgroundG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SettingsWindowBackgroundG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5156,7 +6081,7 @@ function ProEnchantersCreateColorsFrame()
 	SettingsWindowBackgroundB:EnableMouse(true)
 	SettingsWindowBackgroundB:EnableKeyboard(true)
 	SettingsWindowBackgroundB:SetFontObject("GameFontHighlight")
-	SettingsWindowBackgroundB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	SettingsWindowBackgroundB:SetFont(peFontString, FontSize, "")
 	SettingsWindowBackgroundB:SetText(tostring(SettingsWindowBackgroundB1 * 255))
 	SettingsWindowBackgroundB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	SettingsWindowBackgroundB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5196,7 +6121,7 @@ function ProEnchantersCreateColorsFrame()
 	ScrollBarColorsR:EnableMouse(true)
 	ScrollBarColorsR:EnableKeyboard(true)
 	ScrollBarColorsR:SetFontObject("GameFontHighlight")
-	ScrollBarColorsR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsR:SetFont(peFontString, FontSize, "")
 	ScrollBarColorsR:SetText(tostring(ScrollBarColorsR1 * 255))
 	ScrollBarColorsR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	ScrollBarColorsR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5229,7 +6154,7 @@ function ProEnchantersCreateColorsFrame()
 	ScrollBarColorsG:EnableMouse(true)
 	ScrollBarColorsG:EnableKeyboard(true)
 	ScrollBarColorsG:SetFontObject("GameFontHighlight")
-	ScrollBarColorsG:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsG:SetFont(peFontString, FontSize, "")
 	ScrollBarColorsG:SetText(tostring(ScrollBarColorsG1 * 255))
 	ScrollBarColorsG:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	ScrollBarColorsG:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5262,7 +6187,7 @@ function ProEnchantersCreateColorsFrame()
 	ScrollBarColorsB:EnableMouse(true)
 	ScrollBarColorsB:EnableKeyboard(true)
 	ScrollBarColorsB:SetFontObject("GameFontHighlight")
-	ScrollBarColorsB:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	ScrollBarColorsB:SetFont(peFontString, FontSize, "")
 	ScrollBarColorsB:SetText(tostring(ScrollBarColorsB1 * 255))
 	ScrollBarColorsB:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	ScrollBarColorsB:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5300,7 +6225,7 @@ function ProEnchantersCreateColorsFrame()
 	OpacityAmountR:EnableMouse(true)
 	OpacityAmountR:EnableKeyboard(true)
 	OpacityAmountR:SetFontObject("GameFontHighlight")
-	OpacityAmountR:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	OpacityAmountR:SetFont(peFontString, FontSize, "")
 	OpacityAmountR:SetText(tostring(OpacityAmountR1 * 100))
 	OpacityAmountR:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
 	OpacityAmountR:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
@@ -5328,7 +6253,7 @@ function ProEnchantersCreateColorsFrame()
 	redTheme:SetText("Red")
 	redTheme:SetSize(50, 25) -- Adjust size as needed
 	local redThemeText = redTheme:GetFontString()
-	redThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	redThemeText:SetFont(peFontString, FontSize, "")
 	redTheme:SetNormalFontObject("GameFontHighlight")
 	redTheme:SetHighlightFontObject("GameFontNormal")
 	redTheme:SetScript("OnClick", function()
@@ -5370,7 +6295,7 @@ function ProEnchantersCreateColorsFrame()
 	greenTheme:SetText("Green")
 	greenTheme:SetSize(50, 25) -- Adjust size as needed
 	local greenThemeText = greenTheme:GetFontString()
-	greenThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	greenThemeText:SetFont(peFontString, FontSize, "")
 	greenTheme:SetNormalFontObject("GameFontHighlight")
 	greenTheme:SetHighlightFontObject("GameFontNormal")
 	greenTheme:SetScript("OnClick", function()
@@ -5412,7 +6337,7 @@ function ProEnchantersCreateColorsFrame()
 	blueTheme:SetText("Blue")
 	blueTheme:SetSize(50, 25) -- Adjust size as needed
 	local blueThemeText = blueTheme:GetFontString()
-	blueThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	blueThemeText:SetFont(peFontString, FontSize, "")
 	blueTheme:SetNormalFontObject("GameFontHighlight")
 	blueTheme:SetHighlightFontObject("GameFontNormal")
 	blueTheme:SetScript("OnClick", function()
@@ -5454,7 +6379,7 @@ function ProEnchantersCreateColorsFrame()
 	purpleTheme:SetText("Purple")
 	purpleTheme:SetSize(50, 25) -- Adjust size as needed
 	local purpleThemeText = purpleTheme:GetFontString()
-	purpleThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	purpleThemeText:SetFont(peFontString, FontSize, "")
 	purpleTheme:SetNormalFontObject("GameFontHighlight")
 	purpleTheme:SetHighlightFontObject("GameFontNormal")
 	purpleTheme:SetScript("OnClick", function()
@@ -5496,7 +6421,7 @@ function ProEnchantersCreateColorsFrame()
 	lightTheme:SetText("Light")
 	lightTheme:SetSize(50, 25) -- Adjust size as needed
 	local lightThemeText = lightTheme:GetFontString()
-	lightThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	lightThemeText:SetFont(peFontString, FontSize, "")
 	lightTheme:SetNormalFontObject("GameFontHighlight")
 	lightTheme:SetHighlightFontObject("GameFontNormal")
 	lightTheme:SetScript("OnClick", function()
@@ -5538,7 +6463,7 @@ function ProEnchantersCreateColorsFrame()
 	darkTheme:SetText("Dark")
 	darkTheme:SetSize(50, 25) -- Adjust size as needed
 	local darkThemeText = darkTheme:GetFontString()
-	darkThemeText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	darkThemeText:SetFont(peFontString, FontSize, "")
 	darkTheme:SetNormalFontObject("GameFontHighlight")
 	darkTheme:SetHighlightFontObject("GameFontNormal")
 	darkTheme:SetScript("OnClick", function()
@@ -5614,7 +6539,7 @@ function ProEnchantersCreateColorsFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -5627,7 +6552,7 @@ function ProEnchantersCreateColorsFrame()
 	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	resetButton:SetText("Reset to Default")
 	local resetButtonText = resetButton:GetFontString()
-	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButtonText:SetFont(peFontString, FontSize, "")
 	resetButton:SetNormalFontObject("GameFontHighlight")
 	resetButton:SetHighlightFontObject("GameFontNormal")
 	resetButton:SetScript("OnClick", function()
@@ -5835,7 +6760,7 @@ function ProEnchantersCreateSoundsFrame()
 	closeButton2:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton2:SetText("Close")
 	local closeButtonText2 = closeButton2:GetFontString()
-	closeButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText2:SetFont(peFontString, FontSize, "")
 	closeButton2:SetNormalFontObject("GameFontHighlight")
 	closeButton2:SetHighlightFontObject("GameFontNormal")
 	closeButton2:SetScript("OnClick", function()
@@ -6231,7 +7156,7 @@ function ProEnchantersCreateTriggersFrame()
 	resetButton2:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	resetButton2:SetText("Reset Triggers and Filters?")
 	local resetButtonText2 = resetButton2:GetFontString()
-	resetButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButtonText2:SetFont(peFontString, FontSize, "")
 	resetButton2:SetNormalFontObject("GameFontHighlight")
 	resetButton2:SetHighlightFontObject("GameFontNormal")
 	resetButton2:SetScript("OnClick", function()
@@ -6249,7 +7174,7 @@ function ProEnchantersCreateTriggersFrame()
 	closeButton2:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton2:SetText("Close")
 	local closeButtonText2 = closeButton2:GetFontString()
-	closeButtonText2:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText2:SetFont(peFontString, FontSize, "")
 	closeButton2:SetNormalFontObject("GameFontHighlight")
 	closeButton2:SetHighlightFontObject("GameFontNormal")
 	closeButton2:SetScript("OnClick", function()
@@ -6436,12 +7361,12 @@ function ProEnchantersCreateWhisperTriggersFrame()
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 
@@ -6473,7 +7398,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 	hideButton:SetPoint("TOP", InstructionsHeader, "BOTTOM", 0, -2) -- Adjust position as needed
 	hideButton:SetText(GRAY .. "Hide Instructions" .. ColorClose)
 	local hideButtonText = hideButton:GetFontString()
-	hideButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	hideButtonText:SetFont(peFontString, FontSize, "")
 	hideButton:SetNormalFontObject("GameFontHighlight")
 	hideButton:SetHighlightFontObject("GameFontNormal")
 	local hideButtonStatus = false
@@ -6744,7 +7669,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 	clearAllButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	clearAllButton:SetText("Reset commands?")
 	local clearAllButtonText = clearAllButton:GetFontString()
-	clearAllButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	clearAllButtonText:SetFont(peFontString, FontSize, "")
 	clearAllButton:SetNormalFontObject("GameFontHighlight")
 	clearAllButton:SetHighlightFontObject("GameFontNormal")
 	clearAllButton:SetScript("OnClick", function()
@@ -6762,7 +7687,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 	importButton:SetPoint("RIGHT", clearAllButton, "LEFT", -10, 0) -- Adjust position as needed
 	importButton:SetText("Import/Export")
 	local importButtonText = importButton:GetFontString()
-	importButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	importButtonText:SetFont(peFontString, FontSize, "")
 	importButton:SetNormalFontObject("GameFontHighlight")
 	importButton:SetHighlightFontObject("GameFontNormal")
 	importButton:SetScript("OnClick", function()
@@ -6776,7 +7701,7 @@ function ProEnchantersCreateWhisperTriggersFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -6903,12 +7828,12 @@ function ProEnchantersCreateImportFrame()
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 
@@ -6934,7 +7859,7 @@ function ProEnchantersCreateImportFrame()
 	hideButton:SetPoint("TOP", InstructionsHeader, "BOTTOM", 0, -2) -- Adjust position as needed
 	hideButton:SetText(GRAY .. "Show Instructions" .. ColorClose)
 	local hideButtonText = hideButton:GetFontString()
-	hideButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	hideButtonText:SetFont(peFontString, FontSize, "")
 	hideButton:SetNormalFontObject("GameFontHighlight")
 	hideButton:SetHighlightFontObject("GameFontNormal")
 	local hideButtonStatus = true
@@ -7027,7 +7952,7 @@ function ProEnchantersCreateImportFrame()
 	importButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	importButton:SetText("Import/Export")
 	local importButtonText = importButton:GetFontString()
-	importButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	importButtonText:SetFont(peFontString, FontSize, "")
 	importButton:SetNormalFontObject("GameFontHighlight")
 	importButton:SetHighlightFontObject("GameFontNormal")
 	importButton:SetScript("OnClick", function()
@@ -7041,7 +7966,7 @@ function ProEnchantersCreateImportFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -7168,12 +8093,12 @@ function ProEnchantersCreateGoldFrame()
 
 	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	upButtonText:SetText("-")                              -- Set the text for the up button
-	upButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	upButtonText:SetFont(peFontString, FontSize, "")
 	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
 
 	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 	downButtonText:SetText("-")                                -- Set the text for the down button
-	downButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	downButtonText:SetFont(peFontString, FontSize, "")
 	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
 
 
@@ -7274,7 +8199,7 @@ function ProEnchantersCreateGoldFrame()
 	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
 	closeButton:SetText("Close")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
@@ -7287,7 +8212,7 @@ function ProEnchantersCreateGoldFrame()
 	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
 	resetButton:SetText("Reset")
 	local resetButtonText = resetButton:GetFontString()
-	resetButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	resetButtonText:SetFont(peFontString, FontSize, "")
 	resetButton:SetNormalFontObject("GameFontHighlight")
 	resetButton:SetHighlightFontObject("GameFontNormal")
 	resetButton:SetScript("OnClick", function()
@@ -7388,7 +8313,7 @@ function CreateCusWorkOrder(customerName, bypass)
 	customerTitleButton:SetPoint("TOPLEFT", frame, "TOPLEFT", 5, 0)
 	customerTitleButton:SetText(customerName .. " - Work Order#" .. frameID)
 	local customerTitleButtonText = customerTitleButton:GetFontString()
-	customerTitleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	customerTitleButtonText:SetFont(peFontString, FontSize, "")
 	frame.TitleText = customerName .. " - Work Order#" .. frameID
 	customerTitleButton:SetNormalFontObject("GameFontHighlight")
 	customerTitleButton:SetHighlightFontObject("GameFontNormal")
@@ -7421,7 +8346,7 @@ function CreateCusWorkOrder(customerName, bypass)
 	customerAllMats:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -50, 0)
 	customerAllMats:SetText("Req Mats")
 	local customerAllMatsText = customerAllMats:GetFontString()
-	customerAllMatsText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	customerAllMatsText:SetFont(peFontString, FontSize, "")
 	customerAllMats:SetNormalFontObject("GameFontHighlight")
 	customerAllMats:SetHighlightFontObject("GameFontNormal")
 	customerAllMats:SetSize(50, 20) -- Adjust the height as needed and add some padding to width
@@ -7452,7 +8377,7 @@ function CreateCusWorkOrder(customerName, bypass)
 		end
 	end)
 
-	customerAllMats:SetScript("OnEnter", function(self) -- bookmark
+	customerAllMats:SetScript("OnEnter", function(self)
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			mouseFocus = "customerAllMats"
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -7744,12 +8669,12 @@ function CreateCusWorkOrder(customerName, bypass)
 	minButton:SetPoint("TOP", frame, "TOP", 70, 2)
 	minButton:SetText("Minimize")
 	local minButtonText = minButton:GetFontString()
-	minButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	minButtonText:SetFont(peFontString, FontSize, "")
 	minButton:SetNormalFontObject("GameFontHighlight")
 	minButton:SetHighlightFontObject("GameFontNormal")
 	local minimized = false
 	frame.minimized = minimized
-	minButton:SetScript("OnEnter", function(self) -- bookmark
+	minButton:SetScript("OnEnter", function(self)
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			mouseFocus = "minButton"
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -7823,12 +8748,12 @@ function CreateCusWorkOrder(customerName, bypass)
 	closeButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -5, 2)
 	closeButton:SetText("X")
 	local closeButtonText = closeButton:GetFontString()
-	closeButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	closeButtonText:SetFont(peFontString, FontSize, "")
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 
 	--Close Frame Functions
-	closeButton:SetScript("OnEnter", function(self) -- bookmark
+	closeButton:SetScript("OnEnter", function(self)
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			mouseFocus = "closeButton"
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -7986,7 +8911,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	frame.customerTitleButton:SetPoint("TOP", customerTextBg, "TOP", 5, 0)
 	frame.customerTitleButton:SetText("Placeholder")
 	local customerTitleButtonText = frame.customerTitleButton:GetFontString()
-	customerTitleButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	customerTitleButtonText:SetFont(peFontString, FontSize, "")
 	frame.customerTitleButton:SetNormalFontObject("GameFontHighlight")
 	frame.customerTitleButton:SetHighlightFontObject("GameFontNormal")
 	frame.customerTitleButton:SetSize(100, 20) -- Adjust the height as needed and add some padding to width
@@ -8005,7 +8930,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	frame.announceMissingButton:SetPoint("TOP", announceMissingButtonBg, "TOP", 0, 0)
 	frame.announceMissingButton:SetText("Announce current missing mats")
 	local announceMissingButtonText = frame.announceMissingButton:GetFontString()
-	announceMissingButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	announceMissingButtonText:SetFont(peFontString, FontSize, "")
 	frame.announceMissingButton:SetNormalFontObject("GameFontHighlight")
 	frame.announceMissingButton:SetHighlightFontObject("GameFontNormal")
 	frame.announceMissingButton:SetSize(175, 20) -- Adjust the height as needed and add some padding to width
@@ -8155,12 +9080,12 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 		enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
-		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		enchantButtonText:SetFont(peFontString, FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
 		enchantButton:SetMouseClickEnabled(true)
 		enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
-		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+		enchantButton:SetScript("OnEnter", function(self)
 			if ProEnchantersOptions["EnableTooltips"] == true then
 				mouseFocus = "enchantButton2"
 				tempEnchValue = enchValue
@@ -8225,10 +9150,10 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 		enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
-		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		enchantButtonText:SetFont(peFontString, FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
-		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+		enchantButton:SetScript("OnEnter", function(self)
 			if ProEnchantersOptions["EnableTooltips"] == true then
 				mouseFocus = "enchantButton3"
 				tempEnchValue = enchValue
@@ -8279,7 +9204,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	otherEnchants:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 	otherEnchants:SetText("Refresh Buttons")
 	local otherEnchantsText = otherEnchants:GetFontString()
-	otherEnchantsText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	otherEnchantsText:SetFont(peFontString, FontSize, "")
 	otherEnchants:SetNormalFontObject("GameFontHighlight")
 	otherEnchants:SetHighlightFontObject("GameFontNormal")
 
@@ -8325,12 +9250,12 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 		enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
-		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		enchantButtonText:SetFont(peFontString, FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
 		enchantButton:SetMouseClickEnabled(true)
 		enchantButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
-		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+		enchantButton:SetScript("OnEnter", function(self)
 			if ProEnchantersOptions["EnableTooltips"] == true then
 				mouseFocus = "enchantButton4"
 				tempEnchValue = enchValue
@@ -8396,10 +9321,10 @@ function ProEnchantersTradeWindowCreateFrame()
 		enchantButton:SetPoint("BOTTOM", frame, "BOTTOM", -enchxOffset, enchyOffset)
 		enchantButton:SetText(enchantTitleText)
 		local enchantButtonText = enchantButton:GetFontString()
-		enchantButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		enchantButtonText:SetFont(peFontString, FontSize, "")
 		enchantButton:SetNormalFontObject("GameFontHighlight")
 		enchantButton:SetHighlightFontObject("GameFontNormal")
-		enchantButton:SetScript("OnEnter", function(self) -- bookmark
+		enchantButton:SetScript("OnEnter", function(self)
 			if ProEnchantersOptions["EnableTooltips"] == true then
 				mouseFocus = "enchantButton5"
 				tempEnchValue = enchValue
@@ -8453,12 +9378,12 @@ function ProEnchantersTradeWindowCreateFrame()
 		convertButton:SetPoint("TOP", frame, "BOTTOM", -enchxOffset, convertyOffset)
 		convertButton:SetText("Convert \n" .. name)
 		local convertButtonText = convertButton:GetFontString()
-		convertButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+		convertButtonText:SetFont(peFontString, FontSize, "")
 		convertButton:SetNormalFontObject("GameFontHighlight")
 		convertButton:SetHighlightFontObject("GameFontNormal")
 		convertButton:SetMouseClickEnabled(true)
 		convertButton:RegisterForClicks("LeftButtonUp", "LeftButtonDown")
-		convertButton:SetScript("OnEnter", function(self) -- bookmark
+		convertButton:SetScript("OnEnter", function(self)
 			if ProEnchantersOptions["EnableTooltips"] == true then
 				mouseFocus = "enchantButton"
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -8501,7 +9426,7 @@ function ProEnchantersTradeWindowCreateFrame()
 	minButton:SetPoint("TOPLEFT", customerTextBg, "TOPLEFT", 5, 2)
 	minButton:SetText("Minimize")
 	local minButtonText = minButton:GetFontString()
-	minButtonText:SetFont("Interface\\AddOns\\ProEnchanters\\Fonts\\PTSansNarrow.TTF", FontSize, "")
+	minButtonText:SetFont(peFontString, FontSize, "")
 	minButton:SetNormalFontObject("GameFontHighlight")
 	minButton:SetHighlightFontObject("GameFontNormal")
 	local minimized = false
@@ -8962,6 +9887,7 @@ local function OnAddonLoaded()
 	ProEnchantersOptions = ProEnchantersOptions or {}
 	ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
 	ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
+	ProEnchantersOptions.favoritecrafts = ProEnchantersOptions.favoritecrafts or {}
 	ProEnchantersOptions.whispertriggers = ProEnchantersOptions.whispertriggers or {}
 
 	LoadColorTables()
@@ -9000,6 +9926,7 @@ local function OnAddonLoaded()
 	ProEnchanters.frame:RegisterEvent("TRADE_TARGET_ITEM_CHANGED")
 	ProEnchanters.frame:RegisterEvent("UI_INFO_MESSAGE")
 	ProEnchanters.frame:RegisterEvent("UI_ERROR_MESSAGE")
+	ProEnchanters.frame:RegisterEvent("CHAT_MSG_LOOT")
 
 	-- Create Filter Enchants Options Table
 	for key, _ in pairs(EnchantsName) do
@@ -9227,6 +10154,8 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["PauseInvites"] = false
 	end
 
+	ProEnchantersOptions["CraftingMode"] = false
+
 	if ProEnchantersOptions["DisableWhisperCommands"] ~= true then
 		ProEnchantersOptions["DisableWhisperCommands"] = false
 	else
@@ -9321,6 +10250,10 @@ local function OnAddonLoaded()
 		ProEnchantersOptions.whispercount = {}
 	end
 
+	if ProEnchantersOptions["PopUpWhispersOnly"] ~= true then
+		ProEnchantersOptions["PopUpWhispersOnly"] = false
+	end
+
 	if type(ProEnchantersOptions["whispercount"]) == "table" then
 		ProEnchantersOptions.whispercount = {}
 	end
@@ -9357,6 +10290,11 @@ local function OnAddonLoaded()
 	if ProEnchantersOptions["SortBy"] == nil then
 		ProEnchantersOptions["SortBy"] = "Default"
 	end
+
+	-- Create Craftables Tables
+	ProEnchantersOptions.craftables = PECreateLocaleProfessionsTable()
+	PECreateItemLocalizations()
+
 
 
 	-- Now safe to create the frames
@@ -9402,6 +10340,9 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 		ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
+		--print(event .. " triggered detected")
+	elseif event == "CHAT_MSG_LOOT" then -- `text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons`
+		ProEnchanters_OnLootEvent(self, event, ...)
 		--print(event .. " triggered detected")
 	end
 end)
@@ -9727,6 +10668,24 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 	end
 end
 
+function ProEnchanters_OnLootEvent(self, event, ...)
+	if event == "CHAT_MSG_LOOT" then
+		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
+		if ProEnchantersOptions["CraftingMode"] then
+		local playerSelf = GetUnitName("player")
+			if ProEnchantersOptions["DebugLevel"] >= 4 then
+				print("Crafting mode is on, comparing " .. playerName2 .. " against " .. playerSelf .. " for loot message")
+			end
+			if playerName2 == playerSelf then --bookmark
+				if ProEnchantersOptions["DebugLevel"] >= 4 then
+					print("player self match found, refreshing craftable buttons")
+				end
+				C_Timer.After(1, function() LoadCraftablesButtons() end)
+			end
+		end
+	end
+end
+
 -- Event handler function for chat and TRADES
 function ProEnchanters_OnChatEvent(self, event, ...)
 	local cmdFound = false
@@ -9766,8 +10725,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									end
 									-- proceed with whisper strings
 									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									if addonInviteCheck == true and addonInviteType == "customerinvite" then
 										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+										UpdateAddonInvited(playerName, "msgsent")
 									end
 								end
 							end)
@@ -9780,8 +10740,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 								-- proceed with whisper strings
 								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+								if addonInviteCheck == true and addonInviteType == "customerinvite" then
 									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									UpdateAddonInvited(playerName, "msgsent")
 								end
 							end
 						end
@@ -9800,8 +10761,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									end
 									-- proceed with whisper strings
 									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									if addonInviteCheck == true and addonInviteType == "customerinvite" then
 										SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+										UpdateAddonInvited(playerName, "msgsent")
 									end
 								end
 							end)
@@ -9814,8 +10776,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 								-- proceed with whisper strings
 								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+								if addonInviteCheck == true and addonInviteType == "customerinvite" then
 									SendChatMessage(autoInvMsg2, "WHISPER", nil, playerName)
+									UpdateAddonInvited(playerName, "msgsent")
 								end
 							end
 						end
@@ -10086,8 +11049,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									end
 									-- proceed with whisper strings
 									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									if addonInviteCheck == true and addonInviteType == "customerinvite" then
 										SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+										UpdateAddonInvited(playerName, "msgsent")
 									end
 									
 								end
@@ -10101,8 +11065,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 								-- proceed with whisper strings
 								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+								if addonInviteCheck == true and addonInviteType == "customerinvite" then
 									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									UpdateAddonInvited(playerName, "msgsent")
 								end
 							end
 						end
@@ -10121,8 +11086,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 									end
 									-- proceed with whisper strings
 									local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-									if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+									if addonInviteCheck == true and addonInviteType == "customerinvite" then
 										SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+										UpdateAddonInvited(playerName, "msgsent")
 									end
 								end
 							end)
@@ -10135,8 +11101,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 								-- proceed with whisper strings
 								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
-								if addonInviteCheck == true and addonInviteType ~= "whisperinvite" then
+								if addonInviteCheck == true and addonInviteType == "customerinvite" then
 									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
+									UpdateAddonInvited(playerName, "msgsent")
 								end
 							end
 						end
@@ -11827,5 +12794,8 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 		ProEnchanters_OnChatEvent(self, event, ...)
 	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
+	elseif event == "CHAT_MSG_LOOT" then 
+		ProEnchanters_OnLootEvent(self, event, ...)
+		--print(event .. " triggered detected")
 	end
 end)

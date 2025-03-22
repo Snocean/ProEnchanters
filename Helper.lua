@@ -297,9 +297,18 @@ function CheckIfPartyMember(customerName)
     return false
 end
 
+function PEStripColourCodes(txt)
+	local txt = txt or ""
+	txt = string.gsub( txt, "|c%x%x%x%x%x%x%x%x", "" )
+	txt = string.gsub( txt, "|c%x%x %x%x%x%x%x", "" ) -- the trading parts colour has a space instead of a zero for some weird reason
+	txt = string.gsub( txt, "|r", "" )
+	return txt
+end
+
 function PEItemCache()
     local NoneCachedItems = ""
     local CachedItems = ""
+    local CachedSpells = ""
     for _, itemID in pairs(ProEnchantersItemCacheTable) do
         local itemLink = select(2, C_Item.GetItemInfoInstant(itemID))
         if not itemLink then
@@ -307,6 +316,14 @@ function PEItemCache()
         elseif itemLink then
             CachedItems = CachedItems .. itemLink .. ", "
         end
+    end
+    for _, profType in ipairs(PEProfessionsOrder) do
+        for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
+            GameTooltip:AddSpellByID(spellId)
+        end
+    end
+    for _, id in pairs(PEReagentItems) do
+        local itemInfo = C_Item.GetItemInfoInstant(id)
     end
     -- print("Item Cache complete")
 end
@@ -1022,6 +1039,9 @@ function ProEnchantersConvertMats(customerName, index)
 end
 
 function ProEnchantersUpdateTradeWindowButtons(customerName)
+    if customerName == nil then
+        return
+    end
     local customerName = string.lower(customerName)
     ProEnchantersUpdateTradeWindowText(customerName)
     local SlotTypeInput = ""
@@ -1341,6 +1361,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 end
 
 function ProEnchantersUpdateTradeWindowText(customerName)
+    if customerName == nil then
+        return
+    end
     local customerName = string.lower(customerName)
     local tradewindowline = ""
     -- Get Trade Window Frame
@@ -2105,7 +2128,6 @@ function RemoveFromAddonInvited(name)
 end
 
 function AddToAddonInvited(name, invtype)
-    local invtype = invtype
     if ProEnchantersOptions["DebugLevel"] >= 6 then
         print("adding " .. name .. " to addon invited table")
     end
@@ -2123,7 +2145,23 @@ function AddToAddonInvited(name, invtype)
                 print(name .. " added with reason " .. t)
             end
         end
-    end    
+    end
+end
+
+function UpdateAddonInvited(name, invtype)
+    if ProEnchantersOptions["DebugLevel"] >= 6 then
+        print("updating " .. name .. " with invtype " .. invtype)
+    end
+    if invtype == nil then
+        invtype = "customerinvite"
+    end
+    if ProEnchantersOptions.addoninvited[name] then
+        ProEnchantersOptions.addoninvited[name] = invtype
+    else
+        if ProEnchantersOptions["DebugLevel"] >= 6 then
+            print(name .. " not found")
+        end
+    end
 end
 
 function ClearAllAddonInvited()
@@ -2233,3 +2271,201 @@ function PEafkMode(volume)
 
     end
 end
+
+
+-- Craftables Stuff
+
+function PEGetSpellName(id) -- Getting Localized Names
+    local name = C_Spell.GetSpellName(id)
+    if ProEnchantersOptions["DebugLevel"] >= 5 then
+        if name ~= nil then
+            print(name .. " found for spell name")
+        else
+            print("spell not found")
+        end
+    end
+    return name
+end
+
+function PECreateLocaleProfessionsTable()
+	local professions = {}
+	for i = 1, #PEProfessionsOrder do
+		local key = PEProfessionsOrder[i]
+		local profData = PEProfessionsCombined[key]
+		local profLocalizedName = PEGetSpellName(profData.profSpellId)
+        if profLocalizedName ~= nil then
+            professions[profLocalizedName] = {}
+            professions[profLocalizedName]["LocalizedNames"] = {}
+            professions[profLocalizedName]["SpellIDs"] = {}
+        else
+            print("create locale for professions failed")
+        end
+	
+		for craftIndex = 1, #profData.craftIds do
+			local spellLocalizedName = PEGetSpellName(profData.craftIds[craftIndex])
+            if spellLocalizedName ~= nil then
+                if profLocalizedName ~= spellLocalizedName then
+                    table.insert(professions[profLocalizedName]["LocalizedNames"], spellLocalizedName)
+                    table.insert(professions[profLocalizedName]["SpellIDs"], profData.craftIds[craftIndex])
+                else
+                    if ProEnchantersOptions["DebugLevel"] >= 4 then
+                        print(spellLocalizedName .. " matches profession name, skipping")
+                    end
+                end
+            end
+		end
+	end
+
+	return professions
+end
+
+
+
+--[[function PEGetSpellUsable(id) -- Worthless always returns true, not sure why
+    local boolean, _ = C_Spell.IsSpellUsable(id)
+    if ProEnchantersOptions["DebugLevel"] >= 5 then
+        print(tostring(boolean) .. " returned for usable")
+    end
+    return boolean
+end]]
+
+function PETestCastable(id) -- Counts how many times the spell could be cast currently, great for checking how many times you can do an enchant or craft an item
+    local count = C_Spell.GetSpellCastCount(id)
+    local name = PEGetSpellName(id)
+    if ProEnchantersOptions["DebugLevel"] >= 5 then
+        print(tostring(count) .. " available casts on " .. name)
+    end
+    return name, count
+end
+
+function PECreateItemLocalizations()
+    ProEnchantersOptions["reagents"] = {}
+    for _, id in pairs(PEReagentItems) do
+        local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(id)
+        ProEnchantersOptions["reagents"][id] = { ["itemName"] = itemName, ["itemLink"] = itemLink, ["itemSubType"] = itemSubType }
+    end
+end
+
+-- Expand Trade Skill Headers - Maybe can use for later for other types of trade skill stuff
+-- Macro for casting trade skill stuff, can do /cast Tailoring to open tailoring first, CloseTradeSkill() to close it
+--[[ start comment: Macro for casting Non-enchanting trade skills, might be able to just do the /cast enchValue version for single crafts for other tradeskills but not multiples
+local macro1 = [=[
+/cast Tailoring
+/run CloseTradeSkill()
+/run for i=1,GetNumTradeSkills() do if GetTradeSkillInfo(i)=="CRAFTNAME" then CloseTradeSkill() DoTradeSkill(i, n) break end end
+
+REPLACE: 'CRAFTNAME' with Full Localized Name, 'n' with number to do, 1 time or multiple
+
+Macro for casting Enchanting trade skills
+
+local macro1 = [=[
+/cast enchValue
+]=]
+
+local macro2 = string.gsub(macro1, "enchValue", enchValue)
+
+REPLACE: 'enchValue' with Full Localized Name
+
+]] -- end comment
+
+
+
+
+
+-- Unused by maybe helpful in the future
+function PEExpandTSHeaders()
+    for index = GetNumTradeSkills(), 1, -1 do
+        local _, skillType, _, isExpanded, _, _ = GetTradeSkillInfo(index)
+        if skillType == "header" then
+            ExpandTradeSkillSubClass(index)
+        end
+    end
+end
+
+function PEReplaceItemNamesWithLinks(spellId, amtreq)
+    local craftmsg = ""
+    local msg = ""
+    local tempitemName = ""
+    local spell = Spell:CreateFromSpellID(spellId)
+    local spellName = spell:GetSpellName()
+    local LocalLanguage = PELocales[GetLocale()]
+    
+        spell:ContinueOnSpellLoad(function()
+        GameTooltip:AddSpellByID(spellId)end)
+        
+        for i=1, GameTooltip:NumLines() do
+            local text = _G["GameTooltipTextLeft"..i]:GetText()
+            if text ~= nil then
+            -- Reagent Section
+            local filterCheck = PEenchantingLocales["Reagents"][LocalLanguage]
+            --print(LocalLanguage)
+            
+            local filtertext = string.lower(text)
+                    if filtertext:find(string.lower(filterCheck), 1, true) then
+                        --print("filtercheck matched: " .. filterCheck .. " in " .. filtertext)
+                        msg = PEStripColourCodes(text)
+                        msg = string.gsub(msg, filterCheck, "" )
+                        --print("msg: " .. msg)
+                        local newmsg = ""
+                        local items = {}
+                        -- Create Table of each Reagent
+                        for item in string.gmatch(msg, '([^,]+)') do
+                            -- Trim whitespace from start and end
+                            item = item:gsub("^%s*(.-)%s*$", "%1")
+                            table.insert(items, item)
+                            
+                        end
+
+                        --[[for i, v in ipairs(items) do
+                            print(v)
+                        end]]
+
+                        local function parseItem(str)
+                            -- Extract item name and quantity inside parentheses
+                            local name, quantity = string.match(str, "^(.-)%s*%((%d+)%)%s*$")
+                            
+                            if name then
+                                -- Trim whitespace from name
+                                name = name:gsub("^%s*(.-)%s*$", "%1")
+                                quantity = tonumber(quantity) -- Convert quantity to number
+                            else
+                                -- No quantity found, name is entire string
+                                name = str:gsub("^%s*(.-)%s*$", "%1")
+                                quantity = nil
+                            end
+                            
+                            return name, quantity
+                        end
+    
+                        for i = 1, #items do 
+                            local reagent, quantity = parseItem(items[i])
+                            for id , t in pairs(ProEnchantersOptions.reagents) do
+                            --print(t.itemName)
+                                if t.itemName then
+                                    tempitemName = t.itemName
+                                    --print(tempitemName)
+                                else
+                                    tempitemName = "skipthisone"
+                                end
+                                if quantity == nil then
+                                    quantity = 1
+                                end
+                                if reagent == tempitemName then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
+                                    --print(t.itemName .. " found in " .. msg)
+                                    local material = select(2, C_Item.GetItemInfo(id))
+                                    local quant = tonumber(quantity) * tonumber(amtreq)
+                                    --print(material)
+                                    if newmsg == "" then
+                                        newmsg = material .. " x " .. quant
+                                    else
+                                        newmsg = newmsg .. ", " .. material .. " x " .. quant
+                                    end
+                                    --print(msg)
+                                end
+                            end
+                        end
+                        return newmsg
+                    end
+                end
+            end
+        end

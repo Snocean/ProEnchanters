@@ -4,6 +4,43 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 9.4
+- **New** Craftables can be added/removed to favorites to display them in the list first, new way of handling favorites is just having the favorite icon act as the button (considering changing the main enchanting buttons to operate the same but I don't want to clutter the buttons)
+- **New** Context menu now contains a "Focus Player" button that sets the player to your focused customer box, a lot of functions in the add-on require a players name to be in that box however you might not always want to create a work order for them so this is a solution for those situations
+- **New** Option for the Pop Up invite box to set the 'Invite' button to only send the whisper "hey enchanter here" message and not actually invite the player
+
+## Update 9.3.1
+- **Fixed** Localizations for Craftables button mat linking (previously only worked on english)
+- **Fixed** 'Info' icon showing and overlapping on Enchanting buttons when the enchant is un-synced
+- **Changed** Logic behind Shift+Click to link mats of Craftable now uses same logic as the main Enchanting buttons (Check if Whisper Mats, if so -> Whisper/ If Not, Check if current focused customer is party member, if so -> party msg/ If Not, check if there IS a focused customer and if there is -> whisper/ else send message to party)
+- **Removed** Alt + Left Click: Attempt to whisper
+- **Added** Shift + Ctrl + Left Click: Attempts to whisper a message to the current focused customer with the Craftables name and required reagents
+
+## Update 9.3
+- **Changed** Craftbles buttons when sending party message/whisper for required reagents should now send as item links
+- **New** If you have the Quantity box set to a number higher than one, the required reagents sent to the party will reflect this quantity set (quantity 1: 1x bolt of linen = 2x linen cloth // quantity 5: 5x bolt of linen = 10x linen cloth)
+- **New** Info hover on main Enchanting window to display the enchants tooltip (must have tooltips enabled)
+- **Changed** Logic behind sending the initial customer contact messages updated, should now only send the success/failed invite messages once, issue where failed to invite message sometimes doesn't send still needs to be investigated
+
+## Update 9.2
+- **Changed** Craftables Buttons can now be clicked with modifiers to perform new actions.
+- Left Click: Sets the craftable to the craft button with the currently entered amount in the quantity box
+- Shift+Left Click: Attempts to send a message to party (or whisper if you have forced whisper mats on) with the Craftables name and required reagents in plain text format
+- Alt + Left Click: Attempts to whisper a message to the current focused customer with the Craftables name and required reagents in plain text format
+- Right Click: Set the quantity to the maximum available and update the Craft button
+- Shift + Right Click: Add +1 to the quantity box and update the Craft button
+- Ctrl + Right Click: Remove -1 from the quantity box and update the Craft button
+- Alt + Right Click: Set Quantity box to 1 and update the Craft button
+
+## Update 9.1
+- **New** Crafting Mode added, enabled by a checkbox above the Enchants on the right hand side of the main window.
+
+## Update 9.0 Beta
+- **New** Crafting Mode added, enabled by a checkbox above the Enchants on the right hand side of the main window.
+- You *must* set the crafting amount first if you are doing more than 1 of the same craftable item before hitting the Craftable item button and then finally hitting the Craft button.
+- Filters and options to come still to narrow down your craftable items and make it easier to navigate.
+- There will most likely be some buttons where the text expands outside of the buttons bounds, I have not looked at optimizing this stuff yet but do plan on doing so at some point.
+
 ## Update 8.9.9
 - **New** AFK Enchanting Mode (no this isnt a botting mode)
 - You can now toggle '/peafkmode' which will alter your sound settings to be as optimal as possible for getting alerted to potential customers while you're alt tabbed or doing other things

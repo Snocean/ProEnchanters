@@ -3,7 +3,7 @@
 ## Notes: Set of tools used for creating a better work flow while running enchanting services for other players
 ## IconTexture: Interface\AddOns\ProEnchanters\custom_icon.tga
 ## Author: EffinOwen
-## Version: 8.9.9
+## Version: 9.4
 ## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB
 
 # External code
