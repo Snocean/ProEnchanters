@@ -1,10 +1,16 @@
 ### ToDo's
 
+- Add a way to 'test' filters and triggers
+
 - Check into being able to swap work order sorting in the window from high to low
 Add a button on the main window with a v^ type symbol to swap sorting order
 
 - Create Enchants.lua's for each flavor of wow and localizations, modify .toc's to load proper version of enchants
 Might be better to seperate localizations from general stuff (chat channels and messages) and enchants so that only enchant localizations need to be updated in each file
+1. Way to do this: Use Craftables functions that gather mat names/spell names/etc and create a function that gathers and formats the 'CombinedEnchants' table in english once, create a function that pulls and populates the PELocalizations table for their current language, if language changes it can repopulate the new language that way, might be able to make ENCH9999 into ENCH13049 (spellid) as a way to link all tables again
+2. Manually have to create the 'Convertables' table still most likely, we will see
+3. ProEnchantersItemCacheTable needs all Enchanting Reagents
+4. Tables to Replace: ProEnchantersItemCacheTable -> ProEnchantersTables.ItemCache, CombinedEnchants -> ProEnchantersTables.CombinedEnchants, PEConvertablesName, PEConvertablesId, PEenchantingLocales["Enchants"] = {	["ENCH100106"] = { ["Chinese"] = "附魔护腕
 
 ### ToDo's that need testing
 

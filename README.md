@@ -4,6 +4,18 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.0
+- **New** Cataclysm Support
+- This only has limited tested currently by myself in Cata (I only have a level 1 character for very preliminary testing), please let me know in discord if you run into any issues during usage.
+- The changes made for Cata should not have changed anything too much for the Vanilla flavours of WoW and I tested as much as I could myself but I was not able to complete actual enchants for players as part of the testing, if you run into issues while actually doing enchants or crafts please revert to the previous version for now.
+
+## Update 9.4.2
+- **Updated** Potential customer logic updated to hopefully not randomly miss potential customers
+- **Changed** /pedebug 1 will now print out the pass/fail text for when a potential customer is found, this can be used to troubleshoot your triggers and filters
+
+## Update 9.4.1
+- **Fixed** Work orders not populating to the top of the main window when previous ones were closed with the 'Finish All Work Orders' button
+
 ## Update 9.4
 - **New** Craftables can be added/removed to favorites to display them in the list first, new way of handling favorites is just having the favorite icon act as the button (considering changing the main enchanting buttons to operate the same but I don't want to clutter the buttons)
 - **New** Context menu now contains a "Focus Player" button that sets the player to your focused customer box, a lot of functions in the add-on require a players name to be in that box however you might not always want to create a work order for them so this is a solution for those situations

@@ -1,16 +1,17 @@
-## Interface: 40402
+## Interface: 30403
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better work flow while running enchanting services for other players
 ## IconTexture: Interface\AddOns\ProEnchanters\custom_icon.tga
 ## Author: EffinOwen
-## Version: 10.0
-## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB, ProEnchantersTables
+## Version: 8.9
+## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB
+# Wrath toc loading disabled, Enchants/Crafts tables need to be created with localizations
 
 # External code
 embeds.xml
 
 # Main
 PELocalization.lua
-Enchants_Cata.lua
-Helper_Cata.lua
+Enchants.lua
+Helper.lua
 ProEnchanters.lua

@@ -40,16 +40,16 @@ PEenchantingLocales = {
 		["Taiwanese"] = "附魔"
 	},
 	["Reagents"] = {
-		["Chinese"] = "材料：",
+		["Chinese"] = "材料：", -- last
 		["English"] = "Reagents: ",
-		["French"] = "Composants : ",
+		["French"] = "composants : ",
 		["German"] = "Reagenzien: ",
 		["Korean"] = "재료: ",
 		["Mexican"] = "Componentes: ",
 		["Portuguese"] = "Reagentes: ",
-		["Russian"] = "Реагенты: ",
+		["Russian"] = "материалы: ",
 		["Spanish"] = "Componentes: ",
-		["Taiwanese"] = "材料："
+		["Taiwanese"] = "材料: "
 	},
 	["LFGChannelName"] = {
 		["Chinese"] = "寻求组队",
