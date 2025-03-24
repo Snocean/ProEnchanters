@@ -1,3 +1,5 @@
+-- THIS FILE IS NO LONGER USED
+
 -- PE Convertables
 PEConvertablesName = {
 	"Lesser Magic Essence",
