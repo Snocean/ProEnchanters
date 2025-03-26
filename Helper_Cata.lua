@@ -54,24 +54,37 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
     --print(tostring(SpellID))
     local id = SpellID
     local AllMatsReq = ""
+    if SpellID == nil then
+        --print("SpellID is nil")
+        AllMatsReq = "0x Unknown"
+        return AllMatsReq
+    end
+    --print(tostring(SpellID))
     if reqQuantity == nil then
         reqQuantity = 1
     end
     local reqQuantity = reqQuantity
     
+    
     if CombinedEnchants[id].materials then
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
             -- Extract quantity and material name
             local quantity, material = matsReq:match("(%d+)x (.+)")
+           --print(quantity .. " x " .. material)
            --print(tostring(quantity) .. " " .. tostring(material))
             local itemId = material:match(":(%d+):")
             --print(tostring(itemId))
+            --local test = PEItemCache(itemId)
+            --print(test)
             local material = select(2, C_Item.GetItemInfo(itemId))
             --print(tostring(material))
             quantity = tonumber(quantity) * reqQuantity
             --print(tostring(quantity))
 
             -- Append to the AllMatsReq string
+            if material == nil then
+                material = "Unknown"
+            end
             if AllMatsReq ~= "" then
                 AllMatsReq = AllMatsReq .. ", " .. quantity .. "x " .. material
             else
@@ -573,9 +586,14 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 
 
             -- Convert the totalMaterials table back into a string and add to matsNeeded table
+            local itemName
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
+                if itemId then
+                    itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
+                else
+                    itemName = "Unknown Item"
+                end
                 matsNeeded[itemName] = quantity
             end
 

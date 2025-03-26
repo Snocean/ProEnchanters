@@ -4,10 +4,26 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
-## Update 10.0
+## Update 10.3.2
+- **Fixed** Trim server name check box not reflecting the saved variable
+
+## Update 10.3.1
+- **Fixed** Sound options panel scroll bars overlapping slightly with the next set of buttons
+
+## Update 10.3
+- 10.2 update included in release version
+- **Fixed** - Fitler edit box not clearing when 'Finish All Work Orders' is pushed
+- **Changed** - Settings button logic updated, should toggle the Options frame open and close rather than only having the 'Close' button in the options frame as a way to close it and should handle all sub option frames at the same time
+- **New** Filters/Triggers window now has a testing section where you can enter in a test player name and a test message and check to see if the add-on would accept or refuse the message as a potential customer
+
+## Update 10.2
+- **Potential Fix** for LUA errors when trade window opens and the WoW client has not cached the material item links yet
+
+## Update 10.1
 - **New** Cataclysm Support
 - This only has limited tested currently by myself in Cata (I only have a level 1 character for very preliminary testing), please let me know in discord if you run into any issues during usage.
 - The changes made for Cata should not have changed anything too much for the Vanilla flavours of WoW and I tested as much as I could myself but I was not able to complete actual enchants for players as part of the testing, if you run into issues while actually doing enchants or crafts please revert to the previous version for now.
+- **10.1** Sync should work again
 
 ## Update 9.4.2
 - **Updated** Potential customer logic updated to hopefully not randomly miss potential customers

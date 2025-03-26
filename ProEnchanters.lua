@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.0"
+local version = "v10.3.2"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -38,6 +38,7 @@ local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local mouseFocus = ""
 local tempEnchValue = ""
 PEcacheCheck = false
+PEsettingsWindowCheck = false
 
 -- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
 local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
@@ -1051,7 +1052,8 @@ PESupporters = {
 	"NezzKillz",
 	"EmptyProfile",
 	"Threatco",
-	"Tapps"
+	"Tapps",
+	"Ratakor"
 }
 
 -- Filtered Words Table
@@ -2012,7 +2014,24 @@ function ProEnchantersCreateWorkOrderFrame()
 	settingsButton:SetNormalFontObject("GameFontHighlight")
 	settingsButton:SetHighlightFontObject("GameFontNormal")
 	settingsButton:SetScript("OnClick", function()
-		ProEnchantersOptionsFrame:Show()
+		if ProEnchantersOptionsFrame:IsShown() then
+			ProEnchantersOptionsFrame:Hide()
+			PEsettingsWindowCheck = false
+		elseif not ProEnchantersOptionsFrame:IsShown() then
+			if PEsettingsWindowCheck == false then
+				ProEnchantersOptionsFrame:Show()
+				PEsettingsWindowCheck = true
+			else
+				PEsettingsWindowCheck = false
+			end
+		end
+		ProEnchantersTriggersFrame:Hide()
+		ProEnchantersWhisperTriggersFrame:Hide()
+		ProEnchantersImportFrame:Hide()
+		ProEnchantersCreditsFrame:Hide()
+		ProEnchantersColorsFrame:Hide()
+		ProEnchantersGoldFrame:Hide()
+		ProEnchantersSoundsFrame:Hide()
 	end)
 	if wofSize < 240 then
 		settingsButton:Hide()
@@ -2056,11 +2075,11 @@ function ProEnchantersCreateWorkOrderFrame()
 				table.insert(ProEnchantersTradeHistory[customerName], tradeLine)
 			end
 		end
-		ProEnchantersCustomerNameEditBox:SetText("") -- FilterEnchantButtons()
+		ProEnchantersCustomerNameEditBox:SetText("") -- bookmark
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
-		ProEnchantersCustomerNameEditBox:SetText("")
+		ProEnchantersFiltersEditBox:SetText("")
 		FilterEnchantButtons()
-		ProEnchantersCustomerNameEditBox.ClearFocus(ProEnchantersCustomerNameEditBox)
+		ProEnchantersFiltersEditBox:ClearFocus(ProEnchantersFiltersEditBox)
 		yOffset = -5
 	end)
 
@@ -2301,7 +2320,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	SortByDD:SetPoint("LEFT", filterHeader, "RIGHT", -25, -2)
 
 	-- Create an EditBox for the customer name
-	local filterEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderEnchantsFrame,
+	local filterEditBox = CreateFrame("EditBox", "ProEnchantersFiltersEditBox", WorkOrderEnchantsFrame,
 		"InputBoxTemplate")
 	filterEditBox:SetSize(50, 20)
 	filterEditBox:SetPoint("LEFT", SortByDD, "RIGHT", -8, 3)
@@ -2936,7 +2955,7 @@ local craftBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
 	craftButton:SetNormalFontObject("GameFontHighlight")
 	craftButton:SetHighlightFontObject("GameFontNormal")
 	craftButton:RegisterForClicks("AnyUp")
-	craftButton:SetScript("OnEnter", function(self) -- bookmark
+	craftButton:SetScript("OnEnter", function(self)
 		if ProEnchantersOptions["EnableTooltips"] == true then
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 			GameTooltip:AddLine(craftTooltip)
@@ -4175,7 +4194,7 @@ function ProEnchantersCreateOptionsFrame()
 	TrimServerNameCb:SetPoint("LEFT", TrimServerNameHeader, "RIGHT", 10, 0)
 	TrimServerNameCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
 	TrimServerNameCb:SetHitRectInsets(0, 0, 0, 0)
-	TrimServerNameCb:SetChecked(ProEnchantersOptions["DelayWorkorder"])
+	TrimServerNameCb:SetChecked(ProEnchantersOptions["TrimServerName"])
 	TrimServerNameCb:SetScript("OnClick", function(self)
 		ProEnchantersOptions["TrimServerName"] = self:GetChecked()
 	end)
@@ -4733,7 +4752,7 @@ function ProEnchantersCreateOptionsFrame()
 					local enchantCheck = PEenchantingLocales["EnchantSearch"][LocalLanguage]
 					if string.find(skillName, enchantCheck, 1, true) then
 						for enchKey, _ in pairs(EnchantsName) do
-							local enchValue = PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
+							local enchValue = ProEnchantersTables.Locales[enchKey] -- PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
 							if enchValue == skillName then
 								--print(enchValue .. " found, setting to true")
 								ProEnchantersOptions.filters[enchKey] = true
@@ -4753,7 +4772,7 @@ function ProEnchantersCreateOptionsFrame()
 				for enchKey, isVisible in pairs(ProEnchantersOptions.filters) do
 					if not isVisible then
 						if enchKey  then
-							local enchValue = PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
+							local enchValue = ProEnchantersTables.Locales[enchKey] -- PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
 							--print(enchValue .. " not found, set to false")
 						end
 					end
@@ -4777,7 +4796,24 @@ function ProEnchantersCreateOptionsFrame()
 	closeButton:SetNormalFontObject("GameFontHighlight")
 	closeButton:SetHighlightFontObject("GameFontNormal")
 	closeButton:SetScript("OnClick", function()
-		OptionsFrame:Hide()
+		if OptionsFrame:IsShown() then
+			OptionsFrame:Hide()
+			PEsettingsWindowCheck = false
+		elseif not OptionsFrame:IsShown() then
+			if PEsettingsWindowCheck == false then
+				OptionsFrame:Show()
+				PEsettingsWindowCheck = true
+			else
+				PEsettingsWindowCheck = false
+			end
+		end
+		ProEnchantersTriggersFrame:Hide()
+		ProEnchantersWhisperTriggersFrame:Hide()
+		ProEnchantersImportFrame:Hide()
+		ProEnchantersCreditsFrame:Hide()
+		ProEnchantersColorsFrame:Hide()
+		ProEnchantersGoldFrame:Hide()
+		ProEnchantersSoundsFrame:Hide()
 	end)
 
 	local creditsButton = CreateFrame("Button", nil, OptionsFrame)
@@ -4834,7 +4870,12 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersTriggersFrame:Hide()
 		ProEnchantersWhisperTriggersFrame:Hide()
 		ProEnchantersImportFrame:Hide()
+		ProEnchantersCreditsFrame:Hide()
+		ProEnchantersColorsFrame:Hide()
+		ProEnchantersGoldFrame:Hide()
+		ProEnchantersSoundsFrame:Hide()
 	end)
+	
 
 	return OptionsFrame
 end
@@ -6751,7 +6792,7 @@ function ProEnchantersCreateSoundsFrame()
 	}
 
 	local PotentialCustomerDD = createScrollableDropdown(potentialcustomer_opts)
-	PotentialCustomerDD:SetPoint("TOP", PotentialCustomerHeader, "BOTTOM", -20, -5)
+	PotentialCustomerDD:SetPoint("TOP", PotentialCustomerHeader, "BOTTOM", -10, -5)
 
 	local defaultValNewTrade = ProEnchantersOptions["NewTradeSound"]
 
@@ -6768,7 +6809,7 @@ function ProEnchantersCreateSoundsFrame()
 	}
 
 	local NewTradeDD = createScrollableDropdown(newtrade_opts)
-	NewTradeDD:SetPoint("TOP", NewTradeHeader, "BOTTOM", -20, -5)
+	NewTradeDD:SetPoint("TOP", NewTradeHeader, "BOTTOM", 0, -5)
 
 
 	-- Create a close button background
@@ -6885,7 +6926,7 @@ end
 function ProEnchantersCreateTriggersFrame()
 	local TriggersFrame = CreateFrame("Frame", "ProEnchantersTriggersFrame", UIParent, "BackdropTemplate")
 	TriggersFrame:SetFrameStrata("FULLSCREEN")
-	TriggersFrame:SetSize(800, 350) -- Adjust height as needed
+	TriggersFrame:SetSize(800, 450) -- Adjust height as needed
 	TriggersFrame:SetPoint("TOP", 0, -300)
 	TriggersFrame:SetMovable(true)
 	TriggersFrame:EnableMouse(true)
@@ -6909,7 +6950,7 @@ function ProEnchantersCreateTriggersFrame()
 	-- Create a full background texture
 	local bgTexture = TriggersFrame:CreateTexture(nil, "BACKGROUND")
 	bgTexture:SetColorTexture(unpack(SettingsWindowBackgroundOpaque)) -- Set RGBA values for your preferred color and alpha
-	bgTexture:SetSize(800, 325)
+	bgTexture:SetSize(800, 425)
 	bgTexture:SetPoint("TOP", TriggersFrame, "TOP", 0, -25)
 
 	-- Create a title background
@@ -6980,6 +7021,18 @@ function ProEnchantersCreateTriggersFrame()
 	FilteredWordsEditBox:SetText(SetFilteredEditBox())
 	FilteredWordsEditBox:SetScript("OnTextChanged", function()
 		scrollChild:SetHeight(FilteredWordsEditBox:GetHeight())
+		local newFiltered = FilteredWordsEditBox:GetText()
+		if newFiltered == "" then
+			newFiltered = "potential customer filters disabled - remove this sentence and add a word to re-enable"
+		end
+		ProEnchantersOptions.filteredwords = {}
+		for word in newFiltered:gmatch("[^,]+") do
+			-- Trim spaces from the beginning and end of the item
+			word = word:match("^%s*(.-)%s*$")
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.filteredwords, word)
+			end
+		end
 	end)
 	FilteredWordsEditBox:SetScript("OnEnterPressed", function()
 		local newFiltered = FilteredWordsEditBox:GetText()
@@ -6990,7 +7043,9 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.filteredwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.filteredwords, word)
+			end
 		end
 		FilteredWordsEditBox:ClearFocus()
 	end)
@@ -7003,7 +7058,9 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newFiltered:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.filteredwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.filteredwords, word)
+			end
 		end
 		FilteredWordsEditBox:ClearFocus()
 	end)
@@ -7060,6 +7117,18 @@ function ProEnchantersCreateTriggersFrame()
 	TriggerWordsEditBox:SetText(SetTriggerEditBox())
 	TriggerWordsEditBox:SetScript("OnTextChanged", function()
 		scrollChild2:SetHeight(TriggerWordsEditBox:GetHeight())
+		local newTriggers = TriggerWordsEditBox:GetText()
+		if newTriggers == "" then
+			newTriggers = "potential customer triggers disabled - remove this sentence and add a word to re-enable"
+		end
+		ProEnchantersOptions.triggerwords = {}
+		for word in newTriggers:gmatch("[^,]+") do
+			-- Trim spaces from the beginning and end of the item
+			word = word:match("^%s*(.-)%s*$")
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.triggerwords, word)
+			end
+		end
 	end)
 	TriggerWordsEditBox:SetScript("OnEnterPressed", function()
 		local newTriggers = TriggerWordsEditBox:GetText()
@@ -7070,7 +7139,9 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.triggerwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.triggerwords, word)
+			end
 		end
 		TriggerWordsEditBox:ClearFocus()
 	end)
@@ -7083,7 +7154,9 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newTriggers:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.triggerwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.triggerwords, word)
+			end
 		end
 		TriggerWordsEditBox:ClearFocus()
 	end)
@@ -7148,7 +7221,9 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newInvs:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.invwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.invwords, word)
+			end
 		end
 		InvWordsEditBox:ClearFocus()
 	end)
@@ -7161,9 +7236,160 @@ function ProEnchantersCreateTriggersFrame()
 		for word in newInvs:gmatch("[^,]+") do
 			-- Trim spaces from the beginning and end of the item
 			word = word:match("^%s*(.-)%s*$")
-			table.insert(ProEnchantersOptions.invwords, word)
+			if word ~= "" then
+				table.insert(ProEnchantersOptions.invwords, word)
+			end
 		end
 		InvWordsEditBox:ClearFocus()
+	end)
+
+	local TestHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	TestHeader:SetFontObject(UIFontBasic)
+	TestHeader:SetPoint("TOPLEFT", InvWordsHeader, "TOPLEFT", 0, -70)
+	TestHeader:SetText("Test:")
+
+	local TestPlayerBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
+	TestPlayerBg:SetSize(135, 25)
+	TestPlayerBg:SetColorTexture(unpack(MainWindowBackgroundTrans)) -- Set RGBA values for your preferred color and alpha
+	TestPlayerBg:SetPoint("LEFT", TestHeader, "RIGHT", 5, 0)
+
+	local TestPlayerHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	TestPlayerHeader:SetFontObject(UIFontBasic)
+	TestPlayerHeader:SetPoint("BOTTOM", TestPlayerBg, "TOP", 0, 2)
+	TestPlayerHeader:SetText("Player Name")
+
+	-- Create an EditBox for Filtered Words
+	local TestPlayerEditBox = CreateFrame("EditBox", "ProEnchantersTestPlayerEditBox", TriggersFrame)
+	TestPlayerEditBox:SetSize(130, 20)
+	TestPlayerEditBox:SetPoint("LEFT", TestHeader, "RIGHT", 10, 0)
+	TestPlayerEditBox:SetAutoFocus(false)
+	TestPlayerEditBox:EnableMouse(true)
+	TestPlayerEditBox:SetFontObject("GameFontHighlight")
+	TestPlayerEditBox:SetText("Player")
+	TestPlayerEditBox:SetMaxLetters(12)
+	TestPlayerEditBox:SetScript("OnEnterPressed", function()
+		local testPlayer = TestPlayerEditBox:GetText()
+		TestPlayerEditBox:ClearFocus()
+	end)
+
+	TestPlayerEditBox:SetScript("OnEscapePressed", function()
+		local testPlayer = TestPlayerEditBox:GetText()
+		TestPlayerEditBox:ClearFocus()
+	end)
+
+	local TestMsgBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
+	TestMsgBg:SetSize(465, 25)
+	TestMsgBg:SetColorTexture(unpack(MainWindowBackgroundTrans)) -- Set RGBA values for your preferred color and alpha
+	TestMsgBg:SetPoint("LEFT", TestPlayerBg, "RIGHT", 10, 0)
+
+	local TestMsgHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	TestMsgHeader:SetFontObject(UIFontBasic)
+	TestMsgHeader:SetPoint("BOTTOM", TestMsgBg, "TOP", 0, 2)
+	TestMsgHeader:SetText("Test Message")
+
+	-- Create an EditBox for Filtered Words
+	local TestMsgEditBox = CreateFrame("EditBox", "ProEnchantersTestMsgEditBox", TriggersFrame)
+	TestMsgEditBox:SetSize(460, 20)
+	TestMsgEditBox:SetPoint("LEFT", TestMsgBg, "LEFT", 10, 0)
+	TestMsgEditBox:SetAutoFocus(false)
+	TestMsgEditBox:EnableMouse(true)
+	TestMsgEditBox:SetFontObject("GameFontHighlight")
+	TestMsgEditBox:SetText("LF Enchanter!! I need 42 Enchants! Help!")
+	TestMsgEditBox:SetMaxLetters(255)
+	TestMsgEditBox:SetScript("OnEnterPressed", function()
+		local TestMsg = TestMsgEditBox:GetText()
+		TestMsgEditBox:ClearFocus()
+	end)
+
+	TestMsgEditBox:SetScript("OnEscapePressed", function()
+		local TestMsg = TestMsgEditBox:GetText()
+		TestMsgEditBox:ClearFocus()
+	end)
+
+	local TestBtnBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
+	TestBtnBg:SetColorTexture(unpack(BottomBarColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	TestBtnBg:SetSize(47, 25)                           -- Adjust size as needed
+	TestBtnBg:SetPoint("LEFT", TestMsgBg, "RIGHT", 10, 0)
+
+	local TestResponseTxt = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	TestResponseTxt:SetFontObject(UIFontBasic)
+	TestResponseTxt:SetPoint("TOPLEFT", TestHeader, "BOTTOMLEFT", 0, -5)
+	TestResponseTxt:SetText("")
+	TestResponseTxt:SetWordWrap(true)
+	TestResponseTxt:SetSize(700, 80)
+
+	local function TestFilterMsg()
+		local author2 = TestPlayerEditBox:GetText()
+		local msg = TestMsgEditBox:GetText()
+		local msg2 = string.lower(msg)
+		local author = string.gsub(author2, "%-.*", "")
+		
+		--local author3 = string.lower(author)
+		for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+				
+			local check1 = false
+			local check2 = false
+			local check3 = false
+			local check4 = false
+			local startPos, endPos = string.find(msg2, tword)
+			if string.find(msg2, tword, 1, true) then
+				check1 = true
+				if startPos then
+					-- Check if "ench" is at the start of the string or preceded by a space
+					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+						check2 = true
+					else
+						TestResponseTxt:SetText(tword .. " is contained within a word, check2 returned as false")
+						return
+					end
+				end
+				
+			--else
+				--return
+			--end
+		
+		
+			for _, word in pairs(ProEnchantersOptions.filteredwords) do
+				local filteredWord = word
+				
+				if string.find(msg2, filteredWord, 1, true) then
+					check3 = true
+					msg2 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord)
+					TestResponseTxt:SetText("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
+					return
+				end
+			end
+			for _, word in pairs(ProEnchantersOptions.filteredwords) do
+				local filteredWord = word
+				if string.find(author, filteredWord, 1, true) then
+					print(author .. " matches " .. filteredWord)
+					check4 = true
+					TestResponseTxt:SetText("Sender: " ..	LIGHTBLUE .. author2 .. ColorClose .. " name found in filter list, check 3 returning false")
+					return
+				end
+			end
+		
+				if check1 == true and check2 == true and check3 == false and check4 == false then
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+						TestResponseTxt:SetText("All checks passed on trigger: " .. GREEN .. tword .. ColorClose .. ", continuing with potential customer invite or pop-up\n".. GREY .. "--\n" .. ColorClose .. msg2)
+						break
+				end
+			end
+			TestResponseTxt:SetText("Message did not match any triggers")
+		end
+	end
+
+	-- Create a reset button at the bottom
+	local TestBtn = CreateFrame("Button", nil, TriggersFrame)
+	TestBtn:SetSize(150, 25)                                     -- Adjust size as needed
+	TestBtn:SetPoint("CENTER", TestBtnBg, "CENTER", 0, 0) -- Adjust position as needed
+	TestBtn:SetText("Test")
+	local TestBtnText = TestBtn:GetFontString()
+	TestBtnText:SetFont(peFontString, FontSize, "")
+	TestBtn:SetNormalFontObject("GameFontHighlight")
+	TestBtn:SetHighlightFontObject("GameFontNormal")
+	TestBtn:SetScript("OnClick", function()
+		TestFilterMsg()
 	end)
 
 	-- Create a close button background
@@ -9075,7 +9301,7 @@ function ProEnchantersTradeWindowCreateFrame()
 		local enchantStats3 = string.gsub(enchantStats2, "%)", "")
 		local enchantStats = string.gsub(enchantStats3, "%+", "")
 		local enchantTitleText = enchantTitleText1 .. "\n" .. enchantStats
-		local enchValue = ProEnchantersTables.Locales[key] --bookmark
+		local enchValue = ProEnchantersTables.Locales[key]
 		--print(enchValue)
 
 
@@ -10718,7 +10944,7 @@ function ProEnchanters_OnLootEvent(self, event, ...)
 			if ProEnchantersOptions["DebugLevel"] == 8 then
 				print("Crafting mode is on, comparing " .. playerName2 .. " against " .. playerSelf .. " for loot message")
 			end
-			if playerName2 == playerSelf then --bookmark
+			if playerName2 == playerSelf then
 				if ProEnchantersOptions["DebugLevel"] == 8 then
 					print("player self match found, refreshing craftable buttons")
 				end
