@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.3.2"
+local version = "v10.3.5"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -7322,6 +7322,7 @@ function ProEnchantersCreateTriggersFrame()
 		local author2 = TestPlayerEditBox:GetText()
 		local msg = TestMsgEditBox:GetText()
 		local msg2 = string.lower(msg)
+		
 		local author = string.gsub(author2, "%-.*", "")
 		
 		--local author3 = string.lower(author)
@@ -7331,16 +7332,17 @@ function ProEnchantersCreateTriggersFrame()
 			local check2 = false
 			local check3 = false
 			local check4 = false
-			local startPos, endPos = string.find(msg2, tword)
-			if string.find(msg2, tword, 1, true) then
+			local tword = string.gsub(tword, "+", "")
+			local msg3 = string.gsub(msg2, "+", "")
+			local startPos, endPos = string.find(msg3, tword)
+			if string.find(msg3, tword, 1, true) then
 				check1 = true
 				if startPos then
 					-- Check if "ench" is at the start of the string or preceded by a space
-					if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+					if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 						check2 = true
 					else
 						TestResponseTxt:SetText(tword .. " is contained within a word, check2 returned as false")
-						return
 					end
 				end
 				
@@ -7360,12 +7362,12 @@ function ProEnchantersCreateTriggersFrame()
 				end
 			end
 			for _, word in pairs(ProEnchantersOptions.filteredwords) do
-				local filteredWord = word
-				if string.find(author, filteredWord, 1, true) then
-					print(author .. " matches " .. filteredWord)
-					check4 = true
-					TestResponseTxt:SetText("Sender: " ..	LIGHTBLUE .. author2 .. ColorClose .. " name found in filter list, check 3 returning false")
-					return
+				if word:match("^%u") then				
+					if word == author then
+						check4 = true
+						TestResponseTxt:SetText("Sender: " ..	LIGHTBLUE .. author2 .. ColorClose .. " name found in filter list, check 3 returning false")
+						return
+					end
 				end
 			end
 		
@@ -11407,30 +11409,31 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in Trade Channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
 					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
+								check2 = true
+								if ProEnchantersOptions["DebugLevel"] == 88 then
+									print(tword .. " does not have any leading characters, returning check2 as true")
+								end
+							else
+								if ProEnchantersOptions["DebugLevel"] == 1 then
+									print(tword .. " is contained within a word, check2 returned as false")
+								end
+								
 							end
 						end
-					end
 					
 				--else
 					--return
@@ -11446,19 +11449,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - trade channel")
 		
 						end
-						return
+						
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									
+							end
+							
 						end
-						return
 					end
 				end
 
@@ -11509,6 +11513,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
+					break
 					end
 				end
 			end
@@ -11517,20 +11522,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
 					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 							check2 = true
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
@@ -11539,6 +11544,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 1 then
 								print(tword .. " is contained within a word, check2 returned as false")
 							end
+							
 						end
 					end
 				--else
@@ -11554,21 +11560,22 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						check3 = true
 						if ProEnchantersOptions["DebugLevel"] == 1 then
 							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - lfg channel")
-							return
+							
 						end
-						break
+						
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								return
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									
+							end
+							break
 						end
-						break
 					end
 				end
 
@@ -11619,7 +11626,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
+					break
 					end
+					
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["World"] == true and string.find(channelName, localWorldChannel, 1, true) then
@@ -11627,20 +11636,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in World Channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
+					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
-					check1 = true
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 							check2 = true
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
@@ -11665,21 +11674,22 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						check3 = true
 						if ProEnchantersOptions["DebugLevel"] == 1 then
 							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - world channel")
-							return
+							
 						end
 						break
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								return
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									
+							end
+							break
 						end
-						break
 					end
 				end
 
@@ -11730,7 +11740,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
+					break
 					end
+					
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["Services"] == true and string.find(channelName, localServicesChannel, 1, true) then
@@ -11738,20 +11750,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in Services Channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
+					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
-					check1 = true
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 							check2 = true
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
@@ -11782,15 +11794,16 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								return
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									return
+							end
+							break
 						end
-						break
 					end
 				end
 
@@ -11841,7 +11854,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
-				end
+					break
+					end
+				
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
@@ -11849,20 +11864,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in LFG Channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
+					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
-					check1 = true
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 							check2 = true
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
@@ -11893,15 +11908,16 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								return
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									return
+							end
+							break
 						end
-						break
 					end
 				end
 
@@ -11952,6 +11968,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
+					break
 				end
 				end
 			end
@@ -11960,20 +11977,20 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				print("Message found in local city channel: " .. channelName)
 			end
 			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
+				local tword = string.gsub(tword, "+", "")
 				local check1 = false
 				local check2 = false
 				local check3 = false
 				local check4 = false
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
+				local msg3 = string.gsub(msg2, "+", "")
+				local startPos, endPos = string.find(msg3, tword)
+				if string.find(msg3, tword, 1, true) then
 					check1 = true
 					if ProEnchantersOptions["DebugLevel"] == 1 then
 						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 					end
 					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
 							check2 = true
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(tword .. " does not have any leading characters, returning check2 as true")
@@ -12004,15 +12021,16 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				end
 				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
+					if word:match("^%u") then				
+						if word == author then
 						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("Sender: " ..
-								author2 .. " name found in filter list, check 3 returning false")
-								return
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								print("Sender: " ..
+									author2 .. " name found in filter list, check 3 returning false")
+									return
+							end
+							break
 						end
-						break
 					end
 				end
 
@@ -12063,7 +12081,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 					end
+					break
 				end
+				
 				end
 			end
 		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
@@ -12073,31 +12093,31 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 				
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-					
+						local tword = string.gsub(tword, "+", "")
 						local check1 = false
 						local check2 = false
 						local check3 = false
 						local check4 = false
-						local startPos, endPos = string.find(msg2, tword)
-						if string.find(msg2, tword, 1, true) then
+						local msg3 = string.gsub(msg2, "+", "")
+						local startPos, endPos = string.find(msg3, tword)
+						if string.find(msg3, tword, 1, true) then
 							check1 = true
 							if ProEnchantersOptions["DebugLevel"] == 1 then
 								print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
 							end
 							if startPos then
-								-- Check if "ench" is at the start of the string or preceded by a space
-								if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
-									check2 = true
-									if ProEnchantersOptions["DebugLevel"] == 88 then
-										print(tword .. " does not have any leading characters, returning check2 as true")
+									if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
+											check2 = true
+											if ProEnchantersOptions["DebugLevel"] == 88 then
+												print(tword .. " does not have any leading characters, returning check2 as true")
+											end
+										else
+											if ProEnchantersOptions["DebugLevel"] == 1 then
+												print(tword .. " is contained within a word, check2 returned as false")
+												
+											end
+										end
 									end
-								else
-									if ProEnchantersOptions["DebugLevel"] == 1 then
-										print(tword .. " is contained within a word, check2 returned as false")
-										return
-									end
-								end
-							end
 							
 						--else
 							--return
@@ -12115,15 +12135,16 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						end
 					end
 					for _, word in pairs(ProEnchantersOptions.filteredwords) do
-						local filteredWord = word
-						if string.find(author, filteredWord, 1, true) then
+						if word:match("^%u") then				
+							if word == author then
 							check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									return
+								if ProEnchantersOptions["DebugLevel"] == 1 then
+									print("Sender: " ..
+										author2 .. " name found in filter list, check 3 returning false")
+										return
+								end
+								break
 							end
-							break
 						end
 					end
 
@@ -12176,6 +12197,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 							end
 						end
+						break
 					end
 					end
 				end
@@ -12899,6 +12921,19 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 						end
 					end
 				end
+			end
+			if ProEnchantersOptions["TradeMsg"] then
+				if ProEnchantersOptions["TradeMsg"] == "" then
+					--print("Now trading " .. customerName)
+				else
+					local tradeMsg = ProEnchantersOptions["TradeMsg"]
+					local capPlayerName = CapFirstLetter(customerName)
+					local newtradeMsg = string.gsub(tradeMsg, "CUSTOMER", capPlayerName)
+					SendChatMessage(newtradeMsg, IsInRaid() and "RAID" or "PARTY")
+				end
+			else
+				local capPlayerName = CapFirstLetter(customerName)
+				SendChatMessage("Now trading with " .. capPlayerName, IsInRaid() and "RAID" or "PARTY")
 			end
 		elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 			if ProEnchantersOptions["EnableNewTradeSound"] == true then

@@ -1,6 +1,80 @@
 --- Game Flavor
 ProEnchantersWoWFlavor = "Vanilla"
 
+--[[function PEMsgCheck(msg, author2, tword) -- To be worked on
+	local msg2 = string.lower(msg)
+	local author = string.gsub(author2, "%-.*", "")
+	local author3 = string.lower(author)
+	local finalcheck = false
+	local printout = msg .. " contains no trigger word"
+	
+	if LocalLanguage == nil then
+		LocalLanguage = "English"
+	end
+				
+	local check1 = false
+	local check2 = false
+	local check3 = false
+	local check4 = false
+
+				local startPos, endPos = string.find(msg2, tword)
+				if string.find(msg2, tword, 1, true) then
+					check1 = true
+					if ProEnchantersOptions["DebugLevel"] == 1 then
+						printout = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2
+					end
+					if startPos then
+						-- Check if "ench" is at the start of the string or preceded by a space
+						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
+							check2 = true
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								printout = tword .. " does not have any leading characters, returning check2 as true"
+							end
+						else
+							if ProEnchantersOptions["DebugLevel"] == 1 then
+								printout = tword .. " is contained within a word, check2 returned as false"
+							end
+							return finalcheck, printout
+						end
+					end
+					
+				--else
+					--return
+				--end
+
+
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					
+					if string.find(msg2, filteredWord, 1, true) then
+						check3 = true
+						if ProEnchantersOptions["DebugLevel"] == 1 then
+							printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - trade channel"
+		
+						end
+						return finalcheck, printout
+					end
+				end
+				for _, word in pairs(ProEnchantersOptions.filteredwords) do
+					local filteredWord = word
+					if string.find(author, filteredWord, 1, true) then
+						check4 = true
+						if ProEnchantersOptions["DebugLevel"] == 1 then
+							printout = "Sender: " .. author2 .. " name found in filter list, check 3 returning false"
+								
+						end
+						return finalcheck, printout
+					end
+				end
+				if check1 == true and check2 == true and check3 == false and check4 == false then
+					finalcheck = true
+					printout = "All checks passed, proceeding with invites/messages"
+				end
+			return finalcheck, printout
+			end
+	return finalcheck, printout
+end]]
+
 function GroupLeaderCheck()
     if UnitIsGroupAssistant("player") == true then
         return false

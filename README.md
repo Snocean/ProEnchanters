@@ -4,6 +4,15 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.3.5 - Beta
+- **Fixed** 'Now trading with' message should be sent when trading players while 'work while closed' is toggled on
+- **Changed** Trigger words no longer require a "+" sign to catch words like "+7 agi", setting your trigger as "7 agi" is enough
+- **Changed** Order of trigger words should no longer matter again
+
+## Update 10.3.3 & 10.3.4
+- **Fixed** Potential customers getting filtered out if their name contained any of the filtered words (if players name was Thanos and a filter was set as 'no' it would filter out Thanos as if the full name Thanos was entered in the filters list)
+- **Changed** Small optimizations done to potential customer logic
+
 ## Update 10.3.2
 - **Fixed** Trim server name check box not reflecting the saved variable
 
