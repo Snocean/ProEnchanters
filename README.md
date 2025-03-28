@@ -4,6 +4,9 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.3.6 - Beta
+- **Changed** Optimized trigger/filter logic some more, filters are now checked once per message instead of for each trigger word checked, also /pedebug 1/2/3 are all different options for printing out some logic results to the main window for troubleshooting (more info on that in discord)
+
 ## Update 10.3.5 - Beta
 - **Fixed** 'Now trading with' message should be sent when trading players while 'work while closed' is toggled on
 - **Changed** Trigger words no longer require a "+" sign to catch words like "+7 agi", setting your trigger as "7 agi" is enough

@@ -1,79 +1,141 @@
 --- Game Flavor
 ProEnchantersWoWFlavor = "Vanilla"
 
---[[function PEMsgCheck(msg, author2, tword) -- To be worked on
-	local msg2 = string.lower(msg)
-	local author = string.gsub(author2, "%-.*", "")
-	local author3 = string.lower(author)
-	local finalcheck = false
-	local printout = msg .. " contains no trigger word"
+function PEfilterCheck(msg, author2) -- Need to sort this
+
+    local author = string.gsub(author2, "%-.*", "")
+    local msg2 = string.lower(msg)
+	local finalcheck = "nofilter"
+	local printout = "Filter Check Passed"
 	
 	if LocalLanguage == nil then
 		LocalLanguage = "English"
-	end
-				
+	end 
+    
+    -- Check for Filtered words within message - move this OUT OF the for loop and into it's own function maybe?
+    for _, word in pairs(ProEnchantersOptions.filteredwords) do
+       local filteredWord = word
+       
+       if string.find(msg2, filteredWord, 1, true) then
+           --print(filteredWord .. " filter found")
+           local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+           printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+           finalcheck = "filterfound"
+           return finalcheck, printout
+       end
+   end
+
+   -- Check for Usernames within message that are added to the filters - move this OUT OF the for loop and into it's own function maybe?
+   for _, word in pairs(ProEnchantersOptions.filteredwords) do
+       if word:match("^%u") then			
+           if word == author then
+               --print("name in filter list")
+               printout = "Sender: " .. author2 .. " name found in filter list, check 3 returning false"
+               finalcheck = "senderfound"
+               return finalcheck, printout
+           end
+       end
+   end
+   return finalcheck, printout
+end
+
+function PEMsgCheck(msg, author2, tword) -- To be worked on
+    --print("checking tword: " .. tword)
+
 	local check1 = false
 	local check2 = false
 	local check3 = false
 	local check4 = false
+    local author = string.gsub(author2, "%-.*", "")
+	local tword = string.gsub(tword, "+", "")
+    local msg2 = string.lower(msg)
+	local msg3 = string.gsub(msg2, "+", "")
+	local startPos, endPos = string.find(msg3, tword)
+	local finalcheck = "notrigger"
+	local printout = ""
+    local tfound = ""
+    local breakloop = false
+	
+	if LocalLanguage == nil then
+		LocalLanguage = "English"
+	end 
+       
+        -- Check for Trigger Word within Message
+        if string.find(msg2, tword, 1, true) then
+            
+            check1 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            --print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
 
-				local startPos, endPos = string.find(msg2, tword)
-				if string.find(msg2, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						printout = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2
-					end
-					if startPos then
-						-- Check if "ench" is at the start of the string or preceded by a space
-						if startPos == 1 or string.sub(msg2, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								printout = tword .. " does not have any leading characters, returning check2 as true"
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								printout = tword .. " is contained within a word, check2 returned as false"
-							end
-							return finalcheck, printout
-						end
-					end
-					
-				--else
-					--return
-				--end
+            -- Check if Trigger Word within Message is contained within a word or not
+            if startPos then
+                if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
+                    check2 = true
+                    printout = tword .. " does not have any leading characters, returning check2 as true"
+                    --print(tword .. " not within word")
+                else
+                    local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
+                    printout = tword .. " is contained within a word: " .. msg4
+                    finalcheck = "inword"
+                    if ProEnchantersOptions["DebugLevel"] == 2 then
+                        --print(printout)
+                    end
+                    if ProEnchantersOptions["DebugLevel"] == 3 then
+                        print(printout)
+                    end
+                    return finalcheck, printout, tfound, breakloop
+                end
+            end
 
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            end
+		end
+	return finalcheck, printout, tfound, breakloop
+end
 
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - trade channel"
-		
-						end
-						return finalcheck, printout
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(author, filteredWord, 1, true) then
-						check4 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							printout = "Sender: " .. author2 .. " name found in filter list, check 3 returning false"
-								
-						end
-						return finalcheck, printout
-					end
-				end
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					finalcheck = true
-					printout = "All checks passed, proceeding with invites/messages"
-				end
-			return finalcheck, printout
-			end
-	return finalcheck, printout
-end]]
+function PEPotentialCustomerInvite(author3, author2, msg)
+    if ProEnchantersOptions["WorkWhileClosed"] == true then
+        if ProEnchantersOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    elseif author3 and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+        if ProEnchantersOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    end
+end
 
 function GroupLeaderCheck()
     if UnitIsGroupAssistant("player") == true then

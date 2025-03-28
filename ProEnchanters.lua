@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.3.5"
+local version = "v10.3.6"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -7322,13 +7322,51 @@ function ProEnchantersCreateTriggersFrame()
 		local author2 = TestPlayerEditBox:GetText()
 		local msg = TestMsgEditBox:GetText()
 		local msg2 = string.lower(msg)
-		
+		local breakloop = false
 		local author = string.gsub(author2, "%-.*", "")
+		local finalcheck = ""
+		local printout = ""
+		local tfound = ""
+		local trigger = ""
+		local filtercheck = ""
 		
-		--local author3 = string.lower(author)
-		for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				
-			local check1 = false
+		filtercheck, printout = PEfilterCheck(msg, author2)
+
+		if filtercheck == "nofilter" then
+			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+				trigger = tword
+				finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+				if finalcheck == "inword" then
+					if ProEnchantersOptions["DebugLevel"] < 1 then
+						print(printout)
+					end
+				end
+
+				if breakloop == true then
+					break
+				end
+
+			end
+		end
+
+		--print(finalcheck)
+		if finalcheck == "passed" then
+			msg2 = string.gsub(msg2, trigger, GREEN .. "*" .. ColorClose .. trigger, 1)
+			TestResponseTxt:SetText("All checks passed on trigger: " .. GREEN .. trigger .. ColorClose .. ", continuing with potential customer invite or pop-up\n".. GREY .. "--\n" .. ColorClose .. msg2)
+		elseif filtercheck == "senderfound" then
+			TestResponseTxt:SetText(printout)
+		elseif filtercheck == "filterfound" then
+			TestResponseTxt:SetText(printout)
+		elseif finalcheck == "notrigger" then
+			TestResponseTxt:SetText("No successful triggers found")
+		else
+			TestResponseTxt:SetText(tfound .. GREY .. "--\n" .. ColorClose .. printout)
+		end
+	end
+
+	-- Previous for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+	--[[local check1 = false
 			local check2 = false
 			local check3 = false
 			local check4 = false
@@ -7376,10 +7414,7 @@ function ProEnchantersCreateTriggersFrame()
 						TestResponseTxt:SetText("All checks passed on trigger: " .. GREEN .. tword .. ColorClose .. ", continuing with potential customer invite or pop-up\n".. GREY .. "--\n" .. ColorClose .. msg2)
 						break
 				end
-			end
-			TestResponseTxt:SetText("Message did not match any triggers")
-		end
-	end
+			end]]
 
 	-- Create a reset button at the bottom
 	local TestBtn = CreateFrame("Button", nil, TriggersFrame)
@@ -10768,10 +10803,6 @@ SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 			print(RED ..
 				"Debugging set to 99 (misc), either /reload or do /pedebug 0 to disable." ..
 				ColorClose)
-		elseif convertedNumber == 1 then
-			print(RED ..
-				"Debugging set to 1 (trigger/filter responses), either /reload or do /pedebug 0 to disable." ..
-				ColorClose)
 		else
 			print(ORANGE ..
 				"Debugging set to " .. ColorClose .. convertedNumber)
@@ -11388,6 +11419,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local city = GetZoneText()
 		local author = string.gsub(author2, "%-.*", "")
 		local author3 = string.lower(author)
+		local finalcheck = false
+		local filtercheck = ""
+		local printout = ""
+		local tfound = ""
+		local breakloop = false
 		if LocalLanguage == nil then
 			LocalLanguage = "English"
 		end
@@ -11404,801 +11440,411 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			print("channelName/channelNumber/channelNameWithNumber from " ..
 				author2 .. ": " .. channelName .. "/" .. channelNumber .. "/" .. channelNameWithNumber)
 		end
+
 		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and string.find(channelName, localTradeChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in Trade Channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-								check2 = true
-								if ProEnchantersOptions["DebugLevel"] == 88 then
-									print(tword .. " does not have any leading characters, returning check2 as true")
-								end
-							else
-								if ProEnchantersOptions["DebugLevel"] == 1 then
-									print(tword .. " is contained within a word, check2 returned as false")
-								end
-								
-							end
-						end
-					
-				--else
-					--return
-				--end
 
+			filtercheck, printout = PEfilterCheck(msg, author2)
 
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - trade channel")
-		
-						end
-						
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									
-							end
-							
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-							PlaySound(SOUNDKIT.MAP_PING)
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-							PlaySound(SOUNDKIT.MAP_PING)
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-					end
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in LFG Channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
-							end
-							
-						end
-					end
-				--else
-					--return
-				--end
-
-
-				
-
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - lfg channel")
-							
-						end
-						
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									
-							end
-							break
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-					end
-					
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["World"] == true and string.find(channelName, localWorldChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in World Channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
-							end
-						end
-					end
-					
-				--else
-					--return
-				--end
-
-
-				
-
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - world channel")
-							
-						end
-						break
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									
-							end
-							break
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-					end
-					
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["Services"] == true and string.find(channelName, localServicesChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in Services Channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
-							end
-						end
-					end
-					
-				--else
-					--return
-				--end
-
-
-				
-
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - services channel")
-							return
-						end
-						break
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									return
-							end
-							break
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-					end
-				
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in LFG Channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
-							end
-						end
-					end
-					
-				--else
-					--return
-				--end
-
-
-				
-
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - local defense channel")
-							return
-						end
-						break
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									return
-							end
-							break
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-				end
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
-			if ProEnchantersOptions["DebugLevel"] == 88 then
-				print("Message found in local city channel: " .. channelName)
-			end
-			for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-				local tword = string.gsub(tword, "+", "")
-				local check1 = false
-				local check2 = false
-				local check3 = false
-				local check4 = false
-				local msg3 = string.gsub(msg2, "+", "")
-				local startPos, endPos = string.find(msg3, tword)
-				if string.find(msg3, tword, 1, true) then
-					check1 = true
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					end
-					if startPos then
-							if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-							check2 = true
-							if ProEnchantersOptions["DebugLevel"] == 88 then
-								print(tword .. " does not have any leading characters, returning check2 as true")
-							end
-						else
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print(tword .. " is contained within a word, check2 returned as false")
-							end
-						end
-					end
-					
-				--else
-					--return
-				--end
-
-
-				
-
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					local filteredWord = word
-					if string.find(msg2, filteredWord, 1, true) then
-						check3 = true
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - local city channel")
-							return
-						end
-						break
-					end
-				end
-				for _, word in pairs(ProEnchantersOptions.filteredwords) do
-					if word:match("^%u") then				
-						if word == author then
-						check4 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("Sender: " ..
-									author2 .. " name found in filter list, check 3 returning false")
-									return
-							end
-							break
-						end
-					end
-				end
-
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-					if ProEnchantersOptions["DebugLevel"] == 1 then
-						print("All checks passed, continuing with potential customer invite or pop-up")
-					end
-					if ProEnchantersOptions["PauseInvites"] == true then
-						if ProEnchantersOptions["DebugLevel"] == 88 then
-							print("Pause invites enabled, ending loop")
-						end
-						return
-					end
-					local playerName = author3
-					local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-					if ProEnchantersOptions["WorkWhileClosed"] == true then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-						if AutoInviteFlag == true then
-							--AddonInvite = true
-							--if AddonInvite == true then
-								InviteUnitPEAddon(author2)
-								PEPlayerInvited[playerName] = msg
-							--end
-							PlaySound(SOUNDKIT.MAP_PING)
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						elseif AutoInviteFlag == false then
-							StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg, author2 }
-							if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-								PESound(ProEnchantersOptions["PotentialCustomerSound"])
-							end
-						end
-					end
-					break
-				end
-				
-				end
-			end
-		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
-			if channelName == "" or channelName == nil then
-				if ProEnchantersOptions["DebugLevel"] == 88 then
-					print("Message found in local say/yell chat")
-				end
-				
+			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-						local tword = string.gsub(tword, "+", "")
-						local check1 = false
-						local check2 = false
-						local check3 = false
-						local check4 = false
-						local msg3 = string.gsub(msg2, "+", "")
-						local startPos, endPos = string.find(msg3, tword)
-						if string.find(msg3, tword, 1, true) then
-							check1 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-							end
-							if startPos then
-									if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-											check2 = true
-											if ProEnchantersOptions["DebugLevel"] == 88 then
-												print(tword .. " does not have any leading characters, returning check2 as true")
-											end
-										else
-											if ProEnchantersOptions["DebugLevel"] == 1 then
-												print(tword .. " is contained within a word, check2 returned as false")
-												
-											end
-										end
-									end
-							
-						--else
-							--return
-					--end
 
-					for _, word in pairs(ProEnchantersOptions.filteredwords) do
-						local filteredWord = word
-						if string.find(msg2, filteredWord, 1, true) then
-							check3 = true
-							if ProEnchantersOptions["DebugLevel"] == 1 then
-								print("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2 .. " - channel say/yell")
-								return
-							end
-							break
-						end
-					end
-					for _, word in pairs(ProEnchantersOptions.filteredwords) do
-						if word:match("^%u") then				
-							if word == author then
-							check4 = true
-								if ProEnchantersOptions["DebugLevel"] == 1 then
-									print("Sender: " ..
-										author2 .. " name found in filter list, check 3 returning false")
-										return
-								end
-								break
-							end
-						end
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
 					end
 
-					if check1 == true and check2 == true and check3 == false and check4 == false then
-						if ProEnchantersOptions["DebugLevel"] == 1 then
-							print("All checks passed, continuing with potential customer invite or pop-up")
-						end
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
 						if ProEnchantersOptions["PauseInvites"] == true then
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("Pause invites enabled, ending loop")
 							end
 							return
 						end
-						local playerName = author3
-						local AutoInviteFlag = ProEnchantersOptions["AutoInvite"]
-						if ProEnchantersOptions["WorkWhileClosed"] == true then
-							if AutoInviteFlag == true then
-								--AddonInvite = true
-								--if AddonInvite == true then
-									InviteUnitPEAddon(author2)
-									PEPlayerInvited[playerName] = msg
-								--end
-								PlaySound(SOUNDKIT.MAP_PING)
-								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-									PESound(ProEnchantersOptions["PotentialCustomerSound"])
-								end
-							elseif AutoInviteFlag == false then
-								StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg,
-									author2 }
-								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-									PESound(ProEnchantersOptions["PotentialCustomerSound"])
-								end
-							end
-						elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-							if AutoInviteFlag == true then
-								--AddonInvite = true
-								--if AddonInvite == true then
-									InviteUnitPEAddon(author2)
-									PEPlayerInvited[playerName] = msg
-								--end
-								PlaySound(SOUNDKIT.MAP_PING)
-								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-									PESound(ProEnchantersOptions["PotentialCustomerSound"])
-								end
-							elseif AutoInviteFlag == false then
-								StaticPopup_Show("INVITE_PLAYER_POPUP", playerName, msg).data = { playerName, msg,
-									author2 }
-								if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
-									PESound(ProEnchantersOptions["PotentialCustomerSound"])
-								end
-							end
-						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
 						break
 					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
+
+			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if filtercheck == "nofilter" then
+				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
+					end
+
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
+						break
+					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["World"] == true and string.find(channelName, localWorldChannel, 1, true) then
+			
+			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if filtercheck == "nofilter" then
+				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
+					end
+
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
+						break
+					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["Services"] == true and string.find(channelName, localServicesChannel, 1, true) then
+			
+			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if filtercheck == "nofilter" then
+				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
+					end
+
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
+						break
+					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
+			
+			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if filtercheck == "nofilter" then
+				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
+					end
+
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
+						break
+					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
+			
+			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if filtercheck == "nofilter" then
+				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+
+					if breakloop == true then
+						break
+					end
+
+					if finalcheck == "passed" then
+
+						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+					
+						if ProEnchantersOptions["PauseInvites"] == true then
+							if ProEnchantersOptions["DebugLevel"] == 88 then
+								print("Pause invites enabled, ending loop")
+							end
+							return
+						end
+
+						PEPotentialCustomerInvite(author3, author2, msg)
+
+						break
+					end
+				end
+			end
+
+			-- Debug Printing
+			if ProEnchantersOptions["DebugLevel"] == 1 then
+				if finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 2 then
+				if filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				elseif finalcheck == "passed" then
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+			if ProEnchantersOptions["DebugLevel"] == 3 then
+				if finalcheck == "notrigger" then
+					print("No successful triggers found" .. " - " .. channelName)
+				elseif filtercheck == "senderfound" then
+					print(printout .. " - " .. channelName)
+				elseif filtercheck == "filterfound" then
+					print(printout .. " - " .. channelName)
+				else
+					print(tfound .. "\n" .. printout .. " - " .. channelName)
+				end
+			end
+
+		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
+			if channelName == "" or channelName == nil then
+
+				filtercheck, printout = PEfilterCheck(msg, author2)
+
+				if filtercheck == "nofilter" then
+					for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
+	
+						finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
+	
+						if breakloop == true then
+							break
+						end
+	
+						if finalcheck == "passed" then
+	
+							msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+						
+							if ProEnchantersOptions["PauseInvites"] == true then
+								if ProEnchantersOptions["DebugLevel"] == 88 then
+									print("Pause invites enabled, ending loop")
+								end
+								return
+							end
+	
+							PEPotentialCustomerInvite(author3, author2, msg)
+	
+							break
+						end
+					end
+				end
+	
+				-- Debug Printing
+				if ProEnchantersOptions["DebugLevel"] == 1 then
+					if finalcheck == "passed" then
+						print(tfound .. "\n" .. printout .. " - " .. channelName)
+					end
+				end
+				if ProEnchantersOptions["DebugLevel"] == 2 then
+					if filtercheck == "senderfound" then
+						print(printout .. " - " .. channelName)
+					elseif filtercheck == "filterfound" then
+						print(printout .. " - " .. channelName)
+					elseif finalcheck == "passed" then
+						print(tfound .. "\n" .. printout .. " - " .. channelName)
+					end
+				end
+				if ProEnchantersOptions["DebugLevel"] == 3 then
+					if finalcheck == "notrigger" then
+						print("No successful triggers found" .. " - " .. channelName)
+					elseif filtercheck == "senderfound" then
+						print(printout .. " - " .. channelName)
+					elseif filtercheck == "filterfound" then
+						print(printout .. " - " .. channelName)
+					else
+						print(tfound .. "\n" .. printout .. " - " .. channelName)
 					end
 				end
 			end
