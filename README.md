@@ -4,6 +4,33 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.4.1 - Beta
+- **New** Filters can now be encased in brackets ( example: [word] ) to make the search for that filter more specific when ruling out messages from potential customers. This helps with short filters like city abbreviations (sw, if, uc, org).
+- You can also use '*' wildcards within the brackets to match all before, after, or between
+- **Example** [sw] would now filter the following:
+"lf sw enchanter"
+"lf enchanter and port if->sw"
+"lf enchanter and port if -> sw"
+"sw -> if port and enchanter please"
+"lf enchanter in sw."
+"lf -->sw<-- enchanter"
+- but not:
+"lf swell enchant"
+"lf enchanter named oswald"
+"lfsw enchanter" (it's vulnerable to customers typos! argg!)
+- **Example** [storm*wind] would now filter the following:
+"lf enchanter in stormwind"
+"lf enchanter in storm wind"
+"lf enchanter in storm      wind"
+"lf enchanter in storm------wind"
+"lf enchanter in storm of the mighty wind"
+- **New** Filters can also use *some* LUA pattern matching for those who are comfortable doing so, if a filter word contains "%", "^", or "$" it will enable that filter to use all LUA pattern matching with magic characters for advanced usage [99% of users will not find a use for this and I am considering disabling it entirely to avoid issues]
+- **Example** storm%s+wind would now filter the following:
+"lf enchanter in storm wind"
+"lf enchanter in storm            wind"
+- https://www.lua.org/manual/5.3/manual.html#6.4.1 for pattern infromation options
+- This also means if you do **NOT** want to use pattern matching but want to filter out a specific message like %2 it must be set to %%2 instead as the first "%" tells the add-on to treat the second portion "%2" as plain text, if you enter only "%2" as a filter it will throw an error.
+
 ## Update 10.3.6 - Beta
 - **Changed** Optimized trigger/filter logic some more, filters are now checked once per message instead of for each trigger word checked, also /pedebug 1/2/3 are all different options for printing out some logic results to the main window for troubleshooting (more info on that in discord)
 

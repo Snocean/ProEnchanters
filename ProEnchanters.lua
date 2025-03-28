@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.3.6"
+local version = "v10.4.1"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -6967,13 +6967,16 @@ function ProEnchantersCreateTriggersFrame()
 
 	local InstructionsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	InstructionsHeader:SetFontObject(UIFontBasic)
-	InstructionsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 90, -30)
+	InstructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -5)
 	InstructionsHeader:SetText(
-		"Add words below separated by commas to enable new trigger words for the auto invites or words that will filter others messages.\nYou can also set players names in the Filter section to filter that player from triggering the auto invite.\nMake sure words or phrases to filter are in lower case and player names start with a Capital letter.")
+		"Add words below separated by commas to enable new triggers/filters. IMPORTANT: Set all filters in lower-case, set filtered Player names starting with an upper-case letter." ..
+		"\nTriggers tell the addon you want to invite a player, Filters tell the addon you want to ignore a message. Filters over-rule Triggers." ..
+		"\nYou can add filters inside of brackets (example: [word] ) to be more explicit in its search. Supports * wildcard. (example [sw] would filter 'sw' but not 'swell')" ..
+		"\nFilters search the entire text, Triggers search the start of each word, and Filtered Player names will ignore all messages from that player.")
 
 	local FilteredWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	FilteredWordsHeader:SetFontObject(UIFontBasic)
-	FilteredWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -55)
+	FilteredWordsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 30, -85)
 	FilteredWordsHeader:SetText("Filtered Words:")
 
 	-- Create a close button background
@@ -7069,7 +7072,7 @@ function ProEnchantersCreateTriggersFrame()
 
 	local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	TriggerWordsHeader:SetFontObject(UIFontBasic)
-	TriggerWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -155)
+	TriggerWordsHeader:SetPoint("TOPLEFT", FilteredWordsHeader, "BOTTOMLEFT", 0, -90)
 	TriggerWordsHeader:SetText("Trigger Words:")
 
 	-- Create a close button background
@@ -7163,7 +7166,7 @@ function ProEnchantersCreateTriggersFrame()
 
 	local InvWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	InvWordsHeader:SetFontObject(UIFontBasic)
-	InvWordsHeader:SetPoint("TOPLEFT", InstructionsHeader, "TOPLEFT", -70, -235)
+	InvWordsHeader:SetPoint("TOPLEFT", TriggerWordsHeader, "BOTTOMLEFT", 0, -65)
 	InvWordsHeader:SetText("Inv Words:")
 
 	-- Create a close button background

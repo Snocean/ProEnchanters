@@ -7,22 +7,75 @@ function PEfilterCheck(msg, author2) -- Need to sort this
     local msg2 = string.lower(msg)
 	local finalcheck = "nofilter"
 	local printout = "Filter Check Passed"
-	
+    local newfilteredWord = ""
+    local filterspatterns = {
+        "^WORD%s",
+        "^WORD%p",
+        "%sWORD%s",
+        "%pWORD%s",
+        "%sWORD%p",
+        "%pWORD%p",
+        "%sWORD$",
+        "%pWORD$"
+    }
+
 	if LocalLanguage == nil then
 		LocalLanguage = "English"
-	end 
-    
+	end
+
     -- Check for Filtered words within message - move this OUT OF the for loop and into it's own function maybe?
     for _, word in pairs(ProEnchantersOptions.filteredwords) do
-       local filteredWord = word
-       
-       if string.find(msg2, filteredWord, 1, true) then
-           --print(filteredWord .. " filter found")
-           local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
-           printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
-           finalcheck = "filterfound"
-           return finalcheck, printout
-       end
+        local filteredWord = word
+        --print("searching for [WORD]")
+        if string.find(filteredWord, "%[.-%]") then
+            --print("[] found")
+            for _, filter in ipairs(filterspatterns) do
+                newfilteredWord = string.match(filteredWord, "%[(.-)%]")
+                --print(newfilteredWord)
+                filter = string.gsub(filter, "WORD", newfilteredWord, 1)
+                filter = string.gsub(filter, "*", ".-")
+                --print(filter)
+                if string.find(msg2, filter) then
+                    --print(filteredWord .. " filter found")
+                    local msg4 = string.gsub(msg2, filter, RED .. "*" .. ColorClose .. filter, 1)
+                    printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                    finalcheck = "filterfound"
+                    return finalcheck, printout
+                end
+            end
+        elseif string.find(filteredWord, "%", 1, true) then
+            if string.find(msg2, filteredWord) then
+                --print(filteredWord .. " filter found")
+                local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+                printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                finalcheck = "filterfound"
+                return finalcheck, printout
+            end
+        elseif string.find(filteredWord, "^", 1, true) then
+            if string.find(msg2, filteredWord) then
+                --print(filteredWord .. " filter found")
+                local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+                printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                finalcheck = "filterfound"
+                return finalcheck, printout
+            end
+        elseif string.find(filteredWord, "$", 1, true) then
+            if string.find(msg2, filteredWord) then
+                --print(filteredWord .. " filter found")
+                local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+                printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                finalcheck = "filterfound"
+                return finalcheck, printout
+            end
+        else
+            if string.find(msg2, filteredWord, 1, true) then
+                --print(filteredWord .. " filter found")
+                local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+                printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                finalcheck = "filterfound"
+                return finalcheck, printout
+            end
+        end
    end
 
    -- Check for Usernames within message that are added to the filters - move this OUT OF the for loop and into it's own function maybe?
