@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.4.1"
+local version = "v10.5"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -2075,7 +2075,7 @@ function ProEnchantersCreateWorkOrderFrame()
 				table.insert(ProEnchantersTradeHistory[customerName], tradeLine)
 			end
 		end
-		ProEnchantersCustomerNameEditBox:SetText("") -- bookmark
+		ProEnchantersCustomerNameEditBox:SetText("")
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
 		ProEnchantersFiltersEditBox:SetText("")
 		FilterEnchantButtons()
@@ -2204,11 +2204,6 @@ function ProEnchantersCreateWorkOrderFrame()
 	titleButton:SetHighlightFontObject("GameFontNormal")
 
 	WorkOrderFrame:SetScript("OnShow", function()
-		if ProEnchantersWoWFlavor == "Cata" then -- PEcacheCheck == false then
-			PEItemCache()
-			--PEcacheCheck = true
-		end
-		
 		local currentHeight = WorkOrderFrame:GetHeight()
 		if currentHeight < 240 then -- If the work order frame is minimized, show it maximized
 			toggleWorkOrderFrameMinimize()
@@ -3094,7 +3089,7 @@ local craftBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
 		local cenchyOffset = 5
 		local cenchxOffset = 5
 		local filterText = cmfilterEditBox:GetText():lower()
-
+		
 		for b, craftableBtnInfo in pairs(craftablesButtons) do
 			craftableBtnInfo.button:Hide()
 			craftableBtnInfo.background:Hide()
@@ -3538,6 +3533,19 @@ end
                 end
 		    end
 			LoadCraftablesButtons()
+			--local profupper = string.upper(cmProf)
+			--profupper = string.gsub(profupper, "%s", "")
+			local curProfName = PEProfessionsOrder[currentProfShown]
+			local cachedamt = 0
+			local noncachedamt = 0
+			for n, id in pairs(PEProfessionsCombined[curProfName]["reagentIds"]) do
+				local cachedcount, noncachedcount, cached, noncached = PEItemCache(id)
+				cachedamt = cachedamt + cachedcount
+				noncachedamt = noncachedamt + noncachedcount
+			end
+			--print("cached: " .. cachedamt .. ", noncached: " .. noncachedamt)
+			--print("cmProf: " .. curProfName)
+
         end
 	}
 
@@ -3572,6 +3580,8 @@ end
 		ProEnchantersOptions["CraftingMode"] = self:GetChecked()
 		if ProEnchantersOptions["CraftingMode"] then
 			-- Hide Enchants Stuff
+			local fEditBoxText = filterEditBox:GetText()
+			cmfilterEditBox:SetText(fEditBoxText)
 			filterEditBox:SetText("disabled for crafting mode")
 			FilterEnchantButtons()
 			filterEditBox.ClearFocus(filterEditBox)
@@ -3613,10 +3623,21 @@ end
 			cmfilterEditBox:Show()
 			cmFilterHeader:Show()
 			LoadCraftablesButtons()
+			local currentProf = PEProfessionsOrder[currentProfShown]
+			local cachedamt = 0
+			local noncachedamt = 0
+			for n, id in pairs(PEProfessionsCombined[currentProf]["reagentIds"]) do
+				local cachedcount, noncachedcount, cached, noncached = PEItemCache(id)
+				cachedamt = cachedamt + cachedcount
+				noncachedamt = noncachedamt + noncachedcount
+			end
+			--print("cached: " .. cachedamt .. ", noncached: " .. noncachedamt)
+			--print("cmProf: " .. currentProf)
 			--print("Beta Crafting Mode Activated")
 		else
 			-- Show Enchants Stuff
-			filterEditBox:SetText("")
+			local cmEditBoxText = cmfilterEditBox:GetText()
+			filterEditBox:SetText(cmEditBoxText)
 			FilterEnchantButtons()
 			filterEditBox.ClearFocus(filterEditBox)
 			filterEditBox:Show()
@@ -3647,6 +3668,15 @@ end
 				craftableBtnInfo.favbtn:Hide()
 				craftableBtnInfo.favbg:Hide()
 			end
+			local cachedamt = 0
+			local noncachedamt = 0
+			for n, id in pairs(PEProfessionsCombined.ENCHANTING.reagentIds) do
+				local cachedcount, noncachedcount, cached, noncached = PEItemCache(id)
+				cachedamt = cachedamt + cachedcount
+				noncachedamt = noncachedamt + noncachedcount
+			end
+			--print("cached: " .. cachedamt .. ", noncached: " .. noncachedamt)
+			--print("cmProf: " .. "ENCHANTING")
 		end
 	end)
 	nextProfBtn:SetScript("OnClick", function()
@@ -6970,20 +7000,49 @@ function ProEnchantersCreateTriggersFrame()
 	InstructionsHeader:SetPoint("TOP", titleBg, "BOTTOM", 0, -5)
 	InstructionsHeader:SetText(
 		"Add words below separated by commas to enable new triggers/filters. IMPORTANT: Set all filters in lower-case, set filtered Player names starting with an upper-case letter." ..
-		"\nTriggers tell the addon you want to invite a player, Filters tell the addon you want to ignore a message. Filters over-rule Triggers." ..
-		"\nYou can add filters inside of brackets (example: [word] ) to be more explicit in its search. Supports * wildcard. (example [sw] would filter 'sw' but not 'swell')" ..
+		"\nTriggers tell the addon you want to invite a player, Filters tell the addon you want to ignore a message. Filters over-rule Triggers." .. 
+		--"\nYou can add filters inside of brackets (example: [word] ) to be more explicit in its search. Supports * wildcard. (example [sw] would filter 'sw' but not 'swell')" ..
 		"\nFilters search the entire text, Triggers search the start of each word, and Filtered Player names will ignore all messages from that player.")
 
-	local FilteredWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	--[[local FilteredWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	FilteredWordsHeader:SetFontObject(UIFontBasic)
 	FilteredWordsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 30, -85)
+	FilteredWordsHeader:SetText("Filtered Words:")]]
+
+	local FilteredWordsHeader = CreateFrame("Button", nil, TriggersFrame)
+	FilteredWordsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 30, -75)
 	FilteredWordsHeader:SetText("Filtered Words:")
+	FilteredWordsHeader:SetSize(70, 30)
+	local FilteredWordsHeaderText = FilteredWordsHeader:GetFontString()
+	FilteredWordsHeaderText:SetFont(peFontString, FontSize, "")
+	FilteredWordsHeader:SetNormalFontObject("GameFontHighlight")
+	FilteredWordsHeader:SetHighlightFontObject("GameFontHighlight")
+	FilteredWordsHeader:SetScript("OnEnter", function(self) --bookmark
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Filter Examples")
+		GameTooltip:AddDoubleLine("Example: if","Filters: '" .. RED .. "if" .. ColorClose .. " i was able to fly', 'lf l" .. RED .. "if" .. ColorClose .. "esteal enchant'")
+		GameTooltip:AddDoubleLine("Example: [if]","Filters: '" .. RED .. "if" .. ColorClose .. " i was able to fly', 'anyone know --" .. RED .. "-if-" .. ColorClose .. "-- i can fly?', WILL NOT filter: 'lf lifesteal enchant'")
+		GameTooltip:AddDoubleLine("Example: t*b*[org*]","Filters: 'lf port tb -> org', 'lf port thunderbluff to orgrimmar'")
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("The [] around a filter will tell the add-on to only consider the word if does not start or end with another letter.")
+		GameTooltip:AddLine("Examples for [org]: '-->org<--', ' >  org  <', 'org.' would all get filtered, 'orgrimmar' or 'borg' would not.")
+		GameTooltip:Show()
+	end)
+	FilteredWordsHeader:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
+	local FilteredWordsHeaderHint = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	FilteredWordsHeaderHint:SetFontObject(UIFontBasic)
+	FilteredWordsHeaderHint:SetPoint("TOP", FilteredWordsHeader, "BOTTOM", 0, 10)
+	FilteredWordsHeaderHint:SetText(GREY .. "hover me" .. ColorClose)
+
 
 	-- Create a close button background
 	local FilteredScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
 	FilteredScrollBg:SetSize(610, 80)
 	FilteredScrollBg:SetColorTexture(unpack(MainWindowBackgroundTrans)) -- Set RGBA values for your preferred color and alpha
-	FilteredScrollBg:SetPoint("TOPLEFT", FilteredWordsHeader, "TOPRIGHT", 15, 5)
+	FilteredScrollBg:SetPoint("TOPLEFT", FilteredWordsHeader, "TOPRIGHT", 15, -5)
 
 	local FilteredScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersFilteredScrollFrame", TriggersFrame,
 		"UIPanelScrollFrameTemplate")
@@ -7070,10 +7129,32 @@ function ProEnchantersCreateTriggersFrame()
 
 	ProEnchantersTriggersFrame.FilteredWords = FilteredWordsEditBox
 
-	local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	--[[local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	TriggerWordsHeader:SetFontObject(UIFontBasic)
 	TriggerWordsHeader:SetPoint("TOPLEFT", FilteredWordsHeader, "BOTTOMLEFT", 0, -90)
+	TriggerWordsHeader:SetText("Trigger Words:")]]
+
+	local TriggerWordsHeader = CreateFrame("Button", nil, TriggersFrame)
+	TriggerWordsHeader:SetPoint("TOPLEFT", FilteredWordsHeader, "BOTTOMLEFT", 0, -70)
 	TriggerWordsHeader:SetText("Trigger Words:")
+	TriggerWordsHeader:SetSize(70, 30)
+	local TriggerWordsHeaderText = TriggerWordsHeader:GetFontString()
+	TriggerWordsHeaderText:SetFont(peFontString, FontSize, "")
+	TriggerWordsHeader:SetNormalFontObject("GameFontHighlight")
+	TriggerWordsHeader:SetHighlightFontObject("GameFontHighlight")
+	TriggerWordsHeader:SetScript("OnEnter", function(self) --bookmark
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Trigger Examples")
+		GameTooltip:AddDoubleLine("Example: ench","Triggers: 'lf " .. GREEN .. "ench" .. ColorClose .. "anter', 'lf 42 str to boots " .. GREEN .. "ench" .. ColorClose .. "antment', 'lf major " .. GREEN .. "ench" .. ColorClose .. "antingpowers'")
+		GameTooltip:AddDoubleLine("Example: [lf enchanter]","Triggers: '" .. GREEN .. "lf enchanter!" .. ColorClose .. "', 'I am " .. GREEN .. "lf enchanter" .. ColorClose .. " in org', WILL NOT trigger 'lf gigaenchanter'")
+		GameTooltip:AddDoubleLine("Example: ^lf enchanter$","Triggers: '" .. GREEN .. "lf enchanter" .. ColorClose .. "', WILL NOT trigger: 'im lf enchanter', 'lf enchanter pls'")
+		GameTooltip:AddLine(" ")
+		GameTooltip:AddLine("The ^ denotes the very beginning of a message, $ denotes the very end of a message.")
+		GameTooltip:Show()
+	end)
+	TriggerWordsHeader:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
 
 	-- Create a close button background
 	local TriggerScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -7164,10 +7245,30 @@ function ProEnchantersCreateTriggersFrame()
 		TriggerWordsEditBox:ClearFocus()
 	end)
 
-	local InvWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
+	--[[local InvWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	InvWordsHeader:SetFontObject(UIFontBasic)
 	InvWordsHeader:SetPoint("TOPLEFT", TriggerWordsHeader, "BOTTOMLEFT", 0, -65)
+	InvWordsHeader:SetText("Inv Words:")]]
+
+	local InvWordsHeader = CreateFrame("Button", nil, TriggersFrame)
+	InvWordsHeader:SetPoint("TOPLEFT", TriggerWordsHeader, "BOTTOMLEFT", 0, -50)
 	InvWordsHeader:SetText("Inv Words:")
+	InvWordsHeader:SetSize(70, 30)
+	local InvWordsHeaderText = InvWordsHeader:GetFontString()
+	InvWordsHeaderText:SetFont(peFontString, FontSize, "")
+	InvWordsHeader:SetNormalFontObject("GameFontHighlight")
+	InvWordsHeader:SetHighlightFontObject("GameFontHighlight")
+	InvWordsHeader:SetScript("OnEnter", function(self) --bookmark
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine("Inv Examples")
+		GameTooltip:AddDoubleLine("Example: inv","Triggers: 'inv me pls', 'invite please'")
+		GameTooltip:AddDoubleLine("Example: !inv","Triggers: '!inv pls, '!invite me please'")
+		GameTooltip:AddDoubleLine("Example: potatosoup","Triggers: 'id like some potatosoup ;)', 'potatosoup me'")
+		GameTooltip:Show()
+	end)
+	InvWordsHeader:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
 
 	-- Create a close button background
 	local InvScrollBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -7248,7 +7349,7 @@ function ProEnchantersCreateTriggersFrame()
 
 	local TestHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
 	TestHeader:SetFontObject(UIFontBasic)
-	TestHeader:SetPoint("TOPLEFT", InvWordsHeader, "TOPLEFT", 0, -70)
+	TestHeader:SetPoint("TOPLEFT", InvWordsHeader, "TOPLEFT", 0, -80)
 	TestHeader:SetText("Test:")
 
 	local TestPlayerBg = TriggersFrame:CreateTexture(nil, "OVERLAY")
@@ -10623,6 +10724,18 @@ local function OnAddonLoaded()
 	ShowOpenWorkOrders()
 	ClearAllTempIgnored()
 	ClearAllAddonInvited()
+
+	-- cache Enchanting items on load
+	local cachedamt = 0
+	local noncachedamt = 0
+	for n, id in pairs(PEProfessionsCombined.ENCHANTING.reagentIds) do
+		local cachedcount, noncachedcount, cached, noncached = PEItemCache(id)
+		cachedamt = cachedamt + cachedcount
+		noncachedamt = noncachedamt + noncachedcount
+	end
+	--print("cached: " .. cachedamt .. ", noncached: " .. noncachedamt)
+	--print("cmProf: " .. "ENCHANTING")
+
 end
 
 -- Move the ADDON_LOADED event registration to the top
@@ -10661,10 +10774,7 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 	if msg == "reset" then
 		FullResetFrames()
 	elseif msg == "recache" then
-		local test = PEItemCache()
-		if test == true then
-			print("Cache passed successfully")
-		end
+		PEItemCache()
 	elseif msg == "goldreset" then
 		ResetGoldTraded()
 	elseif msg == "devmode" then
@@ -11451,11 +11561,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11509,11 +11619,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11567,11 +11677,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11625,11 +11735,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11683,11 +11793,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11741,11 +11851,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 
-					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-
 					if breakloop == true then
 						break
 					end
+
+					finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 
 					if finalcheck == "passed" then
 
@@ -11800,11 +11910,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				if filtercheck == "nofilter" then
 					for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
 	
-						finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
-	
 						if breakloop == true then
 							break
 						end
+	
+						finalcheck, printout, tfound, breakloop = PEMsgCheck(msg, author2, tword)
 	
 						if finalcheck == "passed" then
 	

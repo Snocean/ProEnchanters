@@ -7,8 +7,7 @@ function PEfilterCheck(msg, author2) -- Need to sort this
     local msg2 = string.lower(msg)
 	local finalcheck = "nofilter"
 	local printout = "Filter Check Passed"
-    local newfilteredWord = ""
-    local filterspatterns = {
+    --[[local filterspatterns = {
         "^WORD%s",
         "^WORD%p",
         "%sWORD%s",
@@ -17,6 +16,13 @@ function PEfilterCheck(msg, author2) -- Need to sort this
         "%pWORD%p",
         "%sWORD$",
         "%pWORD$"
+    }]]
+
+    local filterspatterns = {
+        "^WORD[%s%p]",
+        "[%s%p]WORD[%s%p]",
+        "[%s%p]WORD$",
+        "^WORD$"
     }
 
 	if LocalLanguage == nil then
@@ -25,56 +31,82 @@ function PEfilterCheck(msg, author2) -- Need to sort this
 
     -- Check for Filtered words within message - move this OUT OF the for loop and into it's own function maybe?
     for _, word in pairs(ProEnchantersOptions.filteredwords) do
+
         local filteredWord = word
-        --print("searching for [WORD]")
+
         if string.find(filteredWord, "%[.-%]") then
-            --print("[] found")
-            for _, filter in ipairs(filterspatterns) do
-                newfilteredWord = string.match(filteredWord, "%[(.-)%]")
-                --print(newfilteredWord)
-                filter = string.gsub(filter, "WORD", newfilteredWord, 1)
-                filter = string.gsub(filter, "*", ".-")
-                --print(filter)
-                if string.find(msg2, filter) then
-                    --print(filteredWord .. " filter found")
+
+            for _, filter in ipairs(filterspatterns) do -- fix this
+                local filteredWordFinal = ""
+                local filtersubbed = ""
+                local filter1 = ""
+                local filter2 = ""
+                local filter3 = ""
+                filter1, filter2, filter3 = string.match(filteredWord, "(.*)%[(.-)%](.*)")
+
+                filtersubbed = string.gsub(filter, "WORD", filter2, 1)
+                --filtersubbed = string.gsub(filtersubbed, "*", ".-")
+
+                if filter1 ~= "" then
+                    --remove trailing whitespace if it exists
+                    filter1 = string.gsub(filter1, "%s$", "")
+                    filteredWordFinal = filter1
+                end
+                if filter2 ~= "" then
+                    filteredWordFinal = filteredWordFinal .. filtersubbed
+                end
+                if filter3 ~= "" then
+                    --remove starting whitespace if it exists
+                    filter3 = string.gsub(filter3, "^%s", "")
+                    filteredWordFinal = filteredWordFinal .. filter3
+                end
+
+                filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
+
+                if string.find(msg2, filteredWordFinal) then
                     local msg4 = string.gsub(msg2, filter, RED .. "*" .. ColorClose .. filter, 1)
                     printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
                     finalcheck = "filterfound"
                     return finalcheck, printout
                 end
             end
+
         elseif string.find(filteredWord, "%", 1, true) then
+
             if string.find(msg2, filteredWord) then
-                --print(filteredWord .. " filter found")
                 local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
                 printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
                 finalcheck = "filterfound"
                 return finalcheck, printout
             end
+
         elseif string.find(filteredWord, "^", 1, true) then
+
             if string.find(msg2, filteredWord) then
-                --print(filteredWord .. " filter found")
                 local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
                 printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
                 finalcheck = "filterfound"
                 return finalcheck, printout
             end
+
         elseif string.find(filteredWord, "$", 1, true) then
+
             if string.find(msg2, filteredWord) then
-                --print(filteredWord .. " filter found")
                 local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
                 printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
                 finalcheck = "filterfound"
                 return finalcheck, printout
             end
+
         else
+
             if string.find(msg2, filteredWord, 1, true) then
-                --print(filteredWord .. " filter found")
                 local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
                 printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
                 finalcheck = "filterfound"
                 return finalcheck, printout
             end
+
         end
    end
 
@@ -92,7 +124,7 @@ function PEfilterCheck(msg, author2) -- Need to sort this
    return finalcheck, printout
 end
 
-function PEMsgCheck(msg, author2, tword) -- To be worked on
+--[[function PEMsgCheck(msg, author2, tword) -- To be worked on
     --print("checking tword: " .. tword)
 
 	local check1 = false
@@ -150,9 +182,192 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             end
 		end
 	return finalcheck, printout, tfound, breakloop
+end]]
+
+function PEMsgCheck(msg, author2, tword) -- To be worked on
+    --print("checking tword: " .. tword)
+
+	local check1 = false
+	local check2 = false
+	local check3 = false
+	local check4 = false
+    local author = string.gsub(author2, "%-.*", "")
+	local tword = string.gsub(tword, "+", "")
+    local msg2 = string.lower(msg)
+	local msg3 = string.gsub(msg2, "+", "")
+	local startPos, endPos = string.find(msg3, tword)
+	local finalcheck = "notrigger"
+	local printout = ""
+    local tfound = ""
+    local breakloop = false
+
+    local filterspatterns = {
+        "^WORD[%s%p]",
+        "[%s%p]WORD[%s%p]",
+        "[%s%p]WORD$",
+        "^WORD$"
+    }
+
+	if LocalLanguage == nil then
+		LocalLanguage = "English"
+	end
+
+    local filteredWord = tword
+
+    if string.find(filteredWord, "%[.*%]") then
+        for _, filter in ipairs(filterspatterns) do -- fix this
+            local filteredWordFinal = ""
+            local filtersubbed = ""
+            local filter1 = ""
+            local filter2 = ""
+            local filter3 = ""
+            filter1, filter2, filter3 = string.match(filteredWord, "(.*)%[(.*)%](.*)")
+
+            filtersubbed = string.gsub(filter, "WORD", filter2, 1)
+            --filtersubbed = string.gsub(filtersubbed, "*", ".-")
+
+            if filter1 ~= "" then
+                --remove trailing whitespace if it exists
+                filter1 = string.gsub(filter1, "%s$", "")
+                filteredWordFinal = filter1
+            end
+            if filter2 ~= "" then
+                filteredWordFinal = filteredWordFinal .. filtersubbed
+            end
+            if filter3 ~= "" then
+                --remove starting whitespace if it exists
+                filter3 = string.gsub(filter3, "^%s", "")
+                filteredWordFinal = filteredWordFinal .. filter3
+            end
+
+            filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
+            filteredWordFinal = string.gsub(filteredWordFinal, "%s", "%%s")
+            print(filteredWordFinal)
+            -- Check for Trigger Word within Message
+            if string.find(msg2, filteredWordFinal) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+            end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            else
+                local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
+                printout = tword .. " was not found as an explicit word or phrase"
+                finalcheck = "inword"
+                if ProEnchantersOptions["DebugLevel"] == 2 then
+                    --print(printout)
+                end
+                if ProEnchantersOptions["DebugLevel"] == 3 then
+                    print(printout)
+                end
+            end
+
+        end
+        return finalcheck, printout, tfound, breakloop
+    elseif string.find(filteredWord, "%", 1, true) then
+        if string.find(msg2, tword) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+        end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            else
+                return finalcheck, printout, tfound, breakloop
+            end
+    elseif string.find(filteredWord, "^", 1, true) then
+        if string.find(msg2, tword) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+        end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            else
+                return finalcheck, printout, tfound, breakloop
+            end
+    elseif string.find(filteredWord, "$", 1, true) then
+        if string.find(msg2, tword) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+        end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            else
+                return finalcheck, printout, tfound, breakloop
+            end
+    else
+        if string.find(msg2, tword, 1, true) then
+        
+            check1 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            --print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+
+            -- Check if Trigger Word within Message is contained within a word or not
+            if startPos then
+                if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
+                    check2 = true
+                    printout = tword .. " does not have any leading characters, returning check2 as true"
+                    --print(tword .. " not within word")
+                else
+                    local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
+                    printout = tword .. " is contained within a word: " .. msg4
+                    finalcheck = "inword"
+                    if ProEnchantersOptions["DebugLevel"] == 2 then
+                        --print(printout)
+                    end
+                    if ProEnchantersOptions["DebugLevel"] == 3 then
+                        print(printout)
+                    end
+                    return finalcheck, printout, tfound, breakloop
+                end
+            end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            end
+        end
+        return finalcheck, printout, tfound, breakloop
+    end
 end
 
 function PEPotentialCustomerInvite(author3, author2, msg)
+    --print("starting invite function for " .. author3 .. author2 .. msg)
     if ProEnchantersOptions["WorkWhileClosed"] == true then
         if ProEnchantersOptions["AutoInvite"] == true then
             --AddonInvite = true
@@ -271,6 +486,9 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
             --print(tostring(quantity))
 
             -- Append to the AllMatsReq string
+            if material == nil then
+                material = C_Item.GetItemNameByID(itemId)--"Unknown"
+            end
             if material == nil then
                 material = "Unknown"
             end
@@ -484,33 +702,39 @@ function PEStripColourCodes(txt)
 end
 
 function PEItemCache(id)
-    local NoneCachedItems = ""
+    local NonCachedItems = ""
     local CachedItems = ""
     local CachedSpells = ""
+    local cachedCount = 0
+    local noncachedCount = 0
     if id then
         local itemLink = select(2, C_Item.GetItemInfo(id))
+        --print(itemLink)
         if not itemLink then
-            NoneCachedItems = NoneCachedItems .. id .. ", "
+            NonCachedItems = NonCachedItems .. id .. ", "
+            noncachedCount = 1
         elseif itemLink then
             CachedItems = CachedItems .. itemLink .. ", "
+            cachedCount = 1
         end
-        return CachedItems
-    end
-    for _, itemID in pairs(ProEnchantersItemCacheTable) do
-        local itemLink = select(2, C_Item.GetItemInfo(itemID))
-        if not itemLink then
-            NoneCachedItems = NoneCachedItems .. itemID .. ", "
-        elseif itemLink then
-            CachedItems = CachedItems .. itemLink .. ", "
+        return cachedCount, noncachedCount, CachedItems, NonCachedItems
+    else
+        for _, itemID in pairs(ProEnchantersItemCacheTable) do
+            local itemLink = select(2, C_Item.GetItemInfo(itemID))
+            if not itemLink then
+                NonCachedItems = NonCachedItems .. itemID .. ", "
+            elseif itemLink then
+                CachedItems = CachedItems .. itemLink .. ", "
+            end
         end
-    end
-    for _, profType in ipairs(PEProfessionsOrder) do
-        for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
-            GameTooltip:AddSpellByID(spellId)
+        for _, profType in ipairs(PEProfessionsOrder) do
+            for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
+                GameTooltip:AddSpellByID(spellId)
+            end
         end
-    end
-    for _, id in pairs(PEReagentItems) do
-        local itemInfo = C_Item.GetItemInfo(id)
+        for _, id in pairs(PEReagentItems) do
+            local itemInfo = C_Item.GetItemInfo(id)
+        end
     end
     -- print("Item Cache complete")
 end

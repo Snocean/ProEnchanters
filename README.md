@@ -4,7 +4,16 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
-## Update 10.4.1 - Beta
+## Update 10.5 - Beta
+- **Changed** Added new pattern searching options to the 'Triggers' as well
+- **New** Added Tooltips to the Filters and Triggers section that can give some helpful ideas of what a filter or trigger would do depending on new pattern searches.
+- **Changed** Logic behind Item caching has been overhauled - the add-on will now try to cache the items based on the main windows enchanting/crafting display. IF you have Enchants showing it will try to cache all the reagents for enchanting, if you switch to crafting mode and go to Cooking it will try to cache all the reagents for Cooking, etc
+- **Changed** The 'Filter' edit box between Enchanting mode and Crafting mode should keep it's text between switches.
+
+## Update 10.4.3 - Beta
+- **Changed** Filters encased in brackets can be preceeded or followed by words and wildcards as well (t*b[uc] would filter out 'thunder bluff to uc', 'tb -> uc' etc)
+
+## Update 10.4.2 - Beta
 - **New** Filters can now be encased in brackets ( example: [word] ) to make the search for that filter more specific when ruling out messages from potential customers. This helps with short filters like city abbreviations (sw, if, uc, org).
 - You can also use '*' wildcards within the brackets to match all before, after, or between
 - **Example** [sw] would now filter the following:
@@ -30,6 +39,7 @@ If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send 
 "lf enchanter in storm            wind"
 - https://www.lua.org/manual/5.3/manual.html#6.4.1 for pattern infromation options
 - This also means if you do **NOT** want to use pattern matching but want to filter out a specific message like %2 it must be set to %%2 instead as the first "%" tells the add-on to treat the second portion "%2" as plain text, if you enter only "%2" as a filter it will throw an error.
+- 10.4.2 - fixed invites not being sent out
 
 ## Update 10.3.6 - Beta
 - **Changed** Optimized trigger/filter logic some more, filters are now checked once per message instead of for each trigger word checked, also /pedebug 1/2/3 are all different options for printing out some logic results to the main window for troubleshooting (more info on that in discord)
