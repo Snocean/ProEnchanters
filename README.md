@@ -4,7 +4,17 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
-## Update 10.5 - Beta
+## Update 10.6 - Beta
+- **New** Message Log button
+- Allows you to view a message history of hopefully relevant information. Logs messages from Say/Yell (if the player triggered an invite previously or is in the party), all Party(including yourself), all Raid (including yourself), and all received whispers. Also logs messages that triggered an invite popup/auto invite.
+- You can open the message log via a player name to view all messages sent by that player after logging has started. If the player name in the customer focus box doesn't exist or is blank it will load the entire history that's available.
+- Msg history is cleared on add-on load so doing a /reload or porting to another city or relaunching the game will wipe the chat history. I can consider changing this, just don't want to make it a cluttered mess for people.
+- Closing a work order/All work orders clears the messages that were attached to the player in the open work orders. 
+- The Refresh button on the message log window can be used if you changed the focused customer and want to view the new focused customers logs or if you clear the focused customer you can hit refresh to show all logs again
+- Cleanse Logs will clear all logs not currently tied to an open work order (all invited from messages and your own party/raid messages included)
+- If you run into an issue where you start getting errors try doing a "/pe msglogclear", this will wipe all the message log tables clean but you won't have to do a /reload this way at least
+
+## Update 10.5
 - **Changed** Added new pattern searching options to the 'Triggers' as well
 - **New** Added Tooltips to the Filters and Triggers section that can give some helpful ideas of what a filter or trigger would do depending on new pattern searches.
 - **Changed** Logic behind Item caching has been overhauled - the add-on will now try to cache the items based on the main windows enchanting/crafting display. IF you have Enchants showing it will try to cache all the reagents for enchanting, if you switch to crafting mode and go to Cooking it will try to cache all the reagents for Cooking, etc

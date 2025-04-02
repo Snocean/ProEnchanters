@@ -1,9 +1,15 @@
 ### ToDo's
 
+- Figure out why slot based trade buttons are not working
+
 - Add a way to 'test' filters and triggers
 
 - Check into being able to swap work order sorting in the window from high to low
 Add a button on the main window with a v^ type symbol to swap sorting order
+
+### ToDo's that need testing
+
+### Done ToDo's
 
 - Create Enchants.lua's for each flavor of wow and localizations, modify .toc's to load proper version of enchants
 Might be better to seperate localizations from general stuff (chat channels and messages) and enchants so that only enchant localizations need to be updated in each file
@@ -11,10 +17,6 @@ Might be better to seperate localizations from general stuff (chat channels and 
 2. Manually have to create the 'Convertables' table still most likely, we will see
 3. ProEnchantersItemCacheTable needs all Enchanting Reagents
 4. Tables to Replace: ProEnchantersItemCacheTable -> ProEnchantersTables.ItemCache, CombinedEnchants -> ProEnchantersTables.CombinedEnchants, PEConvertablesName, PEConvertablesId, PEenchantingLocales["Enchants"] = {	["ENCH100106"] = { ["Chinese"] = "附魔护腕
-
-### ToDo's that need testing
-
-### Done ToDo's
 
 - Add ability to pause invites
 

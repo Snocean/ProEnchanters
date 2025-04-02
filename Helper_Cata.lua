@@ -306,6 +306,51 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
     end
 end
 
+function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
+    --print("starting invite function for " .. author3 .. author2 .. msg)
+    if ProEnchantersOptions["WorkWhileClosed"] == true then
+        if ProEnchantersOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+                -- Add message to msg logs as well
+                PELogMsg(author3, msg, "invitemessage")
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            PELogMsg(author3, msg, "invitemessage")
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    elseif author3 and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+        if ProEnchantersOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+                -- Add message to msg logs as well
+                PELogMsg(author3, msg, "invitemessage")
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            PELogMsg(author3, msg, "invitemessage")
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    end
+end
+
 function GroupLeaderCheck()
     if UnitIsGroupAssistant("player") == true then
         return false
@@ -2857,4 +2902,308 @@ function PECreateLocalesAllEnchants()
     --print(profLocalizedName)
     ProEnchantersTables.Locales[enchKey] = profLocalizedName
     end
+end
+
+-- msg log stuff
+
+function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
+    ProEnchantersMsgLogFrame.textLogHeader:SetHeight(10000)
+    local lowerName = string.lower(name)
+    local currentLogs = ProEnchantersMsgLogFrame.currentLogs
+    local fulltext = {}
+    local existcheck = false
+    local title = "All"
+
+    if lowerName and lowerName ~= "" then
+        -- Check for chat logs for name
+        for _, n in pairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == lowerName then
+                existcheck = true
+                break
+            end
+        end
+
+        if existcheck then
+        -- If exists, Update currentLogs to name
+            currentLogs = lowerName
+        else 
+            currentLogs = "all"
+        end
+    else
+        currentLogs = "all"
+    end
+
+    if currentLogs == "all" then
+        -- Get all messages for current open work orders
+        if ProEnchantersMsgLogHistory["orderedTimes"][1] then
+            for i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+                -- Msg creation
+                local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+                local line = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msg"]
+                local msgtype = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msgtype"]
+
+                -- Time Formatting
+                local hour = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["hour"]
+                local minute = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["minute"]
+                local timeentry = ""
+                if minute == 0 then
+                    minute = "00"
+                elseif minute < 10 then
+                    minute = "0" .. tostring(minute)
+                end
+
+                if hour > 12 then
+                    hour = hour - 12
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "pm) " .. ColorClose
+                else
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "am) " .. ColorClose
+                end
+
+                -- Name Formatting 
+                local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+                local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
+
+                -- Final Formatting
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. "[" .. capitalizedName .. "] says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "[" .. capitalizedName .. "] yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "[" .. capitalizedName .. "] triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. capitalizedName .. ": " .. line
+                end
+                --fullentry = timeentry .. capitalizedName .. ": " .. line
+
+                table.insert(fulltext, fullentry)
+            end
+        else
+            fulltext = {"nothing to display"}
+        end
+        title = "All"
+    else
+        -- For i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+        -- local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+        -- Get all messages where name matches ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+        local capitalizedName = currentLogs:sub(1,1):upper() .. currentLogs:sub(2):lower()
+        if ProEnchantersMsgLogHistory["orderedTimes"][1] then
+            for i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+                local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+                if ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"] == lowerName then
+                -- Msg creation
+                local line = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msg"]
+                local msgtype = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msgtype"]
+
+                -- Time Formatting
+                local hour = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["hour"]
+                local minute = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["minute"]
+                local timeentry = ""
+                if minute == 0 then
+                    minute = "00"
+                elseif minute < 10 then
+                    minute = "0" .. tostring(minute)
+                end
+
+                if hour > 12 then
+                    hour = hour - 12
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "pm) " .. ColorClose
+                else
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "am) " .. ColorClose
+                end
+
+                -- Name Formatting 
+                local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+                local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
+
+                -- Final Formatting
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. "[" .. capitalizedName .. "] says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "[" .. capitalizedName .. "] yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "[" .. capitalizedName .. "] triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. capitalizedName .. ": " .. line
+                end
+                --fullentry = timeentry .. capitalizedName .. ": " .. line
+
+                table.insert(fulltext, fullentry)
+                        
+                end
+            end
+        else
+            fulltext = {"nothing to display for " .. lowerName}
+        end
+        title = capitalizedName
+    end
+
+    --[[for _, item in ipairs(fulltext) do
+        print(item)
+    end]]
+
+    -- Set Text
+    local text = table.concat(fulltext, "\n")
+    ProEnchantersMsgLogFrame.title:SetText("Pro Enchanters Customer Chat Log - " .. title)
+	ProEnchantersMsgLogFrame.textLogHeader:SetText(text) --bookmark
+    ProEnchantersMsgLogFrame.textLogHeaderSize:SetText(text)
+	ProEnchantersMsgLogFrame.currentLogs = currentLogs
+    -- Update Scroll Height
+    local height = ProEnchantersMsgLogFrame.textLogHeaderSize:GetStringHeight()--GetStringHeight()
+    --print(height)
+	ProEnchantersMsgLogFrame.textLogHeader:SetHeight(height)
+	ProEnchantersMsgLogFrame.ScrollChild:SetHeight(height)
+end
+
+function PECheckIfMsgShouldLog(name, checktype)
+    local check = "unknown"
+    if checktype and checktype ~= "" then
+        check = checktype
+    end
+    if not ProEnchantersMsgLogHistory then
+        ProEnchantersMsgLogHistory = {}
+    end
+    if not ProEnchantersMsgLogHistory["loggedPlayers"] then
+        ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    end
+
+    if check == "groupjoin" then
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == name then
+            return false
+            end
+        end
+        table.insert( ProEnchantersMsgLogHistory["loggedPlayers"], name)
+        return true
+    elseif check == "sayyell" then
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == name then
+                return true
+            end
+        end
+    else
+        return false
+    end
+    return false
+end
+
+function PELogMsg(name, msg, msgtype)
+
+    local lowerName = ""
+    local newmsg = ""
+    local msgflag = "unknown"
+    local currentTime = GetTime() * 1000
+    local hour, minute = GetGameTime()
+
+    if name and name ~= "" then
+        lowerName = string.lower(name)
+    else
+        print("no name for function, howd you even do this")
+        return
+    end
+
+    if msg and msg ~= "" then
+        newmsg = msg
+    else
+        print("no msg to add")
+        return
+    end
+
+    if msgtype and msgtype ~= "" then
+        msgflag = msgtype
+    end
+
+    if not ProEnchantersMsgLogHistory then
+        ProEnchantersMsgLogHistory = {}
+    end
+    if not ProEnchantersMsgLogHistory["orderedTimes"] then 
+        ProEnchantersMsgLogHistory["orderedTimes"] = {}
+    end
+    if not ProEnchantersMsgLogHistory["loggedPlayers"] then 
+        ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    end
+    if not ProEnchantersMsgLogHistory["timesTables"] then 
+        ProEnchantersMsgLogHistory["timesTables"] = {}
+    end
+
+    local currentTime = GetTime() * 1000
+    local loggingcheck = "no"
+
+    if lowerName and lowerName ~= "" then
+        for _, ct in ipairs(ProEnchantersMsgLogHistory["orderedTimes"]) do
+            if currentTime == ct then
+                currentTime = currentTime + 1
+            end
+        end
+        table.insert( ProEnchantersMsgLogHistory["orderedTimes"], currentTime)
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            --print(name .. " being compared to " .. n)
+            if n == lowerName then
+                loggingcheck = "yes"
+                break
+            end
+        end
+        if loggingcheck ~= "yes" then
+            --print("inserting loggedplayers")
+            table.insert( ProEnchantersMsgLogHistory["loggedPlayers"], lowerName)
+        end
+        ProEnchantersMsgLogHistory["timesTables"][currentTime] = {
+            ["name"] = lowerName,
+            ["msg"] = msg,
+            ["msgtype"] = msgflag,
+            ["time"] = currentTime,
+            ["hour"] = hour,
+            ["minute"] = minute
+        }
+    end
+    PEUpdateMsgLog("addedmessage")
+end
+
+function PEClearPlayerMsgLogs(name)
+    --print(name .. " received to clear")
+    local lowerName = string.lower(name)
+
+    -- if name then set players msg logs to nil when work order is closed
+    for i = #ProEnchantersMsgLogHistory["loggedPlayers"], 1, -1 do
+        local n = ProEnchantersMsgLogHistory["loggedPlayers"][i]
+        if n == lowerName then
+            table.remove(ProEnchantersMsgLogHistory["loggedPlayers"], i)
+            -- loop backwards through
+            for time, data in pairs(ProEnchantersMsgLogHistory["timesTables"]) do
+                --print(data.name .. " comparing to " .. lowerName)
+                if data.name == lowerName then
+                    local timestring = data.time
+                    for i, tn in ipairs(ProEnchantersMsgLogHistory["orderedTimes"]) do
+                        --print(timestring .. " comparing to " .. tn)
+                        if tn == timestring then
+                            table.remove(ProEnchantersMsgLogHistory["orderedTimes"], i)
+                            break
+                        end
+                    end
+                    ProEnchantersMsgLogHistory["timesTables"][time] = nil
+                end
+            end
+        end
+    end
+end
+
+function PEClearMsgLogs()
+    ProEnchantersMsgLogHistory = {}
+    ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    ProEnchantersMsgLogHistory["timesTables"] = {}
+    ProEnchantersMsgLogHistory["orderedTimes"] = {}
+    -- wipe msg log table
 end

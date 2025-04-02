@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.5"
+local version = "v10.6"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -39,6 +39,10 @@ local mouseFocus = ""
 local tempEnchValue = ""
 PEcacheCheck = false
 PEsettingsWindowCheck = false
+ProEnchantersMsgLogHistory = ProEnchantersMsgLogHistory or {}
+ProEnchantersMsgLogHistory["orderedTimes"] = ProEnchantersMsgLogHistory["orderedTimes"] or {}
+ProEnchantersMsgLogHistory["loggedPlayers"] = ProEnchantersMsgLogHistory["loggedPlayers"] or {}
+ProEnchantersMsgLogHistory["timesTables"] = ProEnchantersMsgLogHistory["timesTables"] or {}
 
 -- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
 local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
@@ -415,6 +419,7 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 		local nametrim = string.gsub(author2, "%-.*", "")
 		-- AddonInvite = true
 		PEPlayerInvited[playerName] = msg
+		-- Add message to msg logs as well
 		if ProEnchantersOptions["PopUpWhispersOnly"] == true then
 			local autoInvMsg = AutoInviteMsg
 			local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", playerName)
@@ -430,6 +435,8 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 			end
 		else
 			InviteUnitPEAddon(author2)
+            -- Add message to msg logs as well
+            PELogMsg(author2, msg, "invitemessage")
 		end
 	end,
 	OnAlt = function(self, data)
@@ -1053,7 +1060,9 @@ PESupporters = {
 	"EmptyProfile",
 	"Threatco",
 	"Tapps",
-	"Ratakor"
+	"Ratakor",
+	"Stanfordlouie",
+	"Sativa"
 }
 
 -- Filtered Words Table
@@ -1493,6 +1502,13 @@ local function tooltipFormat(enchValue)
 		GameTooltip:Show()
 	end
 
+	if mouseFocus == "logsButton" then
+		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+		GameTooltip:AddLine(" ");
+		GameTooltip:AddLine("|cFFFFFFFFOpen the Msg Logs for focused customer|r")
+		GameTooltip:Show()
+	end
+
 	if mouseFocus == "titleButton" then
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
@@ -1782,7 +1798,7 @@ function ProEnchantersCreateWorkOrderFrame()
 
 	local targetButton = CreateFrame("Button", "targetbutton", WorkOrderFrame, "SecureActionButtonTemplate")
 	targetButton:SetSize(60, 25)
-	targetButton:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -15, -33)
+	targetButton:SetPoint("TOPRIGHT", WorkOrderFrame, "TOPRIGHT", -15, -32)
 	targetButton:SetText("Target")
 	local targetButtonText = targetButton:GetFontString()
 	targetButtonText:SetFont(peFontString, FontSize, "")
@@ -1805,12 +1821,14 @@ function ProEnchantersCreateWorkOrderFrame()
 	targetButton:SetAttribute("type", "macro")
 	targetButton:SetAttribute("macrotext", "/tar " .. target)
 
+	
+
 	-- Create an EditBox for the customer name
 	local customerNameEditBox = CreateFrame("EditBox", "ProEnchantersCustomerNameEditBox", WorkOrderFrame,
 		"InputBoxTemplate")
 	customerNameEditBox:SetSize(156, 20)
 	--customerNameEditBox:SetFrameLevel(9001)
-	customerNameEditBox:SetPoint("TOP", newcustomerBg, "TOP", -5, -10)
+	customerNameEditBox:SetPoint("TOPLEFT", newcustomerBg, "TOPLEFT", 75, -10)
 	customerNameEditBox:SetAutoFocus(false)
 	customerNameEditBox:SetFontObject("GameFontHighlight")
 	customerNameEditBox:SetScript("OnEnterPressed", function()
@@ -1875,7 +1893,48 @@ function ProEnchantersCreateWorkOrderFrame()
 	local targetBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
 	targetBg:SetColorTexture(unpack(MainButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
 	targetBg:SetSize(60, 20)                             -- Adjust size as needed
-	targetBg:SetPoint("LEFT", createBg, "RIGHT", 10, 0)
+	targetBg:SetPoint("CENTER", targetButton, "CENTER", 0, 0)
+
+	local msglogBg = WorkOrderFrame:CreateTexture(nil, "ARTWORK")
+	msglogBg:SetColorTexture(unpack(MainButtonColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	msglogBg:SetSize(60, 20)                             -- Adjust size as needed
+	msglogBg:SetPoint("RIGHT", targetButton, "LEFT", -10, 0)
+
+	-- Create a "Create" button
+	local msglogBtn = CreateFrame("Button", nil, WorkOrderFrame) --, "GameMenuButtonTemplate")
+	msglogBtn:SetSize(60, 20)
+	--createButton:SetFrameLevel(9001)
+	msglogBtn:SetPoint("CENTER", msglogBg, "CENTER", 0, 0)
+	msglogBtn:SetText("Msg Logs")
+	local msglogBtnText = msglogBtn:GetFontString()
+	msglogBtnText:SetFont(peFontString, FontSize, "")
+	msglogBtn:SetNormalFontObject("GameFontHighlight")
+	msglogBtn:SetHighlightFontObject("GameFontNormal")
+	msglogBtn:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			mouseFocus = "logsButton"
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			tooltipFormat()
+		end
+	end)
+
+	msglogBtn:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
+	msglogBtn:SetScript("OnClick", function()
+		customerNameEditBox:ClearFocus() -- Remove focus from the edit box
+		local customerName = ProEnchantersCustomerNameEditBox:GetText()
+		-- update chat log for this userUpdateTradeHistory(customerName)
+		if not ProEnchantersMsgLogFrame:IsShown() then
+			ProEnchantersMsgLogFrame:Show()
+			PEUpdateMsgLog(customerName)
+		else
+			ProEnchantersMsgLogFrame:Hide()
+		end
+	end)
 
 
 	-- Scroll frame setup...
@@ -2070,11 +2129,14 @@ function ProEnchantersCreateWorkOrderFrame()
 				frameInfo.Completed = true
 				frameInfo.Frame:Hide()
 				local customerName = frameInfo.Frame.customerName
+				--print(customerName)
 				local tradeLine = LIGHTGREEN ..
 					"---- End of Workorder# " .. frameInfo.Frame.frameID .. " ----" .. ColorClose
 				table.insert(ProEnchantersTradeHistory[customerName], tradeLine)
+				PEClearPlayerMsgLogs(customerName)
 			end
 		end
+		PEUpdateMsgLog("clearedallworkorders")
 		ProEnchantersCustomerNameEditBox:SetText("")
 		ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
 		ProEnchantersFiltersEditBox:SetText("")
@@ -2124,6 +2186,7 @@ function ProEnchantersCreateWorkOrderFrame()
 		ProEnchantersGoldFrame:Hide()
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
+		ProEnchantersMsgLogFrame:Hide()
 	end)
 
 	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
@@ -4985,7 +5048,7 @@ function ProEnchantersCreateCreditsFrame()
 	SupportersHeader:SetFontObject("GameFontHighlight")
 	SupportersHeader:SetPoint("TOP", discordButton, "BOTTOM", 0, -10)
 	SupportersHeader:SetText(SEAGREEN ..
-		"~" .. ColorClose .. DARKGOLDENROD .. " Supporters " .. ColorClose .. SEAGREEN .. "~" .. ColorClose)
+		"~" .. ColorClose .. DARKGOLDENROD .. " Those who've helped along the way " .. ColorClose .. SEAGREEN .. "~" .. ColorClose)
 	SupportersHeader:SetFont(peFontString, FontSize + 4, "")
 
 	-- Create a close button background
@@ -7017,7 +7080,7 @@ function ProEnchantersCreateTriggersFrame()
 	FilteredWordsHeaderText:SetFont(peFontString, FontSize, "")
 	FilteredWordsHeader:SetNormalFontObject("GameFontHighlight")
 	FilteredWordsHeader:SetHighlightFontObject("GameFontHighlight")
-	FilteredWordsHeader:SetScript("OnEnter", function(self) --bookmark
+	FilteredWordsHeader:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine("Filter Examples")
 		GameTooltip:AddDoubleLine("Example: if","Filters: '" .. RED .. "if" .. ColorClose .. " i was able to fly', 'lf l" .. RED .. "if" .. ColorClose .. "esteal enchant'")
@@ -7142,7 +7205,7 @@ function ProEnchantersCreateTriggersFrame()
 	TriggerWordsHeaderText:SetFont(peFontString, FontSize, "")
 	TriggerWordsHeader:SetNormalFontObject("GameFontHighlight")
 	TriggerWordsHeader:SetHighlightFontObject("GameFontHighlight")
-	TriggerWordsHeader:SetScript("OnEnter", function(self) --bookmark
+	TriggerWordsHeader:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine("Trigger Examples")
 		GameTooltip:AddDoubleLine("Example: ench","Triggers: 'lf " .. GREEN .. "ench" .. ColorClose .. "anter', 'lf 42 str to boots " .. GREEN .. "ench" .. ColorClose .. "antment', 'lf major " .. GREEN .. "ench" .. ColorClose .. "antingpowers'")
@@ -7258,7 +7321,7 @@ function ProEnchantersCreateTriggersFrame()
 	InvWordsHeaderText:SetFont(peFontString, FontSize, "")
 	InvWordsHeader:SetNormalFontObject("GameFontHighlight")
 	InvWordsHeader:SetHighlightFontObject("GameFontHighlight")
-	InvWordsHeader:SetScript("OnEnter", function(self) --bookmark
+	InvWordsHeader:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine("Inv Examples")
 		GameTooltip:AddDoubleLine("Example: inv","Triggers: 'inv me pls', 'invite please'")
@@ -8629,6 +8692,293 @@ function ProEnchantersCreateGoldFrame()
 	return frame
 end
 
+function ProEnchantersCreateMsgLogFrame() -- bookmark
+	local MsgLogFrame = CreateFrame("Frame", "ProEnchantersMsgLogFrame", UIParent, "BackdropTemplate")
+	MsgLogFrame:SetFrameStrata("FULLSCREEN")
+	MsgLogFrame:SetSize(450, 350) -- Adjust height as needed
+	MsgLogFrame:SetPoint("TOP", 0, -300)
+	MsgLogFrame:SetMovable(true)
+	--MsgLogFrame:SetResizable(true) we'll see about this.
+	--MsgLogFrame:SetResizeBounds(455, 250, 455, 2000)
+	MsgLogFrame:EnableMouse(true)
+	MsgLogFrame:RegisterForDrag("LeftButton")
+	MsgLogFrame:SetScript("OnDragStart", MsgLogFrame.StartMoving)
+	MsgLogFrame:SetScript("OnDragStop", function()
+		MsgLogFrame:StopMovingOrSizing()
+	end)
+
+	local backdrop = {
+		edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+		edgeSize = 1,                        -- Border thickness
+	}
+
+	-- Apply the backdrop to the WorkOrderFrame
+	MsgLogFrame:SetBackdrop(backdrop)
+	MsgLogFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
+	MsgLogFrame:Hide()
+
+	-- Create a full background texture
+	local bgTexture = MsgLogFrame:CreateTexture(nil, "BACKGROUND")
+	bgTexture:SetColorTexture(.1, .1, .1, .99)--unpack(SettingsWindowBackgroundOpaque)) -- Set RGBA values for your preferred color and alpha
+	bgTexture:SetSize(450, 325)
+	bgTexture:SetPoint("TOP", MsgLogFrame, "TOP", 0, -25)
+
+	-- Create a title background
+	local titleBg = MsgLogFrame:CreateTexture(nil, "BACKGROUND")
+	titleBg:SetColorTexture(unpack(TopBarColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	titleBg:SetSize(450, 25)                        -- Adjust size as needed
+	titleBg:SetPoint("TOP", MsgLogFrame, "TOP", 0, 0)
+
+	-- Create a title for Options
+	local titleHeader3 = MsgLogFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader3:SetFontObject(UIFontBasic)
+	titleHeader3:SetPoint("TOP", titleBg, "TOP", 0, -8)
+	titleHeader3:SetText("Pro Enchanters Customer Chat Log")
+	ProEnchantersMsgLogFrame.title = titleHeader3
+
+	-- Scroll frame setup...
+	local MsgLogScrollFrame = CreateFrame("ScrollFrame", "ProEnchantersMsgLogScrollFrame", MsgLogFrame,
+		"UIPanelScrollFrameTemplate")
+	MsgLogScrollFrame:SetSize(425, 300)
+	MsgLogScrollFrame:SetPoint("TOP", titleBg, "BOTTOM", -12, 0)
+
+	-- Create a scroll background
+	local scrollBg = MsgLogFrame:CreateTexture(nil, "ARTWORK")
+	scrollBg:SetColorTexture(unpack(ButtonDisabled)) -- Set RGBA values for your preferred color and alpha
+	scrollBg:SetSize(20, 300)                     -- Adjust size as needed
+	scrollBg:SetPoint("TOPRIGHT", MsgLogFrame, "TOPRIGHT", 0, -25)
+
+	-- Access the Scroll Bar
+	local scrollBar = MsgLogScrollFrame.ScrollBar
+
+	-- Customize Thumb Texture
+	local thumbTexture = scrollBar:GetThumbTexture()
+	thumbTexture:SetTexture(nil) -- Clear existing texture
+	thumbTexture:SetColorTexture(unpack(ButtonStandardAndThumb))
+	--thumbTexture:SetAllPoints(thumbTexture)
+
+	-- Customize Scroll Up Button Textures
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Clear existing textures
+	upButton:GetNormalTexture():SetTexture(nil)
+	upButton:GetPushedTexture():SetTexture(nil)
+	upButton:GetDisabledTexture():SetTexture(nil)
+	upButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Customize Scroll Up Button Textures with Solid Colors
+	local upButton = scrollBar.ScrollUpButton
+
+	-- Set colors
+	upButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Replace RGBA values as needed
+	upButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed))        -- Replace RGBA values as needed
+	upButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled))    -- Replace RGBA values as needed
+	upButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight))  -- Replace RGBA values as needed
+
+	-- Repeat for Scroll Down Button
+	local downButton = scrollBar.ScrollDownButton
+
+	-- Clear existing textures
+	downButton:GetNormalTexture():SetTexture(nil)
+	downButton:GetPushedTexture():SetTexture(nil)
+	downButton:GetDisabledTexture():SetTexture(nil)
+	downButton:GetHighlightTexture():SetTexture(nil)
+
+	-- Set colors
+	downButton:GetNormalTexture():SetColorTexture(unpack(ButtonStandardAndThumb)) -- Adjust colors as needed
+	downButton:GetPushedTexture():SetColorTexture(unpack(ButtonPushed))        -- Adjust colors as needed
+	downButton:GetDisabledTexture():SetColorTexture(unpack(ButtonDisabled))    -- Adjust colors as needed
+	downButton:GetHighlightTexture():SetColorTexture(unpack(ButtonHighlight))  -- Adjust colors as needed
+
+	local upButtonText = upButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	upButtonText:SetText("-")                              -- Set the text for the up button
+	upButtonText:SetFont(peFontString, FontSize, "")
+	upButtonText:SetPoint("CENTER", upButton, "CENTER", 0, 0) -- Adjust position as needed
+
+	local downButtonText = downButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+	downButtonText:SetText("-")                                -- Set the text for the down button
+	downButtonText:SetFont(peFontString, FontSize, "")
+	downButtonText:SetPoint("CENTER", downButton, "CENTER", 0, 0) -- Adjust position as needed
+
+
+	-- Scroll child frame where elements are actually placed
+	local ScrollChild = CreateFrame("Frame")
+	ScrollChild:SetWidth(450) -- Adjust height based on the number of elements
+	MsgLogScrollFrame:SetScrollChild(ScrollChild)
+
+	-- Scroll child items below
+
+	-- Create a header for Work While Closed
+	local textLogHeader = ScrollChild:CreateFontString(nil, "OVERLAY") -- change to editbox so you can highlight the text but set to not editable? maybe doesnt matter?
+	textLogHeader:SetFontObject(UIFontBasic)
+	textLogHeader:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 15, -10)
+	textLogHeader:SetJustifyH("LEFT")
+	textLogHeader:SetWidth(400)
+	textLogHeader:SetWordWrap(true)
+	textLogHeader:SetText("temp")
+	textLogHeader:Hide()
+
+	local textLogHeaderEditBox = CreateFrame("EditBox", "ProEnchantersMsgLogEditBox", ScrollChild)
+	textLogHeaderEditBox:SetWidth(400) -- Adjust size as needed
+	textLogHeaderEditBox:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 15, -10)
+	textLogHeaderEditBox:SetMultiLine(true)
+	textLogHeaderEditBox:SetAutoFocus(false)
+	local textLogHeaderEditBoxText = textLogHeaderEditBox:GetFontObject()
+	textLogHeaderEditBoxText:SetFontObject(UIFontBasic)
+	textLogHeaderEditBoxText:SetJustifyH("LEFT")
+	textLogHeaderEditBox:SetSpacing(2)
+	textLogHeaderEditBox:EnableMouse(false)
+	textLogHeaderEditBox:SetHyperlinksEnabled(true)
+	textLogHeaderEditBox:SetFontObject("GameFontHighlight")
+	--textLogHeaderEditBox:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 0, 0)
+	--textLogHeaderEditBox:SetPoint("BOTTOMRIGHT", ScrollChild, "BOTTOMRIGHT", 0, 0) -- Anchor bottom right to scrollChild
+	textLogHeaderEditBox:SetText("temp")
+	-- Make EditBox non-editable
+	textLogHeaderEditBox:EnableKeyboard(false)
+
+	--[[local customerBg = ScrollChild:CreateTexture(nil, "BORDER")
+	customerBg:SetColorTexture(.1, .1, .1, .8) -- Set RGBA values for your preferred color and alpha
+	customerBg:SetPoint("TOPLEFT", textLogHeaderEditBox, "TOPLEFT", -5, 5)
+	customerBg:SetPoint("BOTTOMRIGHT", textLogHeaderEditBox, "BOTTOMRIGHT", 5, -5)]]
+	
+
+	ProEnchantersMsgLogFrame.textLogHeader = textLogHeaderEditBox
+	ProEnchantersMsgLogFrame.textLogHeaderSize = textLogHeader
+	ProEnchantersMsgLogFrame.ScrollChild = ScrollChild
+	ProEnchantersMsgLogFrame.currentLogs = "all"
+	--PEUpdateMsgLog()
+
+	-- Create a close button background
+	local closeBg = MsgLogFrame:CreateTexture(nil, "OVERLAY")
+	closeBg:SetColorTexture(unpack(BottomBarColorOpaque)) -- Set RGBA values for your preferred color and alpha
+	closeBg:SetSize(450, 25)                           -- Adjust size as needed
+	closeBg:SetPoint("BOTTOMLEFT", MsgLogFrame, "BOTTOMLEFT", 0, 0)
+
+	local closeButton = CreateFrame("Button", nil, MsgLogFrame)
+	closeButton:SetSize(50, 25)                                   -- Adjust size as needed
+	closeButton:SetPoint("BOTTOMLEFT", closeBg, "BOTTOMLEFT", 10, 0) -- Adjust position as needed
+	closeButton:SetText("Close")
+	local closeButtonText = closeButton:GetFontString()
+	closeButtonText:SetFont(peFontString, FontSize, "")
+	closeButton:SetNormalFontObject("GameFontHighlight")
+	closeButton:SetHighlightFontObject("GameFontNormal")
+	closeButton:SetScript("OnClick", function()
+		MsgLogFrame:Hide()
+	end)
+
+	local ClearButton = CreateFrame("Button", nil, MsgLogFrame)
+	ClearButton:SetSize(80, 25)                             -- Adjust size as needed
+	--ClearAllButton:SetFrameLevel(9001)
+	ClearButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
+	ClearButton:SetText("Cleanse Logs")
+	local ClearButtonText = ClearButton:GetFontString()
+	ClearButtonText:SetFont(peFontString, FontSize, "")
+	ClearButton:SetNormalFontObject("GameFontHighlight")
+	ClearButton:SetHighlightFontObject("GameFontNormal")
+	ClearButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("Clear all logged messages not tied to an open work order")
+			GameTooltip:Show()
+		end
+	end)
+
+	ClearButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
+	ClearButton:SetScript("OnClick", function()
+		local cleartable = {}
+		local safetable = {}
+		
+		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
+			local customerName = frameInfo.Frame.customerName
+			if frameInfo.Completed == false then
+				table.insert(safetable, customerName)
+				--print(customerName .. " added to safe table")
+			end
+		end
+
+		for id, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+			-- check if safe
+			local safe = false
+			for i, s in ipairs(safetable) do
+				if s == n then
+					safe = true
+					--print(n .. " found, set safe to true")
+					break
+				end
+			end
+			if not safe then
+				table.insert(cleartable, n)
+				--print(n .. " added to clear table")
+			end
+		end
+
+		for _, clear in ipairs(cleartable) do
+			--print("clearing " .. clear)
+			PEClearPlayerMsgLogs(clear)
+		end
+		PEUpdateMsgLog(ProEnchantersMsgLogFrame.currentLogs)
+	end)
+
+	local refreshButton = CreateFrame("Button", nil, MsgLogFrame)
+	refreshButton:SetSize(60, 25)                             -- Adjust size as needed
+	--ClearAllButton:SetFrameLevel(9001)
+	refreshButton:SetPoint("RIGHT", ClearButton, "LEFT", -5, 0) -- Adjust position as needed
+	refreshButton:SetText("Refresh")
+	local refreshButtonText = refreshButton:GetFontString()
+	refreshButtonText:SetFont(peFontString, FontSize, "")
+	refreshButton:SetNormalFontObject("GameFontHighlight")
+	refreshButton:SetHighlightFontObject("GameFontNormal")
+	refreshButton:SetScript("OnEnter", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip:AddLine("Refresh displayed logs")
+			GameTooltip:Show()
+		end
+	end)
+
+	refreshButton:SetScript("OnLeave", function(self)
+		if ProEnchantersOptions["EnableTooltips"] == true then
+			GameTooltip:Hide()
+		end
+	end)
+
+	refreshButton:SetScript("OnClick", function()
+		local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
+		PEUpdateMsgLog(currentCusFocus)
+	end)
+
+	-- MsgLogFrame On Show Script
+	MsgLogFrame:SetScript("OnShow", function()
+		-- Run Function that sets text on show?
+	end)
+
+	--[[local resizeButton = CreateFrame("Button", nil, WorkOrderFrame) -- MAYBE.
+	resizeButton:SetSize(16, 16)
+	resizeButton:SetPoint("BOTTOMRIGHT")
+	resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
+	resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
+	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
+	if wofSize < 240 then
+		resizeButton:Hide()
+	end
+	resizeButton:SetScript("OnMouseDown", function(self, button)
+		WorkOrderFrame:StartSizing("BOTTOMRIGHT")
+		WorkOrderFrame:SetUserPlaced(true)
+	end)
+
+	resizeButton:SetScript("OnMouseUp", function(self, button)
+		WorkOrderFrame:StopMovingOrSizing()
+	end)]]
+
+	return MsgLogFrame
+end
+
 function UpdateCheckboxesBasedOnFilters()
 	for key, checkbox in pairs(enchantFilterCheckboxes) do
 		local isChecked = ProEnchantersOptions.filters[key]
@@ -8938,9 +9288,12 @@ function CreateCusWorkOrder(customerName, bypass)
 	tradehistoryEditBox:SetFontObject("GameFontHighlight")
 	tradehistoryEditBox:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 0, 0)
 	tradehistoryEditBox:SetPoint("BOTTOMRIGHT", scrollChild, "BOTTOMRIGHT", 0, 0) -- Anchor bottom right to scrollChild
+	-- Make EditBox non-editable
+	tradehistoryEditBox:EnableKeyboard(false)
+
 	-- Tooltips for trade history within work order
 
-	tradehistoryEditBox:EnableKeyboard(true)
+	-- tradehistoryEditBox:EnableKeyboard(true)
 
 
 
@@ -9035,8 +9388,7 @@ function CreateCusWorkOrder(customerName, bypass)
 		end
 	end)
 
-	-- Make EditBox non-editable
-	tradehistoryEditBox:EnableKeyboard(false)
+	
 
 	-- Store the trade history EditBox in the frame
 	frame.tradeHistoryEditBox = tradehistoryEditBox
@@ -9194,6 +9546,8 @@ function CreateCusWorkOrder(customerName, bypass)
 		table.insert(ProEnchantersTradeHistory[customerNameLower], tradeLine)
 		ProEnchantersWorkOrderFrames[frameID].Completed = true
 		PEPlayerInvited[customerName] = nil
+		PEClearPlayerMsgLogs(customerNameLower)
+		PEUpdateMsgLog("clearedworkorder")
 
 		-- Move all existing frames up if they are lower than the frame being deleted
 		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
@@ -9211,6 +9565,7 @@ function CreateCusWorkOrder(customerName, bypass)
 			ProEnchantersCustomerNameEditBox:SetText("")
 			ProEnchantersCustomerNameEditBox:ClearFocus(ProEnchantersCustomerNameEditBox)
 		end
+		
 	end)
 
 	yOffset = yOffset - 162 -- Decrease for a new frame
@@ -10704,6 +11059,7 @@ local function OnAddonLoaded()
 	ProEnchantersGoldFrame = ProEnchantersCreateGoldFrame()
 	ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	ProEnchantersSoundsFrame = ProEnchantersCreateSoundsFrame()
+	ProEnchantersMsgLogFrame = ProEnchantersCreateMsgLogFrame()
 
 	--ProEnchantersCustomerNameEditBox:SetText("tempdisabled") -- 
 	FilterEnchantButtons()
@@ -10724,6 +11080,8 @@ local function OnAddonLoaded()
 	ShowOpenWorkOrders()
 	ClearAllTempIgnored()
 	ClearAllAddonInvited()
+	PEClearMsgLogs()
+	PEUpdateMsgLog("addonloaded")
 
 	-- cache Enchanting items on load
 	local cachedamt = 0
@@ -10773,6 +11131,8 @@ SLASH_PROENCHANTERSAFKMODE1 = "/peafkmode"
 SlashCmdList["PROENCHANTERS"] = function(msg)
 	if msg == "reset" then
 		FullResetFrames()
+	elseif msg == "msglogclear" then
+		PEClearMsgLogs()
 	elseif msg == "recache" then
 		PEItemCache()
 	elseif msg == "goldreset" then
@@ -11114,11 +11474,6 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local localPlayerJoinsRaid = PEenchantingLocales["PlayerJoinsRaidText"][LocalLanguage]
 		local localPlayerInGroup = PEenchantingLocales["PlayerAlreadyInGroupText"][LocalLanguage]
 		if string.find(text, localInvitedText, 1, true) then
-			--if AddonInvite == false then
-			--	NonAddonInvite = true
-			--end
-			--if AddonInvite == true then
-				--AddonInvite = false
 
 				local matchString = string.gsub(localInvitedTextSpecific, "PLAYER", "(.+)")
 				local playerName = string.match(text, matchString)
@@ -11200,9 +11555,14 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 			--end
 		elseif string.find(text, localPlayerJoinsParty, 1, true) then
+
 			if GroupLeaderCheck() == false then
 				return
 			end
+			
+			
+
+
 			local matchString = ""
 			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 				matchString = "(.+)" .. localPlayerJoinsParty
@@ -11210,6 +11570,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				matchString = "(.+) " .. localPlayerJoinsParty
 			end
 			local playerName = string.match(text, matchString)
+			-- Create Msg Logging for player if doesn't exist
+			local name = string.lower(playerName)
+			PECheckIfMsgShouldLog(name, "groupjoin")
+
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
@@ -11318,6 +11682,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			if GroupLeaderCheck() == false then
 				return
 			end
+			
+
+
 			local matchString = ""
 			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 				matchString = "(.+)" .. localPlayerJoinsRaid
@@ -11325,6 +11692,10 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				matchString = "(.+) " .. localPlayerJoinsRaid
 			end
 			local playerName = string.match(text, matchString)
+			-- Create Msg Logging for player if doesn't exist
+			local name = string.lower(playerName)
+			PECheckIfMsgShouldLog(name, "groupjoin")
+
 			if ProEnchantersOptions["WorkWhileClosed"] == true then
 				local unit = GetUnitName("player")
 				SetRaidTarget(unit, PESetRaidIcon)
@@ -11526,6 +11897,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			--end
 		end
 	elseif event == "CHAT_MSG_SAY" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_YELL" then
+		
 		-- Check for matching Emote
 		local msg, author2, language, channelNameWithNumber, target, flags, unknown, channelNumber, channelName = ...
 		local msg2 = string.lower(msg)
@@ -11549,13 +11921,40 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local channelCheck = "General - " .. city
 		local defenseCheck = "LocalDefense - " .. city
 		local guildrecruitCheck = "GuildRecruitment - City"
+
+		-- Add check if msg should get logged such as if player was invited or work order exists
+		-- if ProEnchantersMsgLogHistory["loggedPlayers"] maybe
+		if channelName == "" or channelName == nil then
+			if event == "CHAT_MSG_SAY" then
+				local msgtype ="say"
+				local checktolog = PECheckIfMsgShouldLog(author3, "sayyell")
+				if checktolog then
+					PELogMsg(author3, msg, msgtype)
+				end
+				if ProEnchantersOptions["DebugLevel"] == 69 then
+					PELogMsg(author3, msg, msgtype)
+					print("Adding say message")
+				end
+			elseif event == "CHAT_MSG_YELL" then
+				local msgtype ="yell"
+				local checktolog = PECheckIfMsgShouldLog(author3, "sayyell")
+				if checktolog then
+					print("Adding yell message")
+					PELogMsg(author3, msg, msgtype)
+				end
+				if ProEnchantersOptions["DebugLevel"] == 69 then
+					PELogMsg(author3, msg, msgtype)
+				end
+			end
+		end
+
 		if ProEnchantersOptions["DebugLevel"] == 99 then
 			print("channelName/channelNumber/channelNameWithNumber from " ..
 				author2 .. ": " .. channelName .. "/" .. channelNumber .. "/" .. channelNameWithNumber)
 		end
 
 		if ProEnchantersOptions.AllChannels["TradeChannel"] == true and string.find(channelName, localTradeChannel, 1, true) then
-
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
 
 			if filtercheck == "nofilter" then
@@ -11578,7 +11977,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11613,7 +12012,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 
 		elseif ProEnchantersOptions.AllChannels["LFGChannel"] == true and string.find(channelName, localLFGChannel, 1, true) then
-
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
 
 			if filtercheck == "nofilter" then
@@ -11636,7 +12035,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11671,7 +12070,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 
 		elseif ProEnchantersOptions.AllChannels["World"] == true and string.find(channelName, localWorldChannel, 1, true) then
-			
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
 
 			if filtercheck == "nofilter" then
@@ -11694,7 +12093,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11729,7 +12128,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 
 		elseif ProEnchantersOptions.AllChannels["Services"] == true and string.find(channelName, localServicesChannel, 1, true) then
-			
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
 
 			if filtercheck == "nofilter" then
@@ -11752,7 +12151,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11787,7 +12186,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 
 		elseif ProEnchantersOptions.AllChannels["LocalDefense"] == true and string.find(channelName, localDefenseChannel, 1, true) then
-			
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
 
 			if filtercheck == "nofilter" then
@@ -11810,7 +12209,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11845,8 +12244,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 
 		elseif ProEnchantersOptions.AllChannels["LocalCity"] == true and string.find(channelName, localGeneralChannel, 1, true) then
-			
+			local msgtype = "invitemessage"
 			filtercheck, printout = PEfilterCheck(msg, author2)
+
+			if ProEnchantersOptions["DebugLevel"] == 69 then
+				PELogMsg(author3, msg, msgtype)
+				print("Adding local city message")
+			end
 
 			if filtercheck == "nofilter" then
 				for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
@@ -11868,7 +12272,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							return
 						end
 
-						PEPotentialCustomerInvite(author3, author2, msg)
+						PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 
 						break
 					end
@@ -11905,6 +12309,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		elseif ProEnchantersOptions.AllChannels["SayYell"] == true then
 			if channelName == "" or channelName == nil then
 
+				local msgtype = "invitemessage"
 				filtercheck, printout = PEfilterCheck(msg, author2)
 
 				if filtercheck == "nofilter" then
@@ -11927,7 +12332,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								return
 							end
 	
-							PEPotentialCustomerInvite(author3, author2, msg)
+							PEPotentialCustomerInvite(author3, author2, msg, msgtype)
 	
 							break
 						end
@@ -11971,6 +12376,22 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local startPos, endPos = string.find(msg, "!")
 		local enchantKey = ""
 		local languageId = ""
+
+		-- Add to message logs
+		if event == "CHAT_MSG_PARTY" then
+			local msgtype ="party"
+			PELogMsg(author3, msg, msgtype)
+		elseif event == "CHAT_MSG_RAID" then
+			local msgtype ="raid"
+			PELogMsg(author3, msg, msgtype)
+		elseif event == "CHAT_MSG_PARTY_LEADER" then
+			local msgtype ="party"
+			PELogMsg(author3, msg, msgtype)
+		elseif event == "CHAT_MSG_RAID_LEADER" then
+			local msgtype ="raid"
+			PELogMsg(author3, msg, msgtype)
+		end
+
 		if string.find(msg, "!", 1, true) then
 			if ProEnchantersOptions["DebugLevel"] == 88 then
 				print("Possible !command found from " .. author2 .. ": ! found within " .. msg)
@@ -12215,6 +12636,11 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 		local isPartyFull = MaxPartySizeCheck()
 		local enchantKey = ""
 		local languageId = ""
+
+		-- add to msg log
+		PELogMsg(author3, msg, "whisper")
+
+
 		if ProEnchantersOptions["DebugLevel"] == 88 then
 			print("Whisper received")
 		end
