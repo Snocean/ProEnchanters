@@ -124,66 +124,6 @@ function PEfilterCheck(msg, author2) -- Need to sort this
    return finalcheck, printout
 end
 
---[[function PEMsgCheck(msg, author2, tword) -- To be worked on
-    --print("checking tword: " .. tword)
-
-	local check1 = false
-	local check2 = false
-	local check3 = false
-	local check4 = false
-    local author = string.gsub(author2, "%-.*", "")
-	local tword = string.gsub(tword, "+", "")
-    local msg2 = string.lower(msg)
-	local msg3 = string.gsub(msg2, "+", "")
-	local startPos, endPos = string.find(msg3, tword)
-	local finalcheck = "notrigger"
-	local printout = ""
-    local tfound = ""
-    local breakloop = false
-	
-	if LocalLanguage == nil then
-		LocalLanguage = "English"
-	end 
-       
-        -- Check for Trigger Word within Message
-        if string.find(msg2, tword, 1, true) then
-            
-            check1 = true
-            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            --print("found: " .. msg4)
-            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
-
-            -- Check if Trigger Word within Message is contained within a word or not
-            if startPos then
-                if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-                    check2 = true
-                    printout = tword .. " does not have any leading characters, returning check2 as true"
-                    --print(tword .. " not within word")
-                else
-                    local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
-                    printout = tword .. " is contained within a word: " .. msg4
-                    finalcheck = "inword"
-                    if ProEnchantersOptions["DebugLevel"] == 2 then
-                        --print(printout)
-                    end
-                    if ProEnchantersOptions["DebugLevel"] == 3 then
-                        print(printout)
-                    end
-                    return finalcheck, printout, tfound, breakloop
-                end
-            end
-
-            -- If all checks passed, return true
-            if check1 == true and check2 == true and check3 == false and check4 == false then
-                finalcheck = "passed"
-                printout = "All checks passed, proceeding with invites/messages"
-                breakloop = true
-                return finalcheck, printout, tfound, breakloop
-            end
-		end
-	return finalcheck, printout, tfound, breakloop
-end]]
-
 function PEMsgCheck(msg, author2, tword) -- To be worked on
     --print("checking tword: " .. tword)
 
@@ -192,10 +132,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
 	local check3 = false
 	local check4 = false
     local author = string.gsub(author2, "%-.*", "")
-	local tword = string.gsub(tword, "+", "")
     local msg2 = string.lower(msg)
-	local msg3 = string.gsub(msg2, "+", "")
-	local startPos, endPos = string.find(msg3, tword)
 	local finalcheck = "notrigger"
 	local printout = ""
     local tfound = ""
@@ -327,8 +264,12 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
                 return finalcheck, printout, tfound, breakloop
             end
     else
+        local tword = string.gsub(tword, "+", "")
+	    local msg3 = string.gsub(msg2, "+", "")
+        local startPos, endPos = string.find(msg3, tword)
+
         if string.find(msg2, tword, 1, true) then
-        
+
             check1 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
             --print("found: " .. msg4)
@@ -1460,6 +1401,71 @@ function ProEnchantersConvertMats(customerName, index)
     end
 end
 
+function PETestItemInfo(input)
+    -- Attempt to return item name once
+    local itemName = C_Item.GetItemNameByID(input)
+
+    -- Start repeating timer attempting to input name = id into a table per item ID
+    local myTimer = C_Timer.NewTicker(2, function(self)
+        -- once itemName returns properly, add it to table as name = id
+            if itemName then
+                if ProEnchantersTables then
+                    if not ProEnchantersTables.ItemCache then
+                        ProEnchantersTables.ItemCache = {}
+                    end
+                end
+                ProEnchantersTables.ItemCache[itemName] = input
+                self:Cancel()
+            else
+                -- repeat trying to get itemName on each timer loop if it did not exist previously
+                itemName = C_Item.GetItemNameByID(input)
+            end
+        end, 15) -- repeat 15 times per item ID to ensuse all item IDs are entered
+end
+
+function PETestItemCacheTimed()
+
+    local count = 0
+
+    -- Create tables if not existing
+    if not ProEnchantersTables then
+        ProEnchantersTables = {}
+    end
+    if not ProEnchantersTables.ItemCache then
+        ProEnchantersTables.ItemCache = {}
+    end
+
+    -- Start loop for all items, items in PEAllItems are all available equipable items in chest/gloves/wrists/boots/weapons
+    for _, input in ipairs(PEAllItems) do
+        local flag = false
+        local itemname = ""
+        -- If item already exists in item cache, set flag to true to skip it
+        for name, id in pairs(ProEnchantersTables.ItemCache) do
+            if id == input then
+                flag = true
+                itemname = name
+                break
+            end
+        end
+        -- if item did not exist in cache table, start timer for putting it into the table
+        if flag == false then
+            PETestItemInfo(input)
+            count = count + 1
+        end
+    end
+
+    -- 1583 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
+    count = count - 1583 -- number of items that are not cacheable
+
+    if count > 0 then
+        print(count .. " items attempting to cache, please wait 30 seconds for cacheing to complete (when all items are cached this message should no longer display on addon load)")
+        local myTimer2 = C_Timer.NewTicker(30, function(self) print("Caching should be completed") end, 1)
+    end
+    if count == 0 then
+        --print("all items cached")
+    end
+end
+
 function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName == nil then
         return
@@ -1468,13 +1474,57 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     ProEnchantersUpdateTradeWindowText(customerName)
     local SlotTypeInput = ""
     local tItemLink = GetTradeTargetItemLink(7)
+    local tItemName = GetTradeTargetItemInfo(7)
+    local tItemID
 
-    if not tItemLink then
+    if tItemName then
+        tItemID = ProEnchantersTables.ItemCache[tItemName]
+    end
+
+    if tItemID then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("tItemID returns: " .. tItemID)
+        end
+    elseif tItemLink then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("no itemID found, try doing a /pe cacheitems")
+            print("tItemLink returns: " .. tItemLink)
+        end
+    else
+        print("exiting function - no itemID or itemLink found, try doing a /pe cacheitems")
         return
     end
 
-    if tItemLink then
+    if tItemID then
+        --local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
+
+        local tEQLoc = {
+            ['INVTYPE_CHEST'] = "Chest",
+            ['INVTYPE_ROBE'] = "Chest",
+            ['INVTYPE_FEET'] = "Boots",
+            ['INVTYPE_WRIST'] = "Bracer",
+            ['INVTYPE_HAND'] = "Gloves",
+            ['INVTYPE_CLOAK'] = "Cloak",
+            ['INVTYPE_WEAPON'] = "Weapon",
+            ['INVTYPE_SHIELD'] = "Shield",
+            ['INVTYPE_2HWEAPON'] = "Weapon",
+            ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon"
+        }
+
+        SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
+    elseif tItemLink then
         local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        --local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
 
         local tEQLoc = {
             ['INVTYPE_CHEST'] = "Chest",
@@ -1493,7 +1543,14 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
     end
 
+    if ProEnchantersOptions["DebugLevel"] == 66 then
+        print("Slot Type returned: " .. SlotTypeInput)
+    end
+
     if SlotTypeInput == "Unknown" or SlotTypeInput == nil then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("Slot Type invalid, breaking function")
+        end
         return
     end
 
@@ -1510,6 +1567,11 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName then
         for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+
+                if ProEnchantersOptions["DebugLevel"] == 66 then
+                    print("updating slot specific trade buttons for " .. customerName)
+                end
+
                 local function alphanumericSort(a, b)
                     -- Extract number from the string
                     local numA = tonumber(a:match("%d+"))
@@ -1532,11 +1594,18 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 for _, enchantID in ipairs(frameInfo.Enchants) do
                     if ProEnchantersOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("10 buttons loaded, breaking loop")
+                            end
                             break
                         end
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
+                        
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1547,6 +1616,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck ~= true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats available, setting button to available")
+                                end
                                 if ProEnchantersOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
@@ -1590,6 +1662,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1600,6 +1675,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats missing, setting button to announce")
+                                end
                                 if ProEnchantersOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
@@ -1661,7 +1739,23 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 frame.otherEnchants:SetScript("OnClick", function()
                     local customerName = PEtradeWho
                     customerName = string.lower(customerName)
-                    ProEnchantersUpdateTradeWindowButtons(customerName)
+                    if ProEnchantersOptions["DebugLevel"] == 66 then
+                        print("Loading trade window buttons - slot specific")
+                    end
+
+                    local tItemName = GetTradeTargetItemInfo(7)
+
+                    if tItemName then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("tItemName returns: " .. tItemName)
+                        end
+                        ProEnchantersUpdateTradeWindowButtons(customerName)
+                    elseif not tItemName then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("no item name found")
+                        end
+                        ProEnchantersLoadTradeWindowFrame(customerName)
+                    end
                 end)
 
                 enchyOffset = enchyOffset + 25
@@ -1674,6 +1768,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if ProEnchantersOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[key].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1687,6 +1784,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local buttonName = key .. "buttonactive"
                             local buttonNameBg = key .. "buttonactivebg"
                             if matsMissingCheck ~= true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " mats, setting button to active")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg]:Show()
@@ -1730,6 +1830,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                     frame.namedButtons[buttonNameBg2]:Hide()
                                 end
                             elseif matsMissingCheck == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " but mats missing, setting button to announce")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg1]:Show()
@@ -2768,27 +2871,6 @@ function PECreateItemLocalizations()
     end
 end
 
--- Expand Trade Skill Headers - Maybe can use for later for other types of trade skill stuff
--- Macro for casting trade skill stuff, can do /cast Tailoring to open tailoring first, CloseTradeSkill() to close it
---[[ start comment: Macro for casting Non-enchanting trade skills, might be able to just do the /cast enchValue version for single crafts for other tradeskills but not multiples
-local macro1 = [=[
-/cast Tailoring
-/run CloseTradeSkill()
-/run for i=1,GetNumTradeSkills() do if GetTradeSkillInfo(i)=="CRAFTNAME" then CloseTradeSkill() DoTradeSkill(i, n) break end end
-
-REPLACE: 'CRAFTNAME' with Full Localized Name, 'n' with number to do, 1 time or multiple
-
-Macro for casting Enchanting trade skills
-
-local macro1 = [=[
-/cast enchValue
-]=]
-
-local macro2 = string.gsub(macro1, "enchValue", enchValue)
-
-REPLACE: 'enchValue' with Full Localized Name
-
-]] -- end comment
 
 -- Unused by maybe helpful in the future
 function PEExpandTSHeaders()
@@ -2901,7 +2983,7 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
                     end
                 end
             end
-        end
+end
 
 function PECreateCombinedEnchants(spellId)
     local craftmsg = ""

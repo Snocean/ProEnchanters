@@ -1409,7 +1409,16 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     local SlotTypeInput = ""
     local tItemLink = GetTradeTargetItemLink(7)
 
+    if tItemLink then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("tItemLink returns: " .. tItemLink)
+        end
+    end
+
     if not tItemLink then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("no item link, exiting function")
+        end
         return
     end
 
@@ -1433,7 +1442,14 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
     end
 
+    if ProEnchantersOptions["DebugLevel"] == 66 then
+        print("Slot Type returned: " .. SlotTypeInput)
+    end
+
     if SlotTypeInput == "Unknown" or SlotTypeInput == nil then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("Slot Type invalid, breaking function")
+        end
         return
     end
 
@@ -1450,6 +1466,11 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName then
         for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+
+                if ProEnchantersOptions["DebugLevel"] == 66 then
+                    print("updating slot specific trade buttons for " .. customerName)
+                end
+
                 local function alphanumericSort(a, b)
                     -- Extract number from the string
                     local numA = tonumber(a:match("%d+"))
@@ -1472,11 +1493,18 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 for _, enchantID in ipairs(frameInfo.Enchants) do
                     if ProEnchantersOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("10 buttons loaded, breaking loop")
+                            end
                             break
                         end
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
+                        
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1487,6 +1515,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck ~= true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats available, setting button to available")
+                                end
                                 if ProEnchantersOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
@@ -1530,6 +1561,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1540,6 +1574,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats missing, setting button to announce")
+                                end
                                 if ProEnchantersOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
@@ -1601,7 +1638,23 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 frame.otherEnchants:SetScript("OnClick", function()
                     local customerName = PEtradeWho
                     customerName = string.lower(customerName)
-                    ProEnchantersUpdateTradeWindowButtons(customerName)
+                    if ProEnchantersOptions["DebugLevel"] == 66 then
+                        print("Loading trade window buttons - slot specific")
+                    end
+
+                    local tItemLink = GetTradeTargetItemLink(7)
+
+                    if tItemLink then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("tItemLink returns: " .. tItemLink)
+                        end
+                        ProEnchantersUpdateTradeWindowButtons(customerName)
+                    elseif not tItemLink then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("no item link")
+                        end
+                        ProEnchantersLoadTradeWindowFrame(customerName)
+                    end
                 end)
 
                 enchyOffset = enchyOffset + 25
@@ -1614,6 +1667,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if ProEnchantersOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[key].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1627,6 +1683,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local buttonName = key .. "buttonactive"
                             local buttonNameBg = key .. "buttonactivebg"
                             if matsMissingCheck ~= true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " mats, setting button to active")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg]:Show()
@@ -1670,6 +1729,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                     frame.namedButtons[buttonNameBg2]:Hide()
                                 end
                             elseif matsMissingCheck == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " but mats missing, setting button to announce")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg1]:Show()
@@ -2033,7 +2095,7 @@ function RemoveAllRequestedEnchant(customerName)
     UpdateTradeHistory(customerName)
 end
 
--- Get name of Ench
+-- Get name of Ench -- Cata Specific
 function GetEnchantName(reqEnchant, languageId)
     local language = ""
     if languageId == nil then
@@ -2701,35 +2763,11 @@ function PETestCastable(id) -- Counts how many times the spell could be cast cur
 end
 
 function PECreateItemLocalizations()
-    if not ProEnchantersOptions.reagents then
-        ProEnchantersOptions["reagents"] = {}
+    ProEnchantersOptions["reagents"] = {}
+    for _, id in pairs(PEReagentItems) do
+        local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(id)
+        ProEnchantersOptions["reagents"][id] = { ["itemName"] = itemName, ["itemLink"] = itemLink, ["itemSubType"] = itemSubType }
     end
-    local freshSync = false
-    local LocalLanguage = PELocales[GetLocale()]
-    if not ProEnchantersOptions.reagents["SyncLanguage"] then
-        ProEnchantersOptions.reagents["SyncLanguage"] = LocalLanguage
-        freshSync = true
-    elseif ProEnchantersOptions.reagents["SyncLanguage"] ~= LocalLanguage then
-        ProEnchantersOptions.reagents["SyncLanguage"] = LocalLanguage
-        freshSync = true
-    else
-    end
-
-    if freshSync == false then
-        for _, id in pairs(PEReagentItems) do
-                if ProEnchantersOptions.reagents[id] and ProEnchantersOptions.reagents[id].itemLink ~= nil then
-                else
-                local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(id)
-                ProEnchantersOptions["reagents"][id] = { ["itemName"] = itemName, ["itemLink"] = itemLink, ["itemSubType"] = itemSubType }
-                end
-        end
-    else
-        for _, id in pairs(PEReagentItems) do
-            local itemName, itemLink, itemQuality, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc, itemTexture, sellPrice, classID, subclassID, bindType, expansionID, setID, isCraftingReagent = C_Item.GetItemInfo(id)
-            ProEnchantersOptions["reagents"][id] = { ["itemName"] = itemName, ["itemLink"] = itemLink, ["itemSubType"] = itemSubType }
-        end
-    end
-    --return true
 end
 
 
@@ -2743,7 +2781,7 @@ function PEExpandTSHeaders()
     end
 end
 
-function PEReplaceItemNamesWithLinks(spellId, amtreq)
+function PEReplaceItemNamesWithLinks(spellId, amtreq) -- Cata Specific
     local craftmsg = ""
     local msg = ""
     local tempitemName = ""
@@ -2881,6 +2919,117 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
             end
         end
 
+function PECreateCombinedEnchants(spellId)
+            local craftmsg = ""
+            local msg = ""
+            local tempitemName = ""
+            print(tostring(type(spellId)) .. " type found for spellId " .. spellId)
+            local spell = Spell:CreateFromSpellID(spellId)
+            print(spell:GetSpellName())
+            local LocalLanguage = PELocales[GetLocale()]
+        
+                if spell:GetSpellName() == nil then
+                    return
+                end
+                spell:ContinueOnSpellLoad(function() end)
+                GameTooltip:AddSpellByID(spellId)
+                GameTooltip:Show()
+                local spellName = spell:GetSpellName()
+        
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId] = {}
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["name"] = spellName
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["slot"] = "temp"
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["spell_id"] = tonumber(spellId)
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"] = {}
+                print("tables created")
+                for i=1, GameTooltip:NumLines() do
+                    print("checking gametooltip " .. i)
+                    local text = _G["GameTooltipTextLeft"..i]:GetText()
+                    print(text)
+                    if text ~= nil then
+                    -- Reagent Section
+                    local filterCheck = PEenchantingLocales["Reagents"][LocalLanguage]
+                    --print(LocalLanguage)
+                    
+                    local filtertext = string.lower(text)
+                            if filtertext:find(string.lower(filterCheck), 1, true) then
+                                --print("filtercheck matched: " .. filterCheck .. " in " .. filtertext)
+                                msg = PEStripColourCodes(text)
+                                msg = string.gsub(msg, filterCheck, "" )
+                                --print("msg: " .. msg)
+                                local newmsg = ""
+                                local items = {}
+                                -- Create Table of each Reagent
+                                for item in string.gmatch(msg, '([^,]+)') do
+                                    -- Trim whitespace from start and end
+                                    item = item:gsub("^%s*(.-)%s*$", "%1")
+                                    table.insert(items, item)
+                                    
+                                end
+        
+                                for i, v in ipairs(items) do
+                                    print(v)
+                                end
+        
+                                local function parseItem(str)
+                                    -- Extract item name and quantity inside parentheses
+                                    local name, quantity = string.match(str, "^(.-)%s*%((%d+)%)%s*$")
+                                    
+                                    if name then
+                                        -- Trim whitespace from name
+                                        name = name:gsub("^%s*(.-)%s*$", "%1")
+                                        quantity = tonumber(quantity) -- Convert quantity to number
+                                    else
+                                        -- No quantity found, name is entire string
+                                        name = str:gsub("^%s*(.-)%s*$", "%1")
+                                        quantity = nil
+                                    end
+                                    
+                                    return name, quantity
+                                end
+            
+                                for i = 1, #items do 
+                                    local reagent, quantity = parseItem(items[i])
+                                    for id , t in pairs(ProEnchantersOptions.reagents) do
+                                    --print(t.itemName)
+                                        if t.itemName then
+                                            tempitemName = t.itemName
+                                            --print(tempitemName)
+                                        else
+                                            tempitemName = "skipthisone"
+                                        end
+                                        if quantity == nil then
+                                            quantity = 1
+                                        end
+                                        if reagent == tempitemName then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
+                                            --print(t.itemName .. " found in " .. msg)
+                                            local material = select(2, C_Item.GetItemInfo(id))
+                                            local quant = tonumber(quantity)
+                                            print(tostring(quant) .. "x " .. material)
+                                            table.insert(ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"], tostring(quant) .. "x " .. material)
+                                            --print(msg)
+                                        end
+                                    end
+                                end
+                                GameTooltip:ClearLines()
+                                return newmsg
+                            end
+                        end
+                    end
+                
+        
+            
+end
+
+function PECreateCombinedEnchantsAll()
+    local key = PEProfessionsOrder[1]
+    local profData = PEProfessionsCombined[key]
+    local profLocalizedName = PEGetSpellName(profData.profSpellId)
+    for i = 1, 50 do --#profData.craftIds do
+        print(tostring((profData.craftIds[i])))
+        PECreateCombinedEnchants(profData.craftIds[i])
+    end
+end
 
 function PECreateLocalesAllEnchants()
     if ProEnchantersTables == nil then
@@ -2904,7 +3053,7 @@ function PECreateLocalesAllEnchants()
     end
 end
 
--- msg log stuff
+-- Msg Log Stuff
 
 function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
     ProEnchantersMsgLogFrame.textLogHeader:SetHeight(10000)

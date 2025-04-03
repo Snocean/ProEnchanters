@@ -1,5 +1,5 @@
 -- First Initilizations
-local version = "v10.6"
+local version = "v10.6.5"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
@@ -1062,7 +1062,8 @@ PESupporters = {
 	"Tapps",
 	"Ratakor",
 	"Stanfordlouie",
-	"Sativa"
+	"Sativa",
+	"Lyssaril"
 }
 
 -- Filtered Words Table
@@ -2781,7 +2782,20 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					end
 					local confirmTradeTarget = UnitName("NPC")
 					if confirmTradeTarget == currentTradeTarget then
-						ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						local tItemName = GetTradeTargetItemInfo(7)
+
+						if tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("tItemName returns: " .. tItemName)
+							end
+							ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						elseif not tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("no item name found")
+							end
+							ProEnchantersLoadTradeWindowFrame(confirmTradeTarget)
+						end
+						--ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
 						ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
 					end
 				elseif IsControlKeyDown() then -- Remove from current customer
@@ -2789,7 +2803,20 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 					local currentTradeTarget = UnitName("NPC")
 					if currentCusFocus == currentTradeTarget then
-						ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						local tItemName = GetTradeTargetItemInfo(7)
+
+						if tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("tItemName returns: " .. tItemName)
+							end
+							ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						elseif not tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("no item name found")
+							end
+							ProEnchantersLoadTradeWindowFrame(currentTradeTarget)
+						end
+						--ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 						ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 					end
 				elseif IsAltKeyDown() then -- Add to current trade target
@@ -2801,7 +2828,20 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					end
 					local confirmTradeTarget = UnitName("NPC")
 					if confirmTradeTarget and confirmTradeTarget ~= "Player" and confirmTradeTarget == currentTradeTarget then
-						ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						local tItemName = GetTradeTargetItemInfo(7)
+
+						if tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("tItemName returns: " .. tItemName)
+							end
+							ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
+						elseif not tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("no item name found")
+							end
+							ProEnchantersLoadTradeWindowFrame(confirmTradeTarget)
+						end
+						--ProEnchantersUpdateTradeWindowButtons(confirmTradeTarget)
 						ProEnchantersUpdateTradeWindowText(confirmTradeTarget)
 					end
 				else
@@ -2810,7 +2850,20 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 					local currentTradeTarget = UnitName("NPC")
 					if currentCusFocus == currentTradeTarget then
-						ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						local tItemName = GetTradeTargetItemInfo(7)
+
+						if tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("tItemName returns: " .. tItemName)
+							end
+							ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						elseif not tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("no item name found")
+							end
+							ProEnchantersLoadTradeWindowFrame(currentTradeTarget)
+						end
+						--ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 						ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 					end
 				end
@@ -8698,7 +8751,7 @@ function ProEnchantersCreateMsgLogFrame() -- bookmark
 	MsgLogFrame:SetSize(450, 350) -- Adjust height as needed
 	MsgLogFrame:SetPoint("TOP", 0, -300)
 	MsgLogFrame:SetMovable(true)
-	--MsgLogFrame:SetResizable(true) we'll see about this.
+	--MsgLogFrame:SetResizable(true) -- we'll see about this.
 	--MsgLogFrame:SetResizeBounds(455, 250, 455, 2000)
 	MsgLogFrame:EnableMouse(true)
 	MsgLogFrame:RegisterForDrag("LeftButton")
@@ -9188,7 +9241,20 @@ function CreateCusWorkOrder(customerName, bypass)
 			local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
 			local currentTradeTarget = UnitName("NPC")
 			if currentCusFocus == currentTradeTarget then
-				ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+				local tItemName = GetTradeTargetItemInfo(7)
+
+				if tItemName then
+					if ProEnchantersOptions["DebugLevel"] == 66 then
+						print("tItemName returns: " .. tItemName)
+					end
+					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+				elseif not tItemName then
+					if ProEnchantersOptions["DebugLevel"] == 66 then
+						print("no item name found")
+					end
+					ProEnchantersLoadTradeWindowFrame(currentTradeTarget)
+				end
+				--ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 				ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 			end
 		else -- Link All Mats Requested to player via party or whisper
@@ -9348,9 +9414,22 @@ function CreateCusWorkOrder(customerName, bypass)
 					return
 				end
 				RemoveRequestedEnchant(customerName, hlInfo)
-				local currentTradeTarget = UnitName("NPC")
-				if customerName == currentTradeTarget then
-					ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+					local currentTradeTarget = UnitName("NPC")
+					if customerName == currentTradeTarget then
+						local tItemName = GetTradeTargetItemInfo(7)
+
+						if tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("tItemName returns: " .. tItemName)
+							end
+							ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
+						elseif not tItemName then
+							if ProEnchantersOptions["DebugLevel"] == 66 then
+								print("no item name found")
+							end
+							ProEnchantersLoadTradeWindowFrame(currentTradeTarget)
+						end
+					--ProEnchantersUpdateTradeWindowButtons(currentTradeTarget)
 					ProEnchantersUpdateTradeWindowText(currentTradeTarget)
 				end
 			elseif IsShiftKeyDown() then
@@ -9696,7 +9775,20 @@ function ProEnchantersTradeWindowCreateFrame()
 		ProEnchantersOptions["UseAllMats"] = self:GetChecked()
 		useAllMats = ProEnchantersOptions["UseAllMats"]
 		ProEnchantersUpdateTradeWindowText(customerName)
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+		--ProEnchantersUpdateTradeWindowButtons(customerName)
 	end)
 
 	-- Use Mats from Inventory Text
@@ -10231,7 +10323,20 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 				ProEnchantersLoadTradeWindowFrame(customerName)
 			end
 		end
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+		--ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
@@ -10240,7 +10345,20 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	frame.announceMissingButton:SetScript("OnClick", function()
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+		--ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 		LinkAllMissingMats(customerName)
 	end)
@@ -10249,7 +10367,22 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 		ProEnchantersOptions["UseAllMats"] = self:GetChecked()
 		useAllMats = ProEnchantersOptions["UseAllMats"]
 		ProEnchantersUpdateTradeWindowText(customerName)
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+		if ProEnchantersOptions["DebugLevel"] == 66 then
+			print("Loading trade window buttons - slot specific")
+		end
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
 	end)
 
 	ProEnchantersUpdateTradeWindowText(customerName)
@@ -10257,6 +10390,11 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	if customerName then
 		for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 			if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+
+				if ProEnchantersOptions["DebugLevel"] == 66 then
+                    print("updating non-slot specific trade buttons for " .. customerName)
+                end
+
 				local function alphanumericSort(a, b)
 					-- Extract number from the string
 					local numA = tonumber(a:match("%d+"))
@@ -10379,7 +10517,23 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 				frame.otherEnchants:SetScript("OnClick", function()
 					local customerName = PEtradeWho
 					customerName = string.lower(customerName)
-					ProEnchantersUpdateTradeWindowButtons(customerName)
+					if ProEnchantersOptions["DebugLevel"] == 66 then
+						print("Loading trade window buttons - slot specific")
+					end
+
+					local tItemName = GetTradeTargetItemInfo(7)
+
+					if tItemName then
+						if ProEnchantersOptions["DebugLevel"] == 66 then
+							print("tItemName returns: " .. tItemName)
+						end
+						ProEnchantersUpdateTradeWindowButtons(customerName)
+					elseif not tItemName then
+						if ProEnchantersOptions["DebugLevel"] == 66 then
+							print("no item name found")
+						end
+						ProEnchantersLoadTradeWindowFrame(customerName)
+					end
 					ProEnchantersUpdateTradeWindowText(customerName)
 					customerName = CapFirstLetter(customerName)
 					ProEnchantersCustomerNameEditBox:SetText(customerName)
@@ -10476,7 +10630,20 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 							print("Pressed: " .. name)
 							C_Timer.After(1.2, function()
 								ProEnchantersConvertMats(customerName, i)
-								ProEnchantersUpdateTradeWindowButtons(customerName)
+								local tItemName = GetTradeTargetItemInfo(7)
+
+								if tItemName then
+									if ProEnchantersOptions["DebugLevel"] == 66 then
+										print("tItemName returns: " .. tItemName)
+									end
+									ProEnchantersUpdateTradeWindowButtons(customerName)
+								elseif not tItemName then
+									if ProEnchantersOptions["DebugLevel"] == 66 then
+										print("no item name found")
+									end
+									ProEnchantersLoadTradeWindowFrame(customerName)
+								end
+								--ProEnchantersUpdateTradeWindowButtons(customerName)
 								ProEnchantersUpdateTradeWindowText(customerName)
 							end)
 						end
@@ -11071,6 +11238,13 @@ local function OnAddonLoaded()
 	end]]
 
 	print("|cff00ff00Thank's for using Pro Enchanters! Type /pe to start or /pehelp for more info!|r")
+	if ProEnchantersWoWFlavor == "Vanilla" then
+		if not ProEnchantersTables.ItemCache then
+			PETestItemCacheTimed()
+		end
+	end
+	
+	--ProEnchantersWoWFlavor = "Vanilla"
 	--[[if ProEnchantersOptions["EnableTooltips"] == true then
 		print("|cff00ff00Tooltip's for the Pro Enchanters add-on are currently enabled, you can disable them in the settings window.")
 		print("|cff00ff00While hovering a button you can also press modifier keys (shift, ctrl, shift+ctrl) to see additional functions of the buttons.")
@@ -11133,8 +11307,9 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		FullResetFrames()
 	elseif msg == "msglogclear" then
 		PEClearMsgLogs()
-	elseif msg == "recache" then
-		PEItemCache()
+	elseif msg == "cacheitems" then
+		--ProEnchantersTables.ItemCache = {}
+		PETestItemCacheTimed()
 	elseif msg == "goldreset" then
 		ResetGoldTraded()
 	elseif msg == "devmode" then
@@ -13157,6 +13332,9 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				SendChatMessage("Now trading with " .. capPlayerName, IsInRaid() and "RAID" or "PARTY")
 			end
 		end
+		if ProEnchantersOptions["DebugLevel"] == 66 then
+			print("Loading trade window buttons - not slot specific")
+		end
 		ProEnchantersLoadTradeWindowFrame(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 	elseif (event == "TRADE_MONEY_CHANGED") then
@@ -13216,7 +13394,20 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			end
 		end
 
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+		--ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 
 		-- ItemsTraded = true
@@ -13272,7 +13463,21 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				ItemsTraded = true
 			end
 		end
-		ProEnchantersUpdateTradeWindowButtons(customerName)
+
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 66 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+		--ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
 
 

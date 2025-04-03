@@ -4,6 +4,21 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.6.5 Beta
+- **Potential Fix** Issue where sometimes when a player puts an item into the trade window the trade window enchant buttons do not sort based on the 'slot' of the item in the window.
+- The add-on (on Vanilla wow) will attempt to cache all equipable enchantable items into a new table that the trade window buttons will now use as a reference to avoid the issue where sometimes the trade window buttons won't sort to the proper slot. On first load you will get a message saying x amount of items need to cache. This should complete in about 30 seconds and the next time you launch wow/reload wow the message should not display anymore. If that message DOES display each time you load, please let me know.
+- When you go to open and use the trade buttons if you get a message saying to do a "/pe cacheitems" please do so once, your game might freeze for a few seconds while it attempts to recache all the items but this may help get the remainder of the items cached if the initial cache did not work. So far in my testing I have not had to do a "/pe cacheitems".
+
+
+## Update 10.6.3
+- Pushing Message log function to release since it seems to be working without issue with all my testing, if you notice anything weird please let me know on discord
+- Enabled the ability to have a "+" in your triggers again, you must add a % infront of the + to tell the addon to treat the + like plain text. 
+- Example +4 str    // will trigger on +4 str, 4 str
+- Example: %+4 str  // will trigger on +4 str, not on 4 str
+
+## Update 10.6.2 - Beta
+- Debugging option 66 added to test Trade button loading
+
 ## Update 10.6 - Beta
 - **New** Message Log button
 - Allows you to view a message history of hopefully relevant information. Logs messages from Say/Yell (if the player triggered an invite previously or is in the party), all Party(including yourself), all Raid (including yourself), and all received whispers. Also logs messages that triggered an invite popup/auto invite.
