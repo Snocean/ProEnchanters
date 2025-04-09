@@ -4,6 +4,28 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.7.1 Beta
+- **Added** Ability to cycle through the gold log, it now defaults to the Current Sessions trades (this is wiped on any /reload or game launch), you can hit the Load button to cycle through to see the larger history of gold made.
+
+## Update 10.7
+- **Added** SoD Phase 8 Enchants added
+- **Changed** Added a new function to the addon that will run and update the tables on new versions one time to update any changes to item caches
+
+## Update 10.6.9 Beta
+- **Potential Fix** Stuttering issue caused by enchant buttons showing on the "Use All Mats" version of the trade windows buttons
+
+## Update 10.6.8 Beta
+- **Potentially Fixed** Issue where after having multiple open work orders and then closing them the main windows resize button would act funky and on click extend the window a considerable distance (you could still drag it afterwards but its definitely annoying)
+
+## Update 10.6.7
+- **Fixed** Issue where syncing/unsyncing enchants could cause the info and favorites icons on the main enchanting buttons to glitch
+- **Fixed** Issue where when using a Trigger word with [] it would print out the debugging results
+
+## Update 10.6.6 Beta
+- **Debugging Option** /pedebug 50
+- Starts debugging for creating customer work orders
+- To print the logged debugging do /pe debugresult
+
 ## Update 10.6.5 Beta
 - **Potential Fix** Issue where sometimes when a player puts an item into the trade window the trade window enchant buttons do not sort based on the 'slot' of the item in the window.
 - The add-on (on Vanilla wow) will attempt to cache all equipable enchantable items into a new table that the trade window buttons will now use as a reference to avoid the issue where sometimes the trade window buttons won't sort to the proper slot. On first load you will get a message saying x amount of items need to cache. This should complete in about 30 seconds and the next time you launch wow/reload wow the message should not display anymore. If that message DOES display each time you load, please let me know.

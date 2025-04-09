@@ -1740,6 +1740,54 @@ CombinedEnchants = {
             "2x " .. purplelotus
         },
     },
+    ENCH984 = {
+        name = "Enchant Weapon - Grand Crusader",
+        slot = "Weapon",
+        spell_id = 1231128,
+        stats = " (+120 Str and Heal Chance)",
+        materials = {
+            "5x " .. largebrilliantshard,
+            "2x " .. righteousorb,
+            "2x " .. nexuscrystal,
+            "1x " .. bloodofheroes
+        },
+    },
+    ENCH983 = {
+        name = "Enchant Weapon - Grand Sorceror",
+        slot = "Weapon",
+        spell_id = 1231164,
+        stats = " (+70 Spell power/+mana Chance)",
+        materials = {
+            "6x " .. largebrilliantshard,
+            "3x " .. righteousorb,
+            "2x " .. nexuscrystal,
+            "1x " .. bloodofheroes
+        },
+    },
+    ENCH982 = {
+        name = "Enchant 2H Weapon - Grand Inquisitor",
+        slot = "Weapon",
+        spell_id = 1232172,
+        stats = " (+200 Str and Heal Chance)",
+        materials = {
+            "10x " .. largebrilliantshard,
+            "6x " .. righteousorb,
+            "4x " .. nexuscrystal,
+            "1x " .. bloodofheroes
+        },
+    },
+    ENCH981 = {
+        name = "Enchant 2H Weapon - Grand Arcanist",
+        slot = "Weapon",
+        spell_id = 1231139,
+        stats = " (+140 Spell power/+mana Chance)",
+        materials = {
+            "10x " .. largebrilliantshard,
+            "4x " .. righteousorb,
+            "4x " .. nexuscrystal,
+            "1x " .. bloodofheroes
+        },
+    },
 }
 
 ---- Craftables Tables

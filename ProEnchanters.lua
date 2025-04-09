@@ -1,7 +1,8 @@
 -- First Initilizations
-local version = "v10.6.5"
+local version = "v10.7.1"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
+ProEnchantersSessionLog = {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
 ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
 ProEnchantersWorkOrderFrames = {}
@@ -43,6 +44,7 @@ ProEnchantersMsgLogHistory = ProEnchantersMsgLogHistory or {}
 ProEnchantersMsgLogHistory["orderedTimes"] = ProEnchantersMsgLogHistory["orderedTimes"] or {}
 ProEnchantersMsgLogHistory["loggedPlayers"] = ProEnchantersMsgLogHistory["loggedPlayers"] or {}
 ProEnchantersMsgLogHistory["timesTables"] = ProEnchantersMsgLogHistory["timesTables"] or {}
+local defchatframelimit = DEFAULT_CHAT_FRAME:GetMaxLines()
 
 -- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
 local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
@@ -284,10 +286,6 @@ local function findEnchantByKeyAndLanguage(msg)
 		if ProEnchantersOptions["DebugLevel"] == 99 then
 			print("checking enchant ID: " .. enchID)
 		end
-		--[[for langID, name in pairs(langs) do
-			if ProEnchantersOptions["DebugLevel"] == 99 then
-				print("checking language " .. langID .. " for enchID " .. enchID)
-			end]]
 			local nameProcessed = string.gsub(string.lower(langs), " ", "")
 			if ProEnchantersOptions["DebugLevel"] == 99 then
 				print("Comparing enchant names: " .. nameProcessed .. " with " .. msgProcessed)
@@ -489,6 +487,17 @@ local function DelayedWorkOrder(playerName)
 		local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 		if FullWelcomeMsg == "" then
 			local playerName = string.lower(playerName)
+			if ProEnchantersOptions["DebugLevel"] == 50 then
+				-- line to add to table
+				local debugline = "DelayedWorkOrder (no welcome message)"
+				if playerName then
+					debugline = debugline .. " CreateCusWorkOrder for " .. playerName
+				else
+					debugline = debugline .. " CreateCusWorkOrder for invalid name"
+				end
+				-- Add to table
+				table.insert(ProEnchantersTables["DebugResult"], debugline)
+			end
 			CreateCusWorkOrder(playerName)
 		elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
 			if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -501,6 +510,17 @@ local function DelayedWorkOrder(playerName)
 				SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 			end
 			local playerName = string.lower(playerName)
+			if ProEnchantersOptions["DebugLevel"] == 50 then
+				-- line to add to table
+				local debugline = "DelayedWorkOrder (whisperwelcome)"
+				if playerName then
+					debugline = debugline .. " CreateCusWorkOrder for " .. playerName
+				else
+					debugline = debugline .. " CreateCusWorkOrder for invalid name"
+				end
+				-- Add to table
+				table.insert(ProEnchantersTables["DebugResult"], debugline)
+			end
 			CreateCusWorkOrder(playerName)
 		else
 			if ProEnchantersOptions["NoWelcomeManualInvites"] == true then -- and NonAddonInvite == true then
@@ -511,10 +531,34 @@ local function DelayedWorkOrder(playerName)
 					RemoveFromAddonInvited(capPlayerName)
 				end
 				local playerName = string.lower(playerName)
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "DelayedWorkOrder (nomanualinvite)"
+					if playerName then
+						debugline = debugline .. " CreateCusWorkOrder for " .. playerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid name"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
 				CreateCusWorkOrder(playerName)
 			else
 				SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 				local playerName = string.lower(playerName)
+
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "DelayedWorkOrder"
+					if playerName then
+						debugline = debugline .. " CreateCusWorkOrder for " .. playerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid name"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
+				
 				CreateCusWorkOrder(playerName)
 			end
 		end
@@ -579,19 +623,6 @@ local function FullResetFrames()
 end
 
 -- New menu buttons
---[[ local menuButton1 = Menu.ModifyMenu("MENU_UNIT_PLAYER", function(_, menuButton, contextData)
-	menuButton:CreateDivider()
-	menuButton:CreateTitle("Pro Enchanters")
-	menuButton:CreateButton("Create Work Order", function()
-		CreateCusWorkOrder(contextData.name)
-		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
-		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
-			ProEnchantersWorkOrderFrame:Show()
-			ProEnchantersWorkOrderEnchantsFrame:Show()
-			ResetFrames()
-		end
-	end)
-end)]]
 
 local function createCusFocusButton(menuButton, contextData)
 	menuButton:CreateButton("Focus Player", function()
@@ -601,6 +632,17 @@ end
 
 local function createWorkOrderButton(menuButton, contextData)
 	menuButton:CreateButton("Create Work Order", function()
+		if ProEnchantersOptions["DebugLevel"] == 50 then
+			-- line to add to table
+			local debugline = "CreateWorkOrderButton"
+			if contextData.name then
+				debugline = debugline .. " CreateCusWorkOrder for " .. contextData.name
+			else
+				debugline = debugline .. " CreateCusWorkOrder for invalid name"
+			end
+			-- Add to table
+			table.insert(ProEnchantersTables["DebugResult"], debugline)
+		end
 		CreateCusWorkOrder(contextData.name)
 		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
 		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
@@ -2144,6 +2186,7 @@ function ProEnchantersCreateWorkOrderFrame()
 		FilterEnchantButtons()
 		ProEnchantersFiltersEditBox:ClearFocus(ProEnchantersFiltersEditBox)
 		yOffset = -5
+		UpdateScrollChildHeight()
 	end)
 
 	-- GoldTraded Display
@@ -2200,7 +2243,8 @@ function ProEnchantersCreateWorkOrderFrame()
 		resizeButton:Hide()
 	end
 	resizeButton:SetScript("OnMouseDown", function(self, button)
-		WorkOrderFrame:StartSizing("BOTTOMRIGHT")
+		UpdateScrollChildHeight()
+		WorkOrderFrame:StartSizing("BOTTOMRIGHT", true)
 		WorkOrderFrame:SetUserPlaced(true)
 	end)
 
@@ -2943,7 +2987,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 	resizeButton:SetScript("OnMouseDown", function(self, button)
 		CheckIfConnected() -- Check and store the connection status
-		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT")
+		WorkOrderEnchantsFrame:StartSizing("BOTTOMRIGHT", true)
 		WorkOrderEnchantsFrame:SetUserPlaced(true)
 	end)
 
@@ -3186,14 +3230,6 @@ local craftBg = WorkOrderEnchantsFrame:CreateTexture(nil, "OVERLAY")
 	cmclearBg:Hide()
 	cmfilterEditBox:Hide()
 	cmFilterHeader:Hide()
-
-	--[[ Crafting Count Down
-	local craftingCountDownHeader = WorkOrderEnchantsFrame:CreateFontString(nil, "OVERLAY")
-	craftingCountDownHeader:SetFontObject(UIFontBasic)
-	craftingCountDownHeader:SetPoint("LEFT", craftNumBox, "RIGHT", 15, 0)
-	local craftCountDownRemaining = "0"
-	craftingCountDownHeader:SetText(craftCountDownRemaining .. " Crafts Remaining")
-	craftingCountDownHeader:Hide()]]
 
 	craftButton:Hide()
 	craftBg:Hide()
@@ -3462,43 +3498,6 @@ for _, profType in ipairs(PEProfessionsOrder) do
 							end)
 							msg = PEReplaceItemNamesWithLinks(spellId, amtreq)
 							craftmsg = _G["GameTooltipTextLeft"..1]:GetText() .. " x " .. tostring(amtreq)
-							--[[if msg == nil then
-								for i=1, GameTooltip:NumLines() do
-									local text = _G["GameTooltipTextLeft"..i]:GetText()
-									print(text)
-									local filterCheck = "reagents"
-									if text ~= nil then
-										local filtertext = string.lower(text)
-											if filtertext:find(filterCheck, 1, true) then
-												msg = PEStripColourCodes(text)
-												msg = string.gsub( msg, "Reagents: ", "" )
-												for id, t in pairs(ProEnchantersOptions.reagents) do
-													--print(t.itemName)
-													if t.itemName then
-														tempitemName = t.itemName
-														--print(tempitemName)
-													else
-														tempitemName = "skipthisone"
-													end
-													if msg:find(tempitemName, 1, true) then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
-														--print(t.itemName .. " found in " .. msg)
-														local material = select(2, C_Item.GetItemInfo(id))
-														--print(material)
-														msg = string.gsub(msg, t.itemName, material)
-														-- print(msg)
-													end
-												end
-												
-												craftmsg = _G["GameTooltipTextLeft"..1]:GetText()
-												local doubledMsg = string.gsub(msg, "%((%d+)%)", function(num)
-													local doubled = tonumber(num) * tonumber(craftNumBox:GetText())
-													return "(" .. doubled .. ")"
-												end)
-
-											end
-										end
-								end
-							end]]
 
 							if IsShiftKeyDown() and IsControlKeyDown() then
 							local currentFocus = ProEnchantersCustomerNameEditBox:GetText()
@@ -3561,10 +3560,6 @@ for _, profType in ipairs(PEProfessionsOrder) do
 			-- Store the button and its background in the table
 			craftablesButtons[spellId] = { button = craftableButton, background = craftableButtonBg, profType = profType, favbtn = craftablesFvBtn, favbg = craftablesFvBg }
 
-			--[[if ProEnchantersOptions.filters[key] == false then
-				enchantButton:Hide()
-				enchantButtonBg:Hide()
-			end]]
 		end
 	end
 end
@@ -4813,10 +4808,17 @@ function ProEnchantersCreateOptionsFrame()
 			if ProEnchantersOptions.filters[key] == false then
 				enchantButton.button:Hide()
 				enchantButton.background:Hide()
+				enchantButton.favicon:Hide()
+				enchantButton.inficon:Hide()
+				enchantButton.infbtn:Hide()
 				FilterEnchantButtons()
 			else
+				enchantButton.inficon:Show()
+				enchantButton.infbtn:Show()
 				enchantButton.button:Show()
 				enchantButton.background:Show()
+				--enchantButton.favicon:Hide()
+				
 				FilterEnchantButtons()
 			end
 		end)
@@ -4888,6 +4890,9 @@ function ProEnchantersCreateOptionsFrame()
 					if enchantButton then
 						enchantButton.button:Hide()
 						enchantButton.background:Hide()
+						enchantButton.favicon:Hide()
+						enchantButton.inficon:Hide()
+						enchantButton.infbtn:Hide()
 						FilterEnchantButtons()
 					end
 				end
@@ -4904,6 +4909,8 @@ function ProEnchantersCreateOptionsFrame()
 								ProEnchantersOptions.filters[enchKey] = true
 								local enchantButton = enchantButtons[enchKey]
 								if enchantButton then
+									enchantButton.inficon:Show()
+									enchantButton.infbtn:Show()
 									enchantButton.button:Show()
 									enchantButton.background:Show()
 									FilterEnchantButtons()
@@ -6902,9 +6909,6 @@ function ProEnchantersCreateSoundsFrame()
 	-- Create drop down selector for sound
 
 	local allSounds = LSM:List('sound')
-	--[[for i, v in ipairs(allSounds) do
-	print(tostring(i) .. " index is: " .. tostring(v))
-	end]]
 
 	local defaultValPartyJoin = ProEnchantersOptions["PartyJoinSound"]
 
@@ -7120,11 +7124,6 @@ function ProEnchantersCreateTriggersFrame()
 		--"\nYou can add filters inside of brackets (example: [word] ) to be more explicit in its search. Supports * wildcard. (example [sw] would filter 'sw' but not 'swell')" ..
 		"\nFilters search the entire text, Triggers search the start of each word, and Filtered Player names will ignore all messages from that player.")
 
-	--[[local FilteredWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	FilteredWordsHeader:SetFontObject(UIFontBasic)
-	FilteredWordsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 30, -85)
-	FilteredWordsHeader:SetText("Filtered Words:")]]
-
 	local FilteredWordsHeader = CreateFrame("Button", nil, TriggersFrame)
 	FilteredWordsHeader:SetPoint("TOPLEFT", titleBg, "TOPLEFT", 30, -75)
 	FilteredWordsHeader:SetText("Filtered Words:")
@@ -7245,11 +7244,6 @@ function ProEnchantersCreateTriggersFrame()
 
 	ProEnchantersTriggersFrame.FilteredWords = FilteredWordsEditBox
 
-	--[[local TriggerWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	TriggerWordsHeader:SetFontObject(UIFontBasic)
-	TriggerWordsHeader:SetPoint("TOPLEFT", FilteredWordsHeader, "BOTTOMLEFT", 0, -90)
-	TriggerWordsHeader:SetText("Trigger Words:")]]
-
 	local TriggerWordsHeader = CreateFrame("Button", nil, TriggersFrame)
 	TriggerWordsHeader:SetPoint("TOPLEFT", FilteredWordsHeader, "BOTTOMLEFT", 0, -70)
 	TriggerWordsHeader:SetText("Trigger Words:")
@@ -7360,11 +7354,6 @@ function ProEnchantersCreateTriggersFrame()
 		end
 		TriggerWordsEditBox:ClearFocus()
 	end)
-
-	--[[local InvWordsHeader = TriggersFrame:CreateFontString(nil, "OVERLAY")
-	InvWordsHeader:SetFontObject(UIFontBasic)
-	InvWordsHeader:SetPoint("TOPLEFT", TriggerWordsHeader, "BOTTOMLEFT", 0, -65)
-	InvWordsHeader:SetText("Inv Words:")]]
 
 	local InvWordsHeader = CreateFrame("Button", nil, TriggersFrame)
 	InvWordsHeader:SetPoint("TOPLEFT", TriggerWordsHeader, "BOTTOMLEFT", 0, -50)
@@ -7584,57 +7573,6 @@ function ProEnchantersCreateTriggersFrame()
 			TestResponseTxt:SetText(tfound .. GREY .. "--\n" .. ColorClose .. printout)
 		end
 	end
-
-	-- Previous for _, tword in ipairs(ProEnchantersOptions.triggerwords) do
-	--[[local check1 = false
-			local check2 = false
-			local check3 = false
-			local check4 = false
-			local tword = string.gsub(tword, "+", "")
-			local msg3 = string.gsub(msg2, "+", "")
-			local startPos, endPos = string.find(msg3, tword)
-			if string.find(msg3, tword, 1, true) then
-				check1 = true
-				if startPos then
-					-- Check if "ench" is at the start of the string or preceded by a space
-					if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
-						check2 = true
-					else
-						TestResponseTxt:SetText(tword .. " is contained within a word, check2 returned as false")
-					end
-				end
-				
-			--else
-				--return
-			--end
-		
-		
-			for _, word in pairs(ProEnchantersOptions.filteredwords) do
-				local filteredWord = word
-				
-				if string.find(msg2, filteredWord, 1, true) then
-					check3 = true
-					msg2 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord)
-					TestResponseTxt:SetText("filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg2)
-					return
-				end
-			end
-			for _, word in pairs(ProEnchantersOptions.filteredwords) do
-				if word:match("^%u") then				
-					if word == author then
-						check4 = true
-						TestResponseTxt:SetText("Sender: " ..	LIGHTBLUE .. author2 .. ColorClose .. " name found in filter list, check 3 returning false")
-						return
-					end
-				end
-			end
-		
-				if check1 == true and check2 == true and check3 == false and check4 == false then
-						msg2 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-						TestResponseTxt:SetText("All checks passed on trigger: " .. GREEN .. tword .. ColorClose .. ", continuing with potential customer invite or pop-up\n".. GREY .. "--\n" .. ColorClose .. msg2)
-						break
-				end
-			end]]
 
 	-- Create a reset button at the bottom
 	local TestBtn = CreateFrame("Button", nil, TriggersFrame)
@@ -8499,7 +8437,7 @@ function ProEnchantersCreateImportFrame()
 	return frame
 end
 
-function ProEnchantersCreateGoldFrame()
+function ProEnchantersCreateGoldFrame() -- bookmark
 	local frame = CreateFrame("Frame", "ProEnchantersGoldFrame", UIParent, "BackdropTemplate")
 	frame:SetFrameStrata("FULLSCREEN")
 	frame:SetSize(500, 600) -- Adjust height as needed
@@ -8624,8 +8562,106 @@ function ProEnchantersCreateGoldFrame()
 		"Gold traded to your by players while you have the add-on window open.\nThis number may be slightly inaccurate but should give a rough idea\nof how much gold has been made while enchanting." ..
 		ColorClose)
 
+	-- Input session gold logs
+	function PEGetSessionGoldLogs() -- ProEnchantersSessionLog
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersSessionLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersSessionLog) do
+			print(name)
+			print(amounts)
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldSessionLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetSessionGoldLogs()
+		local totalgold = 0
+		if not check then
+			return "No text to display" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from this sessions trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
 	-- Input gold logs
-	local function GetGoldLogs()
+	function PEGetGoldLogs100() -- ProEnchantersSessionLog
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText100()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs100()
+		local totalgold = 0
+		if not check then
+			return "No text to display" -- Ensures a string is always returned
+		end
+
+		--for i = 1, 100 do 
+		--local t = goldlogs[i]
+		--for _, t in ipairs(goldlogs) do -- Simplified loop
+		for i = 1, 100 do 
+			local t = goldlogs[i]
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from top 100 logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	-- Input gold logs
+	function PEGetGoldLogs() -- ProEnchantersSessionLog
 		local goldlog = {}
 		local check = true
 		if next(ProEnchantersLog) == nil then
@@ -8649,9 +8685,9 @@ function ProEnchantersCreateGoldFrame()
 		return goldsorttable, check
 	end
 
-	local function GoldLogText()
+	function PEGoldLogText()
 		local messageboxtext = ""
-		local goldlogs, check = GetGoldLogs()
+		local goldlogs, check = PEGetGoldLogs()
 		local totalgold = 0
 		if not check then
 			return "No text to display" -- Ensures a string is always returned
@@ -8678,13 +8714,15 @@ function ProEnchantersCreateGoldFrame()
 	goldLogEditBox:EnableMouse(false)
 	goldLogEditBox:EnableKeyboard(false)
 	goldLogEditBox:SetFontObject("GameFontHighlight")
-	goldLogEditBox:SetText(GoldLogText())
+	goldLogEditBox:SetText(PEGoldSessionLogText())
 	goldLogEditBox:SetScript("OnTextChanged", function()
 		--stuff
 	end)
 	goldLogEditBox:SetScript("OnEscapePressed", function(Self)
 		Self:ClearFocus()
 	end)
+	ProEnchantersGoldFrame.goldLogEditBox = goldLogEditBox
+	-- ProEnchantersGoldFrame.goldLogEditBox:SetText(PEGoldSessionLogText())
 
 	-- Create a close button background
 	local goldLogEditBoxBg = ScrollChild:CreateTexture(nil, "OVERLAY")
@@ -8712,19 +8750,34 @@ function ProEnchantersCreateGoldFrame()
 		frame:Hide()
 	end)
 
+	local loadFlag = "first"
+
 	---- Reset Button
 	local resetButton = CreateFrame("Button", nil, frame)
 	resetButton:SetSize(80, 25)                                      -- Adjust size as needed
 	resetButton:SetPoint("BOTTOMRIGHT", closeBg, "BOTTOMRIGHT", -10, 0) -- Adjust position as needed
-	resetButton:SetText("Reset")
+	resetButton:SetText("Load Top 100")
 	local resetButtonText = resetButton:GetFontString()
 	resetButtonText:SetFont(peFontString, FontSize, "")
 	resetButton:SetNormalFontObject("GameFontHighlight")
 	resetButton:SetHighlightFontObject("GameFontNormal")
 	resetButton:SetScript("OnClick", function()
-		ProEnchantersLog = {}
-		goldLogEditBox:SetText(GoldLogText())
-		print(YELLOWGREEN .. "Trade history has been reset." .. ColorClose)
+		if loadFlag == "first" then
+			goldLogEditBox:SetText(PEGoldLogText100()) --PEGoldLogText100()
+			loadFlag = "second"
+			print(YELLOWGREEN .. "Top 100 gold logs loaded." .. ColorClose)
+			resetButton:SetText("Load All")
+		elseif loadFlag == "second" then
+			goldLogEditBox:SetText(PEGoldLogText()) --PEGoldLogText100()
+			loadFlag = "third"
+			print(YELLOWGREEN .. "All gold logs loaded." .. ColorClose)
+			resetButton:SetText("Load Session")
+		else
+			goldLogEditBox:SetText(PEGoldSessionLogText())
+			loadFlag = "first"
+			print(YELLOWGREEN .. "Session gold logs loaded." .. ColorClose)
+			resetButton:SetText("Load Top 100")
+		end
 	end)
 
 	-- Help Reminder
@@ -8735,17 +8788,21 @@ function ProEnchantersCreateGoldFrame()
 
 	-- frame On Show Script
 	frame:SetScript("OnShow", function()
-		goldLogEditBox:SetText(GoldLogText())
+		goldLogEditBox:SetText(PEGoldSessionLogText())
+		resetButton:SetText("Load Top 100")
+		loadFlag = "first"
 	end)
 
 	frame:SetScript("OnHide", function()
-		-- Stuff
+		goldLogEditBox:SetText(PEGoldSessionLogText())
+		resetButton:SetText("Load Top 100")
+		loadFlag = "first"
 	end)
 
 	return frame
 end
 
-function ProEnchantersCreateMsgLogFrame() -- bookmark
+function ProEnchantersCreateMsgLogFrame()
 	local MsgLogFrame = CreateFrame("Frame", "ProEnchantersMsgLogFrame", UIParent, "BackdropTemplate")
 	MsgLogFrame:SetFrameStrata("FULLSCREEN")
 	MsgLogFrame:SetSize(450, 350) -- Adjust height as needed
@@ -8889,11 +8946,6 @@ function ProEnchantersCreateMsgLogFrame() -- bookmark
 	textLogHeaderEditBox:SetText("temp")
 	-- Make EditBox non-editable
 	textLogHeaderEditBox:EnableKeyboard(false)
-
-	--[[local customerBg = ScrollChild:CreateTexture(nil, "BORDER")
-	customerBg:SetColorTexture(.1, .1, .1, .8) -- Set RGBA values for your preferred color and alpha
-	customerBg:SetPoint("TOPLEFT", textLogHeaderEditBox, "TOPLEFT", -5, 5)
-	customerBg:SetPoint("BOTTOMRIGHT", textLogHeaderEditBox, "BOTTOMRIGHT", 5, -5)]]
 	
 
 	ProEnchantersMsgLogFrame.textLogHeader = textLogHeaderEditBox
@@ -9011,24 +9063,6 @@ function ProEnchantersCreateMsgLogFrame() -- bookmark
 		-- Run Function that sets text on show?
 	end)
 
-	--[[local resizeButton = CreateFrame("Button", nil, WorkOrderFrame) -- MAYBE.
-	resizeButton:SetSize(16, 16)
-	resizeButton:SetPoint("BOTTOMRIGHT")
-	resizeButton:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up")
-	resizeButton:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight")
-	resizeButton:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down")
-	if wofSize < 240 then
-		resizeButton:Hide()
-	end
-	resizeButton:SetScript("OnMouseDown", function(self, button)
-		WorkOrderFrame:StartSizing("BOTTOMRIGHT")
-		WorkOrderFrame:SetUserPlaced(true)
-	end)
-
-	resizeButton:SetScript("OnMouseUp", function(self, button)
-		WorkOrderFrame:StopMovingOrSizing()
-	end)]]
-
 	return MsgLogFrame
 end
 
@@ -9050,10 +9084,27 @@ end
 
 -- Function to create a CusWorkOrder frame
 function CreateCusWorkOrder(customerName, bypass)
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "CreateCusWorkOrder"
+		if customerName then
+			debugline = debugline .. " received customerName: " .. customerName
+		else
+			debugline = debugline .. " received invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
+	end
 	local customerName = string.lower(customerName)
 	--customerName = string.utf8upper2(string.sub(customerName2, 1, 1)) .. string.sub(customerName2, 2)
 	if customerName == "" or customerName == nil then
 		print(RED .. "Invalid customer name" .. ColorClose)
+		if ProEnchantersOptions["DebugLevel"] == 50 then
+			-- line to add to table
+			local line = "CreateCusWorkOrder: invalid name check returned true, return triggered"--   " .. customerName
+			-- Add to table
+			table.insert(ProEnchantersTables["DebugResult"], line)
+		end
 		return
 	end
 	local frameID = #ProEnchantersWorkOrderFrames + 1
@@ -9062,7 +9113,13 @@ function CreateCusWorkOrder(customerName, bypass)
 		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 			local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 			local lowerCusName = string.lower(customerName)
-			if lowerFrameCheck == lowerCusName and not frameInfo.Completed then
+			if lowerFrameCheck == lowerCusName and frameInfo.Completed == false then
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local line = "CreateCusWorkOrder: existing work order found, return triggered for  " .. customerName
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], line)
+				end
 				if frameInfo.ExistingWOWarning == nil then
 					print(YELLOW .. "A work order for " .. customerName .. " is already open." .. ColorClose)
 					frameInfo.ExistingWOWarning = true
@@ -9074,6 +9131,18 @@ function CreateCusWorkOrder(customerName, bypass)
 				return frameInfo.Frame
 			end
 		end
+	end
+
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "CreateCusWorkOrder"
+		if customerName then
+			debugline = debugline .. " creating work order frame for : " .. customerName
+		else
+			debugline = debugline .. " creating work order frame for invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
 	end
 
 	local frame = CreateFrame("Frame", framename, ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "BackdropTemplate")
@@ -9234,7 +9303,7 @@ function CreateCusWorkOrder(customerName, bypass)
 			end
 		elseif IsControlKeyDown() then -- delete all requested enchants
 			for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
-				if not frameInfo.Completed and frameInfo.Frame.customerName == lowercusName then
+				if frameInfo.Completed == false and frameInfo.Frame.customerName == lowercusName then
 					RemoveAllRequestedEnchant(customerName)
 				end
 			end
@@ -9343,6 +9412,18 @@ function CreateCusWorkOrder(customerName, bypass)
 	local scrollChild = CreateFrame("Frame", nil, tradeHistoryScrollFrame)
 	scrollChild:SetSize(400, 130) -- Adjust height dynamically based on content
 	tradeHistoryScrollFrame:SetScrollChild(scrollChild)
+
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "CreateCusWorkOrder"
+		if customerName then
+			debugline = debugline .. " creating trade history edit box for customerName: " .. customerName
+		else
+			debugline = debugline .. " creating trade history edit box for invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
+	end
 
 	local tradehistoryEditBox = CreateFrame("EditBox", frameID .. "TradeHistory", scrollChild)
 	tradehistoryEditBox:SetSize(380, 110) -- Adjust size as needed
@@ -9472,10 +9553,33 @@ function CreateCusWorkOrder(customerName, bypass)
 	-- Store the trade history EditBox in the frame
 	frame.tradeHistoryEditBox = tradehistoryEditBox
 
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "CreateCusWorkOrder"
+		if customerName then
+			debugline = debugline .. " initializing trade history for customerName: " .. customerName
+		else
+			debugline = debugline .. " initializing trade history for invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
+	end
+
 	-- Initialize the customer's trade history table
 	ProEnchantersTradeHistory[customerName] = ProEnchantersTradeHistory[customerName] or {}
 	--Input auto invite message if applicable
 	if PEPlayerInvited[customerName] then
+		if ProEnchantersOptions["DebugLevel"] == 50 then
+			-- line to add to table
+			local debugline = "CreateCusWorkOrder"
+			if customerName then
+				debugline = debugline .. " PEPlayerinvite existed for customerName: " .. customerName
+			else
+				debugline = debugline .. " PEPlayerinvite existed for invalid name (wtf?)"
+			end
+			-- Add to table
+			table.insert(ProEnchantersTables["DebugResult"], debugline)
+		end
 		--print(customerName)
 		local firstline = PEPlayerInvited[customerName]
 		firstline = ORANGE .. "Invited from message: " .. ColorClose .. firstline
@@ -9519,7 +9623,7 @@ function CreateCusWorkOrder(customerName, bypass)
 			frame:SetSize(410, 20)
 			-- Move all existing frames up if they are lower than the frame being deleted
 			for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
-				if id > frameID and not frameInfo.Completed then
+				if id > frameID and frameInfo.Completed == false then
 					local newYOffset = frameInfo.Frame.yOffset + 140
 					frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0,
 						newYOffset)
@@ -9541,7 +9645,7 @@ function CreateCusWorkOrder(customerName, bypass)
 
 			-- Move all existing frames up if they are lower than the frame being deleted
 			for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
-				if id > frameID and not frameInfo.Completed then
+				if id > frameID and frameInfo.Completed == false then
 					local newYOffset = frameInfo.Frame.yOffset - 140
 					frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0,
 						newYOffset)
@@ -9599,7 +9703,7 @@ function CreateCusWorkOrder(customerName, bypass)
 
 			-- Move all existing frames up if they are lower than the frame being deleted
 			for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
-				if id > frameID and not frameInfo.Completed then
+				if id > frameID and frameInfo.Completed == false then
 					local newYOffset = frameInfo.Frame.yOffset - 140
 					frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0,
 						newYOffset)
@@ -9630,7 +9734,7 @@ function CreateCusWorkOrder(customerName, bypass)
 
 		-- Move all existing frames up if they are lower than the frame being deleted
 		for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
-			if id > frameID and not frameInfo.Completed then
+			if id > frameID and frameInfo.Completed == false then
 				local newYOffset = frameInfo.Frame.yOffset + 162
 				frameInfo.Frame:SetPoint("TOP", ProEnchantersWorkOrderScrollFrame:GetScrollChild(), "TOP", 0, newYOffset)
 				frameInfo.Frame.yOffset = newYOffset
@@ -9655,6 +9759,17 @@ function CreateCusWorkOrder(customerName, bypass)
 		customerName = string.lower(customerName)
 		customerName = CapFirstLetter(customerName)
 		ProEnchantersCustomerNameEditBox:SetText(customerName)
+	end
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "CreateCusWorkOrder"
+		if customerName then
+			debugline = debugline .. " work order should now be created for customerName: " .. customerName
+		else
+			debugline = debugline .. " work order should now be created for invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
 	end
 	return frame
 end
@@ -9691,6 +9806,17 @@ end
 function OnCreateWorkorderButtonClick()
 	local customerName = ProEnchantersCustomerNameEditBox:GetText()
 	customerName = string.lower(customerName)
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		-- line to add to table
+		local debugline = "OnCreateWorkOrderButtonClick"
+		if customerName then
+			debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+		else
+			debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+		end
+		-- Add to table
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
+	end
 	CreateCusWorkOrder(customerName)
 end
 
@@ -9941,15 +10067,6 @@ function ProEnchantersTradeWindowCreateFrame()
 		end)
 		enchantButton:SetAttribute("type", "macro")
 		enchantButton:SetAttribute("macrotext", macro2)
-		--enchantButton:SetAttribute("type", "spell")
-		--enchantButton:SetAttribute("spell", enchValue)
-		--[[enchantButton:SetScript("PostClick", function(self, btn, down)
-				if (down) then
-					--acceptButtonBg:Show()
-					--macroButton:Show()
-				print("Down on enchant button")
-				end
-			end)]]
 		enchantButton:Hide()
 
 		-- Increase yOffset for the next button
@@ -10111,14 +10228,7 @@ function ProEnchantersTradeWindowCreateFrame()
 		end)
 		enchantButton:SetAttribute("type", "macro")
 		enchantButton:SetAttribute("macrotext", macro2)
-		--[[enchantButton:SetAttribute("type", "spell")
-			enchantButton:SetAttribute("spell", enchValue)
-			enchantButton:SetScript("PostClick", function(self, btn, down)
-				if (down) then
-					acceptButtonBg:Show()
-					macroButton:Show()
-				end
-			end)]]
+
 		enchantButton:Hide()
 
 
@@ -10318,6 +10428,17 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 		customerName = string.lower(customerName)
 		if not ProEnchantersTradeHistory[customerName] then
 			ProEnchantersTradeHistory[customerName] = {}
+			if ProEnchantersOptions["DebugLevel"] == 50 then
+				-- line to add to table
+				local debugline = "LoadTradeWindowFrame (no trade history)"
+				if customerName then
+					debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+				else
+					debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+				end
+				-- Add to table
+				table.insert(ProEnchantersTables["DebugResult"], debugline)
+			end
 			CreateCusWorkOrder(customerName)
 			if ProEnchantersTradeHistory[customerName] then
 				ProEnchantersLoadTradeWindowFrame(customerName)
@@ -10414,7 +10535,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 				end
 				table.sort(keys, alphanumericSort) -- Sorts the keys in natural alphanumeric order
 
-				for _, enchantID in ipairs(frameInfo.Enchants) do
+				--[[for _, enchantID in ipairs(frameInfo.Enchants) do
 					local enchantName = CombinedEnchants[enchantID].name
 					local key = enchantID
 					local enchantStats1 = CombinedEnchants[enchantID].stats
@@ -10461,7 +10582,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 						end
 						--enchyOffset = enchyOffset + 50
 					end
-				end
+				end]]
 
 				for _, enchantID in ipairs(frameInfo.Enchants) do
 					local enchantName = CombinedEnchants[enchantID].name
@@ -10469,6 +10590,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					local enchantStats1 = CombinedEnchants[enchantID].stats
 					local enchantStats2 = string.gsub(enchantStats1, "%(", "")
 					local enchantStats3 = string.gsub(enchantStats2, "%)", "")
+					local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 
 					-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
 					if matsMissingCheck == true then
@@ -10543,7 +10665,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 
 
 
-				for _, key in ipairs(keys) do
+				--[[for _, key in ipairs(keys) do
 					if buttoncount >= 10 then
 						break
 					end
@@ -10576,7 +10698,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 							end
 						end
 					end
-				end
+				end]]
 
 				for _, key in ipairs(keys) do
 					if buttoncount >= 10 then
@@ -11021,10 +11143,6 @@ local function OnAddonLoaded()
 		ProEnchantersOptions["EnableNewTradeSound"] = false
 	end
 
-	--[[if ProEnchantersOptions["DisplayMinimapButton"] == nil then
-		ProEnchantersOptions["DisplayMinimapButton"] = true
-	end]]
-
 	if ProEnchantersOptions["WorkWhileClosed"] ~= true then
 		WorkWhileClosed = false
 		ProEnchantersOptions["WorkWhileClosed"] = WorkWhileClosed
@@ -11230,12 +11348,6 @@ local function OnAddonLoaded()
 
 	--ProEnchantersCustomerNameEditBox:SetText("tempdisabled") -- 
 	FilterEnchantButtons()
-	--[[Show or Hide minimap button
-	if ProEnchantersOptions["DisplayMinimapButton"] == true then
-		ProEnchantersMinimapButton:Show()
-	elseif ProEnchantersOptions["DisplayMinimapButton"] == false then
-		ProEnchantersMinimapButton:Hide()
-	end]]
 
 	print("|cff00ff00Thank's for using Pro Enchanters! Type /pe to start or /pehelp for more info!|r")
 	if ProEnchantersWoWFlavor == "Vanilla" then
@@ -11243,14 +11355,16 @@ local function OnAddonLoaded()
 			PETestItemCacheTimed()
 		end
 	end
+
+	-- One time run after a new version of the add-on is detected to be installed
+	if ProEnchantersOptions["CurrentVersion"] ~= version then
+		print("|cff00ff00Version updated to " .. version .. ", running table update.|r")
+		PETestItemCacheTimed()
+		ProEnchantersOptions["CurrentVersion"] = version
+	end
 	
 	--ProEnchantersWoWFlavor = "Vanilla"
-	--[[if ProEnchantersOptions["EnableTooltips"] == true then
-		print("|cff00ff00Tooltip's for the Pro Enchanters add-on are currently enabled, you can disable them in the settings window.")
-		print("|cff00ff00While hovering a button you can also press modifier keys (shift, ctrl, shift+ctrl) to see additional functions of the buttons.")
-	end]]
-	--CreatePEMacros()
-	--FullResetFrames()
+
 	ShowOpenWorkOrders()
 	ClearAllTempIgnored()
 	ClearAllAddonInvited()
@@ -11265,8 +11379,6 @@ local function OnAddonLoaded()
 		cachedamt = cachedamt + cachedcount
 		noncachedamt = noncachedamt + noncachedcount
 	end
-	--print("cached: " .. cachedamt .. ", noncached: " .. noncachedamt)
-	--print("cmProf: " .. "ENCHANTING")
 
 end
 
@@ -11305,6 +11417,13 @@ SLASH_PROENCHANTERSAFKMODE1 = "/peafkmode"
 SlashCmdList["PROENCHANTERS"] = function(msg)
 	if msg == "reset" then
 		FullResetFrames()
+	elseif msg == "debugresult" then
+		DEFAULT_CHAT_FRAME:SetMaxLines(1000)
+		print("Chat frame line limit changed to 1000, reload to reset")
+		for i = #ProEnchantersTables["DebugResult"], 1, -1 do
+			local line = ProEnchantersTables["DebugResult"][i]
+			print(i .. ": " .. line)
+		end
 	elseif msg == "msglogclear" then
 		PEClearMsgLogs()
 	elseif msg == "cacheitems" then
@@ -11435,10 +11554,16 @@ end
 
 SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 	local convertedNumber = tonumber(msg)
+	ProEnchantersTables["DebugResult"] = {}
 	if type(convertedNumber) == "number" then
 		ProEnchantersOptions["DebugLevel"] = convertedNumber
 		if convertedNumber == 0 then
 			print(GREENYELLOW .. "Debugging disabled. Set to 1 or higher to re-enable." .. ColorClose)
+		elseif convertedNumber == 50 then
+			ProEnchantersTables["DebugResult"] = {}
+			print(ORANGE ..
+				"Debugging set to 50, use /pe debugresult to print results, either /reload or do /pedebug 0 to disable." ..
+				ColorClose)
 		elseif convertedNumber == 77 then
 			print(ORANGE ..
 				"Debugging set to 77, either /reload or do /pedebug 0 to disable." ..
@@ -11605,11 +11730,6 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 			ColorClose)
 	elseif msg == "credits" then
 		ProEnchantersCreditsFrame:Show()
-		--[[print(ORANGE .. "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~" .. ColorClose)
-		print(ORANGE .. "~ Credits ~" .. ColorClose)
-		print(ORANGE .. "Created by EffinOwen" .. ColorClose)
-		print(ORANGE .. "Check out my discord server for anything related to this addon or any of my other addons" .. ColorClose)
-		print(ORANGE .. "https://discord.gg/qT6bRk4eUa" .. ColorClose)]]
 	else
 		print(ORANGE .. "~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~" .. ColorClose)
 		print(ORANGE .. "Help section not recognized" .. ColorClose)
@@ -11763,6 +11883,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty (wwc no welcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11773,6 +11904,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							end
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty (wwc whisperwelcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					else
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11784,6 +11926,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty (wwc)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					end
 				else
@@ -11792,6 +11945,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						"Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!",
 						IsInRaid() and "RAID" or "PARTY")
 					local playerName = string.lower(playerName)
+					if ProEnchantersOptions["DebugLevel"] == 50 then
+						-- line to add to table
+						local debugline = "LocalPlayerJoinsParty (wwc)"
+						if playerName then
+							debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+						else
+							debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+						end
+						-- Add to table
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -11813,6 +11977,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty (blank welcome msg)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then-- and NonAddonInvite == true then
@@ -11825,6 +12000,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty (whisper welcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					else
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11836,6 +12022,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsParty"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					end
 				else
@@ -11844,6 +12041,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						"Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!",
 						IsInRaid() and "RAID" or "PARTY")
 					local playerName = string.lower(playerName)
+					if ProEnchantersOptions["DebugLevel"] == 50 then
+						-- line to add to table
+						local debugline = "LocalPlayerJoinsParty"
+						if playerName then
+							debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+						else
+							debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+						end
+						-- Add to table
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -11885,6 +12093,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid (wwc no welcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11897,6 +12116,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid (wwc whisperwelcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					else
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then -- and NonAddonInvite == true then
@@ -11909,6 +12139,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid (wwc)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					end
 				else
@@ -11917,6 +12158,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						"Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!",
 						IsInRaid() and "RAID" or "PARTY")
 					local playerName = string.lower(playerName)
+					if ProEnchantersOptions["DebugLevel"] == 50 then
+						-- line to add to table
+						local debugline = "LocalPlayerJoinsRaid (wwc)"
+						if playerName then
+							debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+						else
+							debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+						end
+						-- Add to table
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -11938,6 +12190,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					local FullWelcomeMsg = string.gsub(WelcomeMsg, "CUSTOMER", capPlayerName)
 					if FullWelcomeMsg == "" then
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid (no welcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					elseif ProEnchantersOptions["WhisperWelcomeMsg"] == true then
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11950,6 +12213,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							SendChatMessage(FullWelcomeMsg, "WHISPER", nil, playerName)
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid (whisperwelcome)"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					else
 						if ProEnchantersOptions["NoWelcomeManualInvites"] == true then --and NonAddonInvite == true then
@@ -11962,6 +12236,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								SendChatMessage(FullWelcomeMsg, IsInRaid() and "RAID" or "PARTY")
 						end
 						local playerName = string.lower(playerName)
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "LocalPlayerJoinsRaid"
+							if playerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(playerName)
 					end
 				else
@@ -11970,6 +12255,17 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						"Hello there " .. capPlayerName .. " o/, let me know what you need and trade when ready!",
 						IsInRaid() and "RAID" or "PARTY")
 					local playerName = string.lower(playerName)
+					if ProEnchantersOptions["DebugLevel"] == 50 then
+						-- line to add to table
+						local debugline = "LocalPlayerJoinsRaid"
+						if playerName then
+							debugline = debugline .. " CreateCusWorkOrder for : " .. playerName
+						else
+							debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+						end
+						-- Add to table
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
 					CreateCusWorkOrder(playerName)
 				end
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
@@ -13264,21 +13560,55 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				PESound(ProEnchantersOptions["NewTradeSound"])
 			end
 			if not ProEnchantersTradeHistory[customerName] then
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "TRADE_SHOW (wwc no history)"
+					if customerName then
+						debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
 				CreateCusWorkOrder(customerName)
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
 					local capCustomerName = CapFirstLetter(customerName)
 					ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
 				end
 			elseif ProEnchantersTradeHistory[customerName] then
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "TRADE_SHOW (wwc)"
+					if customerName then
+						debugline = debugline .. " Checking for existing history (why?) : " .. customerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
 				for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 					local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 					local lowerCusName = string.lower(customerName)
-					if lowerFrameCheck == lowerCusName and frameInfo.Completed then
+					if lowerFrameCheck == lowerCusName then
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "TRADE_SHOW (wwc open or closed work order found)"
+							if customerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(customerName)
 						if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
 							local capCustomerName = CapFirstLetter(customerName)
 							ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
 						end
+						break
 					end
 				end
 			end
@@ -13300,21 +13630,55 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 				PESound(ProEnchantersOptions["NewTradeSound"])
 			end
 			if not ProEnchantersTradeHistory[customerName] then
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "TRADE_SHOW (no trade history)"
+					if customerName then
+						debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
 				CreateCusWorkOrder(customerName)
 				if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
 					local capCustomerName = CapFirstLetter(customerName)
 					ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
 				end
 			elseif ProEnchantersTradeHistory[customerName] then
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					-- line to add to table
+					local debugline = "TRADE_SHOW"
+					if customerName then
+						debugline = debugline .. " Checking for existing history (why?) : " .. customerName
+					else
+						debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+					end
+					-- Add to table
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
 				for id, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
 					local lowerFrameCheck = string.lower(frameInfo.Frame.customerName)
 					local lowerCusName = string.lower(customerName)
-					if lowerFrameCheck == lowerCusName and frameInfo.Completed then
+					if lowerFrameCheck == lowerCusName then
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							-- line to add to table
+							local debugline = "TRADE_SHOW (open or closed work order found)"
+							if customerName then
+								debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+							else
+								debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+							end
+							-- Add to table
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 						CreateCusWorkOrder(customerName)
 						if ProEnchantersCustomerNameEditBox:GetText() == nil or ProEnchantersCustomerNameEditBox:GetText() == "" then
 							local capCustomerName = CapFirstLetter(customerName)
 							ProEnchantersCustomerNameEditBox:SetText(capCustomerName)
 						end
+						break
 					end
 				end
 			end

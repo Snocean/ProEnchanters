@@ -179,13 +179,13 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
 
             filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
             filteredWordFinal = string.gsub(filteredWordFinal, "%s", "%%s")
-            print(filteredWordFinal)
+            --print(filteredWordFinal)
             -- Check for Trigger Word within Message
             if string.find(msg2, filteredWordFinal) then
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
             end
 
@@ -214,7 +214,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -232,7 +232,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -250,7 +250,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -1454,8 +1454,8 @@ function PETestItemCacheTimed()
         end
     end
 
-    -- 1583 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
-    count = count - 1583 -- number of items that are not cacheable
+    -- 1381 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
+    count = count - 1381 -- number of items that are not cacheable
 
     if count > 0 then
         print(count .. " items attempting to cache, please wait 30 seconds for cacheing to complete (when all items are cached this message should no longer display on addon load)")
@@ -1943,6 +1943,17 @@ function AddTradeLine(customerName, tradeLine)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "AddTradeLine"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
     local tradeLine = string.gsub(tradeLine, "%[", "") -- Remove '['
@@ -1955,6 +1966,17 @@ function AddRequestedEnchant(customerName, reqEnchant)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "AddRequestedEnchant"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
     local reqEnchantName = CombinedEnchants[reqEnchant].name
@@ -1982,6 +2004,17 @@ function RemoveRequestedTradeLine(customerName, linetext)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "RemoveRequestedTradeLine"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
 
@@ -2001,6 +2034,17 @@ function RemoveRequestedEnchant(customerName, reqEnchant)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "RemoveRequestedEnchant"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
 
@@ -2045,6 +2089,17 @@ function FinishedEnchant(customerName, reqEnchant)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "FinishedEnchant"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
 
@@ -2161,6 +2216,17 @@ function RemoveAllRequestedEnchant(customerName)
     local customerName = string.lower(customerName)
     if not ProEnchantersTradeHistory[customerName] then
         ProEnchantersTradeHistory[customerName] = {}
+        if ProEnchantersOptions["DebugLevel"] == 50 then
+            -- line to add to table
+            local debugline = "RemoveAllRequestedEnchant"
+            if customerName then
+                debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+            else
+                debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+            end
+            -- Add to table
+            table.insert(ProEnchantersTables["DebugResult"], debugline)
+        end
         CreateCusWorkOrder(customerName)
     end
 
@@ -2320,6 +2386,17 @@ function PEdoTrade()
         -- AddTradeLine(customerName, IVORY .. "-- Trade at " .. Time .. " --" .. ColorClose)
         local OnTheClock = false
         if not ProEnchantersTradeHistory[customerName] then
+            if ProEnchantersOptions["DebugLevel"] == 50 then
+                -- line to add to table
+                local debugline = "PEdoTrade"
+                if customerName then
+                    debugline = debugline .. " CreateCusWorkOrder for : " .. customerName
+                else
+                    debugline = debugline .. " CreateCusWorkOrder for invalid customerName"
+                end
+                -- Add to table
+                table.insert(ProEnchantersTables["DebugResult"], debugline)
+            end
             CreateCusWorkOrder(customerName)
         end
         if ProEnchantersOptions["WorkWhileClosed"] == true then
@@ -2339,10 +2416,14 @@ function PEdoTrade()
             GoldTraded = GoldTraded + TargetMoney
             UpdateTradeHistory(customerName)
             if OnTheClock == true then
-                if ProEnchantersLog[customerName] == nil then
+                if ProEnchantersLog[customerName] == nil then --ProEnchantersSessionLog
                     ProEnchantersLog[customerName] = {}
                 end
-                table.insert(ProEnchantersLog[customerName], TargetMoney)
+                if ProEnchantersSessionLog[customerName] == nil then --ProEnchantersSessionLog
+                    ProEnchantersSessionLog[customerName] = {}
+                end
+                table.insert(ProEnchantersLog[customerName], TargetMoney) -- Add new line to add to a temporary table for current session as well -- Bookmark -- add to Helper_Cata, check text added in main window
+                table.insert(ProEnchantersSessionLog[customerName], TargetMoney)
                 if ProEnchantersOptions["TipMsg"] then
                     local tip = ""
                     if ProEnchantersOptions["SimplifyTips"] == true then
@@ -2397,6 +2478,7 @@ function PEdoTrade()
                     end
                 end
             end
+            ProEnchantersGoldFrame.goldLogEditBox:SetText(PEGoldSessionLogText())
         end
 
         if ItemsTraded == true then
@@ -2459,7 +2541,7 @@ function PEdoTrade()
                                     enchantId = key
                                 end
                             end
-                            --bookmark
+                        
                             if ProEnchantersOptions["DebugLevel"] == 99 then
                                 if enchantId ~= nil or "" then
                                     print("item.enchant set to " .. tostring(item.enchant))
@@ -3273,7 +3355,7 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
     -- Set Text
     local text = table.concat(fulltext, "\n")
     ProEnchantersMsgLogFrame.title:SetText("Pro Enchanters Customer Chat Log - " .. title)
-	ProEnchantersMsgLogFrame.textLogHeader:SetText(text) --bookmark
+	ProEnchantersMsgLogFrame.textLogHeader:SetText(text) 
     ProEnchantersMsgLogFrame.textLogHeaderSize:SetText(text)
 	ProEnchantersMsgLogFrame.currentLogs = currentLogs
     -- Update Scroll Height

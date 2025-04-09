@@ -2241,7 +2241,11 @@ function PEdoTrade()
                 if ProEnchantersLog[customerName] == nil then
                     ProEnchantersLog[customerName] = {}
                 end
+                if ProEnchantersSessionLog[customerName] == nil then --ProEnchantersSessionLog
+                    ProEnchantersSessionLog[customerName] = {}
+                end
                 table.insert(ProEnchantersLog[customerName], TargetMoney)
+                table.insert(ProEnchantersSessionLog[customerName], TargetMoney)
                 if ProEnchantersOptions["TipMsg"] then
                     local tip = ""
                     if ProEnchantersOptions["SimplifyTips"] == true then
