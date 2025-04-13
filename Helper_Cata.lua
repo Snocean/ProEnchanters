@@ -132,10 +132,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
 	local check3 = false
 	local check4 = false
     local author = string.gsub(author2, "%-.*", "")
-	local tword = string.gsub(tword, "+", "")
     local msg2 = string.lower(msg)
-	local msg3 = string.gsub(msg2, "+", "")
-	local startPos, endPos = string.find(msg3, tword)
 	local finalcheck = "notrigger"
 	local printout = ""
     local tfound = ""
@@ -182,13 +179,13 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
 
             filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
             filteredWordFinal = string.gsub(filteredWordFinal, "%s", "%%s")
-            print(filteredWordFinal)
+            --print(filteredWordFinal)
             -- Check for Trigger Word within Message
             if string.find(msg2, filteredWordFinal) then
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
             end
 
@@ -217,7 +214,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -235,7 +232,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -253,7 +250,7 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
             check1 = true
             check2 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
-            print("found: " .. msg4)
+            --print("found: " .. msg4)
             tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
         end
 
@@ -267,8 +264,12 @@ function PEMsgCheck(msg, author2, tword) -- To be worked on
                 return finalcheck, printout, tfound, breakloop
             end
     else
+        local tword = string.gsub(tword, "+", "")
+	    local msg3 = string.gsub(msg2, "+", "")
+        local startPos, endPos = string.find(msg3, tword)
+
         if string.find(msg2, tword, 1, true) then
-        
+
             check1 = true
             local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
             --print("found: " .. msg4)
@@ -1400,6 +1401,71 @@ function ProEnchantersConvertMats(customerName, index)
     end
 end
 
+function PETestItemInfo(input)
+    -- Attempt to return item name once
+    local itemName = C_Item.GetItemNameByID(input)
+
+    -- Start repeating timer attempting to input name = id into a table per item ID
+    local myTimer = C_Timer.NewTicker(2, function(self)
+        -- once itemName returns properly, add it to table as name = id
+            if itemName then
+                if ProEnchantersTables then
+                    if not ProEnchantersTables.ItemCache then
+                        ProEnchantersTables.ItemCache = {}
+                    end
+                end
+                ProEnchantersTables.ItemCache[itemName] = input
+                self:Cancel()
+            else
+                -- repeat trying to get itemName on each timer loop if it did not exist previously
+                itemName = C_Item.GetItemNameByID(input)
+            end
+        end, 15) -- repeat 15 times per item ID to ensuse all item IDs are entered
+end
+
+function PETestItemCacheTimed() -- Bookmark, need to add to Cata
+
+    local count = 0
+
+    -- Create tables if not existing
+    if not ProEnchantersTables then
+        ProEnchantersTables = {}
+    end
+    if not ProEnchantersTables.ItemCache then
+        ProEnchantersTables.ItemCache = {}
+    end
+
+    -- Start loop for all items, items in PEAllItems are all available equipable items in chest/gloves/wrists/boots/weapons
+    for _, input in ipairs(PEAllItems) do
+        local flag = false
+        local itemname = ""
+        -- If item already exists in item cache, set flag to true to skip it
+        for name, id in pairs(ProEnchantersTables.ItemCache) do
+            if id == input then
+                flag = true
+                itemname = name
+                break
+            end
+        end
+        -- if item did not exist in cache table, start timer for putting it into the table
+        if flag == false then
+            PETestItemInfo(input)
+            count = count + 1
+        end
+    end
+
+    -- 1381 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
+    count = count - 1381 -- number of items that are not cacheable
+
+    if count > 0 then
+        print(count .. " items attempting to cache, please wait 30 seconds for cacheing to complete (when all items are cached this message should no longer display on addon load)")
+        local myTimer2 = C_Timer.NewTicker(30, function(self) print("Caching should be completed") end, 1)
+    end
+    if count == 0 then
+        --print("all items cached")
+    end
+end
+
 function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName == nil then
         return
@@ -1408,22 +1474,57 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     ProEnchantersUpdateTradeWindowText(customerName)
     local SlotTypeInput = ""
     local tItemLink = GetTradeTargetItemLink(7)
+    local tItemName = GetTradeTargetItemInfo(7)
+    local tItemID
 
-    if tItemLink then
-        if ProEnchantersOptions["DebugLevel"] == 66 then
-            print("tItemLink returns: " .. tItemLink)
-        end
+    if tItemName then
+        tItemID = ProEnchantersTables.ItemCache[tItemName]
     end
 
-    if not tItemLink then
+    if tItemID then
         if ProEnchantersOptions["DebugLevel"] == 66 then
-            print("no item link, exiting function")
+            print("tItemID returns: " .. tItemID)
         end
+    elseif tItemLink then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("no itemID found, try doing a /pe cacheitems")
+            print("tItemLink returns: " .. tItemLink)
+        end
+    else
+        print("exiting function - no itemID or itemLink found, try doing a /pe cacheitems")
         return
     end
 
-    if tItemLink then
+    if tItemID then
+        --local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
+
+        local tEQLoc = {
+            ['INVTYPE_CHEST'] = "Chest",
+            ['INVTYPE_ROBE'] = "Chest",
+            ['INVTYPE_FEET'] = "Boots",
+            ['INVTYPE_WRIST'] = "Bracer",
+            ['INVTYPE_HAND'] = "Gloves",
+            ['INVTYPE_CLOAK'] = "Cloak",
+            ['INVTYPE_WEAPON'] = "Weapon",
+            ['INVTYPE_SHIELD'] = "Shield",
+            ['INVTYPE_2HWEAPON'] = "Weapon",
+            ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon"
+        }
+
+        SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
+    elseif tItemLink then
         local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        --local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
 
         local tEQLoc = {
             ['INVTYPE_CHEST'] = "Chest",
@@ -1491,7 +1592,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 table.sort(keys, alphanumericSort) -- Sorts the keys in natural alphanumeric order
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
                             if ProEnchantersOptions["DebugLevel"] == 66 then
                                 print("10 buttons loaded, breaking loop")
@@ -1518,7 +1619,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                 if ProEnchantersOptions["DebugLevel"] == 66 then
                                     print(enchantName .. " mats available, setting button to available")
                                 end
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1554,7 +1655,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 end
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
                             break
                         end
@@ -1577,7 +1678,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                 if ProEnchantersOptions["DebugLevel"] == 66 then
                                     print(enchantName .. " mats missing, setting button to announce")
                                 end
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1642,16 +1743,16 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                         print("Loading trade window buttons - slot specific")
                     end
 
-                    local tItemLink = GetTradeTargetItemLink(7)
+                    local tItemName = GetTradeTargetItemInfo(7)
 
-                    if tItemLink then
+                    if tItemName then
                         if ProEnchantersOptions["DebugLevel"] == 66 then
-                            print("tItemLink returns: " .. tItemLink)
+                            print("tItemName returns: " .. tItemName)
                         end
                         ProEnchantersUpdateTradeWindowButtons(customerName)
-                    elseif not tItemLink then
+                    elseif not tItemName then
                         if ProEnchantersOptions["DebugLevel"] == 66 then
-                            print("no item link")
+                            print("no item name found")
                         end
                         ProEnchantersLoadTradeWindowFrame(customerName)
                     end
@@ -1664,7 +1765,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
                             if ProEnchantersOptions["DebugLevel"] == 66 then
@@ -1713,7 +1814,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
@@ -2300,6 +2401,7 @@ function PEdoTrade()
                     end
                 end
             end
+            ProEnchantersGoldFrame.goldLogEditBox:SetText(PEGoldSessionLogText())
         end
 
         if ItemsTraded == true then
@@ -3116,7 +3218,7 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
                 local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
 
-                -- Final Formatting
+                --[[ Final Formatting
                 local fullentry = ""
                 if msgtype == "whisper" then
                     fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
@@ -3133,7 +3235,26 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 else
                     fullentry = timeentry .. capitalizedName .. ": " .. line
                 end
-                --fullentry = timeentry .. capitalizedName .. ": " .. line
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
 
                 table.insert(fulltext, fullentry)
             end
@@ -3175,7 +3296,9 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
                 local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
 
-                -- Final Formatting
+                
+
+                --[[ Final Formatting
                 local fullentry = ""
                 if msgtype == "whisper" then
                     fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
@@ -3192,7 +3315,31 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 else
                     fullentry = timeentry .. capitalizedName .. ": " .. line
                 end
-                --fullentry = timeentry .. capitalizedName .. ": " .. line
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+
+                -- Create Hyperlink out of name
+                -- "|cFFDA70D6|Haddon:ProEnchanters:" .. "msglog" .. ":" .. line .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r"
+                -- Final Formatting
+
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
 
                 table.insert(fulltext, fullentry)
                         
@@ -3211,7 +3358,7 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
     -- Set Text
     local text = table.concat(fulltext, "\n")
     ProEnchantersMsgLogFrame.title:SetText("Pro Enchanters Customer Chat Log - " .. title)
-	ProEnchantersMsgLogFrame.textLogHeader:SetText(text) --bookmark
+	ProEnchantersMsgLogFrame.textLogHeader:SetText(text)
     ProEnchantersMsgLogFrame.textLogHeaderSize:SetText(text)
 	ProEnchantersMsgLogFrame.currentLogs = currentLogs
     -- Update Scroll Height

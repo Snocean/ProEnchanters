@@ -1423,7 +1423,7 @@ function PETestItemInfo(input)
         end, 15) -- repeat 15 times per item ID to ensuse all item IDs are entered
 end
 
-function PETestItemCacheTimed()
+function PETestItemCacheTimed() -- Bookmark, need to add to Cata
 
     local count = 0
 
@@ -1592,7 +1592,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 table.sort(keys, alphanumericSort) -- Sorts the keys in natural alphanumeric order
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
                             if ProEnchantersOptions["DebugLevel"] == 66 then
                                 print("10 buttons loaded, breaking loop")
@@ -1619,7 +1619,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                 if ProEnchantersOptions["DebugLevel"] == 66 then
                                     print(enchantName .. " mats available, setting button to available")
                                 end
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1655,7 +1655,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 end
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
                             break
                         end
@@ -1678,7 +1678,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                 if ProEnchantersOptions["DebugLevel"] == 66 then
                                     print(enchantName .. " mats missing, setting button to announce")
                                 end
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1765,7 +1765,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
                             if ProEnchantersOptions["DebugLevel"] == 66 then
@@ -1814,7 +1814,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
@@ -3260,7 +3260,7 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
                 local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
 
-                -- Final Formatting
+                --[[ Final Formatting
                 local fullentry = ""
                 if msgtype == "whisper" then
                     fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
@@ -3277,7 +3277,26 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 else
                     fullentry = timeentry .. capitalizedName .. ": " .. line
                 end
-                --fullentry = timeentry .. capitalizedName .. ": " .. line
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
 
                 table.insert(fulltext, fullentry)
             end
@@ -3319,7 +3338,9 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
                 local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
 
-                -- Final Formatting
+                
+
+                --[[ Final Formatting
                 local fullentry = ""
                 if msgtype == "whisper" then
                     fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
@@ -3336,7 +3357,31 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
                 else
                     fullentry = timeentry .. capitalizedName .. ": " .. line
                 end
-                --fullentry = timeentry .. capitalizedName .. ": " .. line
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+
+                -- Create Hyperlink out of name
+                -- "|cFFDA70D6|Haddon:ProEnchanters:" .. "msglog" .. ":" .. line .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r"
+                -- Final Formatting
+
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
 
                 table.insert(fulltext, fullentry)
                         
@@ -3355,7 +3400,7 @@ function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
     -- Set Text
     local text = table.concat(fulltext, "\n")
     ProEnchantersMsgLogFrame.title:SetText("Pro Enchanters Customer Chat Log - " .. title)
-	ProEnchantersMsgLogFrame.textLogHeader:SetText(text) 
+	ProEnchantersMsgLogFrame.textLogHeader:SetText(text)
     ProEnchantersMsgLogFrame.textLogHeaderSize:SetText(text)
 	ProEnchantersMsgLogFrame.currentLogs = currentLogs
     -- Update Scroll Height

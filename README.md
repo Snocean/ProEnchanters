@@ -4,6 +4,21 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 10.7.4 Beta
+- **Changed** Tooltip for the minimap button should now anchor to the bottom left of the minimap icon instead of the top right overlapping with the minimap
+- **New** Added Context menu for Message Logged players that can be accessed by Right Clicking the players name in the message log window
+- Context menu lets you Whisper your Auto Inv Msg, Invite them, Create a Work Order, or add them to Temporary Ignore list
+- **New** You can now Left Click the player names to set your chat window to whisper the player so you can manually type a message to them
+
+## Update 10.7.3 Beta
+- **Hopeful fix** When a player puts an item up in the do-not-trade slow in the trade window and it does not load the buttons properly the add-on should now attempt to reload the buttons automatically in 300ms, in my testing this resolved the issue 100% but it still relies on the WoW server loading the items properly for you so it may still not be 100% fixed and instead is just significantly reduced
+
+## Update 10.7.2 Beta
+- **New** Separated the synced enchants to be saved per character, this is useful if you have multiple characters that have differing enchants but are on the same game client.
+- If you already have the add-on, this will copy over your current synced enchants to every new character, you can then do a new sync on any character to disable/enable enchants and it will now be specific to that character. If you install the add-on completely fresh then all enchants are enabled by default until you do a proper sync or disable specific ones.
+- **Fixed** Print outs happening when money was received
+- **Fixed** On a fresh add-on install the 'disabled' enchant buttons were being set to the wrong color
+
 ## Update 10.7.1 Beta
 - **Added** Ability to cycle through the gold log, it now defaults to the Current Sessions trades (this is wiped on any /reload or game launch), you can hit the Load button to cycle through to see the larger history of gold made.
 

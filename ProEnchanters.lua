@@ -1,10 +1,12 @@
 -- First Initilizations
-local version = "v10.7.1"
+local version = "v10.7.4"
 ProEnchantersOptions = ProEnchantersOptions or {}
+ProEnchantersCharOptions = ProEnchantersCharOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
 ProEnchantersSessionLog = {}
 ProEnchantersTradeHistory = ProEnchantersTradeHistory or {}
 ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
+ProEnchantersCharOptions.filters = ProEnchantersCharOptions.filters or {}
 ProEnchantersWorkOrderFrames = {}
 ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
 ProEnchantersOptions.reagents = ProEnchantersOptions.reagents or {}
@@ -154,7 +156,9 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 		end
 	end,
 	OnEnter = function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:SetOwner(self, "ANCHOR_NONE")
+		local anchor = icon:GetMinimapButton("ProEnchanters")
+		GameTooltip:SetPoint("TOPRIGHT", anchor, "BOTTOMLEFT")
 		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
 		GameTooltip:AddLine(" ");
 		GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
@@ -2231,6 +2235,7 @@ function ProEnchantersCreateWorkOrderFrame()
 		ProEnchantersCreditsFrame:Hide()
 		ProEnchantersColorsFrame:Hide()
 		ProEnchantersMsgLogFrame:Hide()
+		ProEnchantersMsgLogContextFrame.frame:Hide()
 	end)
 
 	local resizeButton = CreateFrame("Button", nil, WorkOrderFrame)
@@ -2584,7 +2589,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		end
 
 		for _, key in ipairs(keys) do
-			if ProEnchantersOptions.filters[key] == true then
+			if ProEnchantersCharOptions.filters[key] == true then
 				if ProEnchantersOptions.favorites[key] == true then
 					local enchantInfo = enchantButtons[key]
 					local enchantName = CombinedEnchants[key].name:lower()
@@ -2615,7 +2620,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 		end
 
 		for _, key in ipairs(keys) do
-			if ProEnchantersOptions.filters[key] == true then
+			if ProEnchantersCharOptions.filters[key] == true then
 				if ProEnchantersOptions.favorites[key] ~= true then
 					local enchantInfo = enchantButtons[key]
 					local enchantName = CombinedEnchants[key].name:lower()
@@ -2788,7 +2793,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 				FilterEnchantButtons()
 			elseif button == "LeftButton" then
 				if IsShiftKeyDown() and IsAltKeyDown() and IsControlKeyDown() then
-					ProEnchantersOptions.filters[reqEnchant] = false
+					ProEnchantersCharOptions.filters[reqEnchant] = false
 					enchantButton:Hide()
 					enchantButtonBg:Hide()
 					FilterEnchantButtons()
@@ -2919,7 +2924,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 
 		-- Store the button and its background in the table
 		enchantButtons[key] = { button = enchantButton, background = enchantButtonBg, favicon = enchantFavIcon, inficon = enchantInfoBtnBg, infbtn = enchantInfoBtn }
-		if ProEnchantersOptions.filters[key] == false then
+		if ProEnchantersCharOptions.filters[key] == false then
 			enchantButton:Hide()
 			enchantButtonBg:Hide()
 		end
@@ -4801,11 +4806,11 @@ function ProEnchantersCreateOptionsFrame()
 		enchantFilterCb:SetPoint("LEFT", enchantFilterName, "RIGHT", 10, 0)
 		enchantFilterCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
 		enchantFilterCb:SetHitRectInsets(0, 0, 0, 0)
-		enchantFilterCb:SetChecked(ProEnchantersOptions.filters[key])
+		enchantFilterCb:SetChecked(ProEnchantersCharOptions.filters[key])
 		enchantFilterCb:SetScript("OnClick", function(self)
-			ProEnchantersOptions.filters[key] = self:GetChecked()
+			ProEnchantersCharOptions.filters[key] = self:GetChecked()
 			local enchantButton = enchantButtons[key]
-			if ProEnchantersOptions.filters[key] == false then
+			if ProEnchantersCharOptions.filters[key] == false then
 				enchantButton.button:Hide()
 				enchantButton.background:Hide()
 				enchantButton.favicon:Hide()
@@ -4876,16 +4881,16 @@ function ProEnchantersCreateOptionsFrame()
 			local localEnchantingName = PEenchantingLocales["Enchanting"][LocalLanguage]
 			if name == localEnchantingName then
 				-- Clear previous table
-				if ProEnchantersOptions and ProEnchantersOptions.filters then
+				if ProEnchantersOptions and ProEnchantersCharOptions.filters then
 					-- Iterate over the table and remove all key-value pairs
-					for key in pairs(ProEnchantersOptions.filters) do
-						ProEnchantersOptions.filters[key] = nil
+					for key in pairs(ProEnchantersCharOptions.filters) do
+						ProEnchantersCharOptions.filters[key] = nil
 					end
 				end
 
 				-- Assume all enchantments are not available initially
 				for enchKey, _ in pairs(EnchantsName) do
-					ProEnchantersOptions.filters[enchKey] = false
+					ProEnchantersCharOptions.filters[enchKey] = false
 					local enchantButton = enchantButtons[enchKey]
 					if enchantButton then
 						enchantButton.button:Hide()
@@ -4906,7 +4911,7 @@ function ProEnchantersCreateOptionsFrame()
 							local enchValue = ProEnchantersTables.Locales[enchKey] -- PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
 							if enchValue == skillName then
 								--print(enchValue .. " found, setting to true")
-								ProEnchantersOptions.filters[enchKey] = true
+								ProEnchantersCharOptions.filters[enchKey] = true
 								local enchantButton = enchantButtons[enchKey]
 								if enchantButton then
 									enchantButton.inficon:Show()
@@ -4922,7 +4927,7 @@ function ProEnchantersCreateOptionsFrame()
 				end
 
 				-- Print out enchantments that are set to false (not found)
-				for enchKey, isVisible in pairs(ProEnchantersOptions.filters) do
+				for enchKey, isVisible in pairs(ProEnchantersCharOptions.filters) do
 					if not isVisible then
 						if enchKey  then
 							local enchValue = ProEnchantersTables.Locales[enchKey] -- PEenchantingLocales["Enchants"][enchKey][LocalLanguage]
@@ -8437,7 +8442,7 @@ function ProEnchantersCreateImportFrame()
 	return frame
 end
 
-function ProEnchantersCreateGoldFrame() -- bookmark
+function ProEnchantersCreateGoldFrame()
 	local frame = CreateFrame("Frame", "ProEnchantersGoldFrame", UIParent, "BackdropTemplate")
 	frame:SetFrameStrata("FULLSCREEN")
 	frame:SetSize(500, 600) -- Adjust height as needed
@@ -8562,105 +8567,23 @@ function ProEnchantersCreateGoldFrame() -- bookmark
 		"Gold traded to your by players while you have the add-on window open.\nThis number may be slightly inaccurate but should give a rough idea\nof how much gold has been made while enchanting." ..
 		ColorClose)
 
-	-- Input session gold logs
-	function PEGetSessionGoldLogs() -- ProEnchantersSessionLog
-		local goldlog = {}
-		local check = true
-		if next(ProEnchantersSessionLog) == nil then
-			check = false
-			return {}, check
-		end
-		for name, amounts in pairs(ProEnchantersSessionLog) do
-			print(name)
-			print(amounts)
-			local gold = 0
-			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
-				gold = gold + tonumber(amount)
-			end
-			goldlog[name] = gold
-		end
-		local goldsorttable = {}
-		for name, gold in pairs(goldlog) do
-			table.insert(goldsorttable, { name = name, gold = gold })
-		end
+	-- Gold Log Stuff
 
-		-- Sort the table based on the gold values
-		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
-		return goldsorttable, check
-	end
-
-	function PEGoldSessionLogText()
-		local messageboxtext = ""
-		local goldlogs, check = PEGetSessionGoldLogs()
+	function PEGetTotalGoldLogs() -- ProEnchantersSessionLog
 		local totalgold = 0
-		if not check then
-			return "No text to display" -- Ensures a string is always returned
-		end
-
-		for _, t in ipairs(goldlogs) do -- Simplified loop
-			local gold = t.gold
-			totalgold = totalgold + gold
-			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
-			messageboxtext = messageboxtext ..
-				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
-		end
-
-		messageboxtext = "Total gold from this sessions trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
-		return messageboxtext
-	end
-
-	-- Input gold logs
-	function PEGetGoldLogs100() -- ProEnchantersSessionLog
-		local goldlog = {}
-		local check = true
 		if next(ProEnchantersLog) == nil then
-			check = false
-			return {}, check
+			return totalgold
 		end
-
 		for name, amounts in pairs(ProEnchantersLog) do
 			local gold = 0
 			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
 				gold = gold + tonumber(amount)
 			end
-			goldlog[name] = gold
-		end
-
-		local goldsorttable = {}
-		for name, gold in pairs(goldlog) do
-			table.insert(goldsorttable, { name = name, gold = gold })
-		end
-
-		-- Sort the table based on the gold values
-		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
-		return goldsorttable, check
-	end
-
-	function PEGoldLogText100()
-		local messageboxtext = ""
-		local goldlogs, check = PEGetGoldLogs100()
-		local totalgold = 0
-		if not check then
-			return "No text to display" -- Ensures a string is always returned
-		end
-
-		--for i = 1, 100 do 
-		--local t = goldlogs[i]
-		--for _, t in ipairs(goldlogs) do -- Simplified loop
-		for i = 1, 100 do 
-			local t = goldlogs[i]
-			local gold = t.gold
 			totalgold = totalgold + gold
-			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
-			messageboxtext = messageboxtext ..
-				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
 		end
-
-		messageboxtext = "Total gold from top 100 logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
-		return messageboxtext
+		return totalgold
 	end
 
-	-- Input gold logs
 	function PEGetGoldLogs() -- ProEnchantersSessionLog
 		local goldlog = {}
 		local check = true
@@ -8704,6 +8627,110 @@ function ProEnchantersCreateGoldFrame() -- bookmark
 		messageboxtext = "Total gold from all logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
 		return messageboxtext
 	end
+
+	function PEGetSessionGoldLogs() -- ProEnchantersSessionLog
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersSessionLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersSessionLog) do
+			--print(name)
+			--print(amounts)
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldSessionLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetSessionGoldLogs()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nNo text to display from current session" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nTotal gold from this sessions trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	-- Input gold logs
+	function PEGetGoldLogs100() -- ProEnchantersSessionLog
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText100()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs100()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nNo text to display for top 100" -- Ensures a string is always returned
+		end
+
+		--for i = 1, 100 do 
+		--local t = goldlogs[i]
+		--for _, t in ipairs(goldlogs) do -- Simplified loop
+		for i = 1, 100 do
+			local t = goldlogs[i]
+			if t == nil then
+				break
+			end
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nTotal gold from top 100 logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	
 
 	-- Create Cmd Box
 	local goldLogEditBox = CreateFrame("EditBox", "cmdBoxMain", ScrollChild)
@@ -8800,6 +8827,118 @@ function ProEnchantersCreateGoldFrame() -- bookmark
 	end)
 
 	return frame
+end
+
+function ProEnchantersCreateMsgLogContextFrame()
+	local MsgLogContextFrame = CreateFrame("Frame", "ProEnchantersMsgLogContextFrame", UIParent, "BackdropTemplate")
+	MsgLogContextFrame:SetFrameStrata("TOOLTIP")
+	MsgLogContextFrame:SetSize(110, 115) -- Adjust height as needed
+	MsgLogContextFrame:SetPoint("TOP", 0, -300)
+	MsgLogContextFrame:SetMovable(false)
+	--MsgLogFrame:SetResizable(true) -- we'll see about this.
+	--MsgLogFrame:SetResizeBounds(455, 250, 455, 2000)
+	MsgLogContextFrame:EnableMouse(true)
+	MsgLogContextFrame:RegisterForDrag("LeftButton")
+
+	local backdrop = {
+		edgeFile = "Interface\\Buttons\\WHITE8x8", -- Path to a 1x1 white pixel texture
+		edgeSize = 1,                        -- Border thickness
+	}
+
+	local clickCatcher = CreateFrame("Button", nil, UIParent)
+    clickCatcher:SetAllPoints(UIParent)
+    clickCatcher:Hide()
+    clickCatcher:SetFrameStrata("FULLSCREEN_DIALOG")
+    clickCatcher:SetToplevel(true)
+    clickCatcher:EnableMouse(true)
+	clickCatcher:RegisterForClicks("AnyUp", "AnyDown")
+    clickCatcher:SetScript("OnClick", function()
+        ProEnchantersMsgLogContextFrame:Hide()
+        clickCatcher:Hide()
+    end)
+	ProEnchantersMsgLogContextFrame.clickCatcher = clickCatcher
+
+	-- Create a full background texture
+	local bgTexture = MsgLogContextFrame:CreateTexture(nil, "BACKGROUND")
+	bgTexture:SetColorTexture(0, 0, 0, .9)--unpack(SettingsWindowBackgroundOpaque)) -- Set RGBA values for your preferred color and alpha
+	--bgTexture:SetSize(450, 325)
+	bgTexture:SetPoint("TOPLEFT", MsgLogContextFrame)
+	bgTexture:SetPoint("BOTTOMRIGHT", MsgLogContextFrame)
+	-- Apply the backdrop to the WorkOrderFrame
+
+	MsgLogContextFrame:SetBackdrop(backdrop)
+	MsgLogContextFrame:SetBackdropBorderColor(unpack(BorderColorOpaque))
+
+	-- Create a title for Options
+	local titleHeader3 = MsgLogContextFrame:CreateFontString(nil, "OVERLAY")
+	titleHeader3:SetFontObject(UIFontBasic)
+	titleHeader3:SetPoint("TOPLEFT", MsgLogContextFrame, "TOPLEFT", 10, -8)
+	titleHeader3:SetText("ContextMenu")
+	ProEnchantersMsgLogContextFrame.title = titleHeader3
+
+	local whisperButton = CreateFrame("Button", nil, MsgLogContextFrame)
+	whisperButton:SetPoint("TOPLEFT", titleHeader3, "BOTTOMLEFT", 0, -3) -- Adjust position as needed
+	whisperButton:SetText("- Whisper Inv Msg")
+	whisperButton:SetSize(50, 20)
+	local whisperButtonText = whisperButton:GetFontString()
+	whisperButtonText:SetFont(peFontString, FontSize, "")
+	whisperButton:SetNormalFontObject("GameFontHighlight")
+	whisperButton:SetHighlightFontObject("GameFontNormal")
+	whisperButton:SetScript("OnClick", function()
+	end)
+
+	local inviteButton = CreateFrame("Button", nil, MsgLogContextFrame)
+	inviteButton:SetPoint("TOPLEFT", whisperButton, "BOTTOMLEFT", 0, -3) -- Adjust position as needed
+	inviteButton:SetText("- Invite")
+	inviteButton:SetSize(50, 20)
+	local inviteButtonText = inviteButton:GetFontString()
+	inviteButtonText:SetFont(peFontString, FontSize, "")
+	inviteButton:SetNormalFontObject("GameFontHighlight")
+	inviteButton:SetHighlightFontObject("GameFontNormal")
+	inviteButton:SetScript("OnClick", function()
+	end)
+
+	local createWOButton = CreateFrame("Button", nil, MsgLogContextFrame)
+	createWOButton:SetPoint("TOPLEFT", inviteButton, "BOTTOMLEFT", 0, -3) -- Adjust position as needed
+	createWOButton:SetText("- Create Work Order")
+	createWOButton:SetSize(50, 20)
+	local createWOButtonText = createWOButton:GetFontString()
+	createWOButtonText:SetFont(peFontString, FontSize, "")
+	createWOButton:SetNormalFontObject("GameFontHighlight")
+	createWOButton:SetHighlightFontObject("GameFontNormal")
+	createWOButton:SetScript("OnClick", function()
+	end)
+
+	local tempIgnoreButton = CreateFrame("Button", nil, MsgLogContextFrame)
+	tempIgnoreButton:SetPoint("TOPLEFT", createWOButton, "BOTTOMLEFT", 0, -3) -- Adjust position as needed
+	tempIgnoreButton:SetText("- Temp Ignore")
+	tempIgnoreButton:SetSize(50, 20)
+	local tempIgnoreButtonText = tempIgnoreButton:GetFontString()
+	tempIgnoreButtonText:SetFont(peFontString, FontSize, "")
+	tempIgnoreButton:SetNormalFontObject("GameFontHighlight")
+	tempIgnoreButton:SetHighlightFontObject("GameFontNormal")
+	tempIgnoreButton:SetScript("OnClick", function()
+	end)
+
+	MsgLogContextFrame:SetScript("OnShow", function()
+		clickCatcher:Show()
+	end)
+
+	MsgLogContextFrame:SetScript("OnHide", function()
+		clickCatcher:Hide()
+	end)
+
+	MsgLogContextFrame:SetScript("OnLeave", function()
+		--MsgLogContextFrame:Hide()
+	end)
+
+	MsgLogContextFrame:Hide()
+	MsgLogContextFrame.frame = MsgLogContextFrame
+	MsgLogContextFrame.whisperButton = whisperButton
+	MsgLogContextFrame.inviteButton = inviteButton
+	MsgLogContextFrame.createWOButton = createWOButton
+	MsgLogContextFrame.tempIgnoreButton = tempIgnoreButton
+	return MsgLogContextFrame
 end
 
 function ProEnchantersCreateMsgLogFrame()
@@ -8937,15 +9076,92 @@ function ProEnchantersCreateMsgLogFrame()
 	local textLogHeaderEditBoxText = textLogHeaderEditBox:GetFontObject()
 	textLogHeaderEditBoxText:SetFontObject(UIFontBasic)
 	textLogHeaderEditBoxText:SetJustifyH("LEFT")
-	textLogHeaderEditBox:SetSpacing(2)
-	textLogHeaderEditBox:EnableMouse(false)
-	textLogHeaderEditBox:SetHyperlinksEnabled(true)
+	--textLogHeaderEditBox:SetSpacing(2)
+	textLogHeaderEditBox:EnableMouse(true)
+	textLogHeaderEditBox:SetHyperlinksEnabled(true) -- bookmark
+	--textLogHeaderEditBox:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 	textLogHeaderEditBox:SetFontObject("GameFontHighlight")
 	--textLogHeaderEditBox:SetPoint("TOPLEFT", ScrollChild, "TOPLEFT", 0, 0)
 	--textLogHeaderEditBox:SetPoint("BOTTOMRIGHT", ScrollChild, "BOTTOMRIGHT", 0, 0) -- Anchor bottom right to scrollChild
 	textLogHeaderEditBox:SetText("temp")
 	-- Make EditBox non-editable
 	textLogHeaderEditBox:EnableKeyboard(false)
+	textLogHeaderEditBox:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+		local linkType, addon, param1, param2, param3 = strsplit(":", linkData)
+		if button == "LeftButton" then
+			if linkType == "addon" and addon == "ProEnchanters" then
+				local hlType = param1 -- type = msglog
+				local hlInfo = param2 -- info = line
+				local customerName = param3 -- name
+				ChatFrame_OpenChat("/w " .. customerName .." ")
+				--print("hyplink leftclicked: " .. customerName .. " " .. hlInfo)
+			end
+		elseif button == "RightButton" then
+			if linkType == "addon" and addon == "ProEnchanters" then
+				local hlType = param1 -- type = msglog
+				local hlInfo = param2 -- info = msgtype
+				local customerName = param3 -- name
+				-- print("rightclicked")
+				local scale = UIParent:GetEffectiveScale()
+				local x, y = GetCursorPosition()
+				x = x / scale
+				y = y / scale
+				ProEnchantersMsgLogContextFrame.frame:Show()
+				ProEnchantersMsgLogContextFrame.frame:ClearAllPoints()
+				ProEnchantersMsgLogContextFrame.frame:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x - 20, y + 20)
+				ProEnchantersMsgLogContextFrame.title:SetText(CYAN .. customerName .. ColorClose)
+				-- Button Setup
+				local inviteW = ProEnchantersMsgLogContextFrame.inviteButton:GetTextWidth()
+				ProEnchantersMsgLogContextFrame.inviteButton:SetSize(inviteW, 20)
+				ProEnchantersMsgLogContextFrame.inviteButton:SetScript("OnClick", function()
+					local realmName = GetNormalizedRealmName()
+                	local inviteName = customerName .. "-" .. realmName
+					InviteUnitPEAddon(customerName)
+					ProEnchantersMsgLogContextFrame.frame:Hide()
+				end)
+
+				local whisperW = ProEnchantersMsgLogContextFrame.whisperButton:GetTextWidth()
+				ProEnchantersMsgLogContextFrame.whisperButton:SetSize(whisperW, 20)
+				ProEnchantersMsgLogContextFrame.whisperButton:SetScript("OnClick", function()
+					local autoInvMsg = AutoInviteMsg
+					local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", customerName)
+						if autoInvMsg2 == "" then
+							ChatFrame_OpenChat("/w " .. customerName .." ")
+						else
+							SendChatMessage(autoInvMsg2, "WHISPER", nil, customerName)
+							UpdateAddonInvited(customerName, "msgsent")
+						end
+						ProEnchantersMsgLogContextFrame.frame:Hide()
+				end)
+
+				local workorderW = ProEnchantersMsgLogContextFrame.createWOButton:GetTextWidth()
+				ProEnchantersMsgLogContextFrame.createWOButton:SetSize(workorderW, 20)
+				ProEnchantersMsgLogContextFrame.createWOButton:SetScript("OnClick", function()
+					CreateCusWorkOrder(customerName)
+					ProEnchantersCustomerNameEditBox:SetText(customerName)
+					if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
+						ProEnchantersWorkOrderFrame:Show()
+						ProEnchantersWorkOrderEnchantsFrame:Show()
+					end
+					ProEnchantersMsgLogContextFrame.frame:Hide()
+				end)
+
+				local ignoreW = ProEnchantersMsgLogContextFrame.tempIgnoreButton:GetTextWidth()
+				ProEnchantersMsgLogContextFrame.tempIgnoreButton:SetSize(ignoreW, 20)
+				ProEnchantersMsgLogContextFrame.tempIgnoreButton:SetScript("OnClick", function()
+					if CheckIfTempIgnored(customerName) == true then
+						ClearTempIgnored(customerName)
+						print(CYAN .. customerName .. ColorClose .. " " .. LIGHTGREEN .. "removed " .. ColorClose .. "from temp ignore list")
+					else
+						AddToTempIgnored(customerName)
+						print(CYAN .. customerName .. ColorClose .. " " .. LIGHTRED .. "added " .. ColorClose .. "to temp ignore list")
+					end
+					ProEnchantersMsgLogContextFrame.frame:Hide()
+				end)
+				
+			end
+		end
+	end)
 	
 
 	ProEnchantersMsgLogFrame.textLogHeader = textLogHeaderEditBox
@@ -9068,7 +9284,7 @@ end
 
 function UpdateCheckboxesBasedOnFilters()
 	for key, checkbox in pairs(enchantFilterCheckboxes) do
-		local isChecked = ProEnchantersOptions.filters[key]
+		local isChecked = ProEnchantersCharOptions.filters[key]
 		if isChecked ~= nil then
 			checkbox:SetChecked(isChecked)
 		end
@@ -10550,7 +10766,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					local matsDiff = {}
 					local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 					if matsMissingCheck ~= true then
-						if ProEnchantersOptions.filters[key] == true then
+						if ProEnchantersCharOptions.filters[key] == true then
 							if buttoncount >= 10 then
 								break
 							end
@@ -10594,7 +10810,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 
 					-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
 					if matsMissingCheck == true then
-						if ProEnchantersOptions.filters[key] == true then
+						if ProEnchantersCharOptions.filters[key] == true then
 							if buttoncount >= 10 then
 								break
 							end
@@ -10669,7 +10885,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					if buttoncount >= 10 then
 						break
 					end
-					if ProEnchantersOptions.filters[key] == true then
+					if ProEnchantersCharOptions.filters[key] == true then
 						-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
 						local matsDiff = {}
 						local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -10704,7 +10920,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 					if buttoncount >= 10 then
 						break
 					end
-					if ProEnchantersOptions.filters[key] == true then
+					if ProEnchantersCharOptions.filters[key] == true then
 						-- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
 						local matsDiff = {}
 						local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -10835,7 +11051,7 @@ local function LoadColorTables()
 	initializeColorTable("MainWindowBackground", { 22 / 255, 26 / 255, 48 / 255 })
 	initializeColorTable("BottomBarColor", { 22 / 255, 26 / 255, 48 / 255 })
 	initializeColorTable("EnchantsButtonColor", { 22 / 255, 26 / 255, 48 / 255 })
-	initializeColorTable("EnchantsButtonColorInactive", { 22 / 255, 26 / 255, 48 / 255 })
+	initializeColorTable("EnchantsButtonColorInactive", { 70 / 255, 70 / 255, 70 / 255 })
 	initializeColorTable("BorderColor", { 49 / 255, 48 / 255, 77 / 255 })
 	initializeColorTable("MainButtonColor", { 22 / 255, 26 / 255, 48 / 255 })
 	initializeColorTable("SettingsWindowBackground", { 49 / 255, 48 / 255, 77 / 255 })
@@ -10921,6 +11137,7 @@ local function OnAddonLoaded()
 	-- Ensure the ProEnchantersOptions and its filters sub-table are properly initialized
 	ProEnchantersOptions = ProEnchantersOptions or {}
 	ProEnchantersOptions.filters = ProEnchantersOptions.filters or {}
+	ProEnchantersCharOptions.filters = ProEnchantersCharOptions.filters or {}
 	ProEnchantersOptions.favorites = ProEnchantersOptions.favorites or {}
 	ProEnchantersOptions.favoritecrafts = ProEnchantersOptions.favoritecrafts or {}
 	ProEnchantersOptions.whispertriggers = ProEnchantersOptions.whispertriggers or {}
@@ -10962,14 +11179,20 @@ local function OnAddonLoaded()
 	ProEnchanters.frame:RegisterEvent("UI_INFO_MESSAGE")
 	ProEnchanters.frame:RegisterEvent("UI_ERROR_MESSAGE")
 	ProEnchanters.frame:RegisterEvent("CHAT_MSG_LOOT")
-
+	ProEnchanters.frame:RegisterEvent("ITEM_DATA_LOAD_RESULT")
+	ProEnchanters.frame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 	-- Create Filter Enchants Options Table
 	for key, _ in pairs(EnchantsName) do
-		-- Create Filters table
+		-- Create Default Filters Table
 		if ProEnchantersOptions.filters[key] == nil or ProEnchantersOptions.filters[key] == "" then
 			ProEnchantersOptions.filters[key] = true
 		else
 			ProEnchantersOptions.filters[key] = ProEnchantersOptions.filters[key]
+		end
+		-- Create Character Specific Filter Table
+		if ProEnchantersCharOptions.filters[key] == nil or ProEnchantersCharOptions.filters[key] == "" then
+			local flag = ProEnchantersOptions.filters[key]
+			ProEnchantersCharOptions.filters[key] = flag
 		end
 		-- Create Favorites table
 		if ProEnchantersOptions.favorites[key] == nil or ProEnchantersOptions.favorites[key] == "" then
@@ -11344,15 +11567,18 @@ local function OnAddonLoaded()
 	ProEnchantersGoldFrame = ProEnchantersCreateGoldFrame()
 	ProEnchantersWorkOrderEnchantsFrame = ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 	ProEnchantersSoundsFrame = ProEnchantersCreateSoundsFrame()
+	ProEnchantersMsgLogContextFrame = ProEnchantersCreateMsgLogContextFrame()
 	ProEnchantersMsgLogFrame = ProEnchantersCreateMsgLogFrame()
-
+	
 	--ProEnchantersCustomerNameEditBox:SetText("tempdisabled") -- 
 	FilterEnchantButtons()
 
 	print("|cff00ff00Thank's for using Pro Enchanters! Type /pe to start or /pehelp for more info!|r")
 	if ProEnchantersWoWFlavor == "Vanilla" then
 		if not ProEnchantersTables.ItemCache then
+			print("|cff00ff00Version updated to " .. version .. ", running table update.|r")
 			PETestItemCacheTimed()
+			ProEnchantersOptions["CurrentVersion"] = version
 		end
 	end
 
@@ -11391,7 +11617,7 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 		OnAddonLoaded()
 	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)
-	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
+	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" or event == "GET_ITEM_INFO_RECEIVED" or event == "ITEM_DATA_LOAD_RESULT" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
 		--print(event .. " triggered detected")
 	elseif event == "CHAT_MSG_LOOT" then -- `text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons`
@@ -12404,13 +12630,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				end
 				if ProEnchantersOptions["DebugLevel"] == 69 then
 					PELogMsg(author3, msg, msgtype)
-					print("Adding say message")
+					--print("Adding say message")
 				end
 			elseif event == "CHAT_MSG_YELL" then
 				local msgtype ="yell"
 				local checktolog = PECheckIfMsgShouldLog(author3, "sayyell")
 				if checktolog then
-					print("Adding yell message")
+					--print("Adding yell message")
 					PELogMsg(author3, msg, msgtype)
 				end
 				if ProEnchantersOptions["DebugLevel"] == 69 then
@@ -12946,7 +13172,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			if enchantKey then
 				--enchantKey, languageId
-				if ProEnchantersOptions.filters[enchantKey] == true then
+				if ProEnchantersCharOptions.filters[enchantKey] == true then
 					local enchName, enchStats = GetEnchantName(enchantKey, languageId)
 					local matsReq = ProEnchants_GetReagentList(enchantKey)
 					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
@@ -12959,7 +13185,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 						customcmdFound = 2
 						return
 					end
-				elseif ProEnchantersOptions.filters[enchantKey] == false then
+				elseif ProEnchantersCharOptions.filters[enchantKey] == false then
 					local enchName, enchStats = GetEnchantName(enchantKey)
 					local enchNameLocalized, _ = GetEnchantName(enchantKey)
 					local enchType = string.match(enchName, "%-%s*(.+)")
@@ -12975,7 +13201,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								local eType = string.match(eName, "%-%s*(.+)")
 								local recommendation = eType ..
 									eStats -- Create a unique identifier for the recommendation
-								if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+								if not recommendations[k] and ProEnchantersCharOptions.filters[k] == true then
 									-- Only add if not already in the table and filter is true
 									recommendations[k] = eStats
 								end
@@ -13192,13 +13418,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			if enchantKey then
 				--enchantKey, languageId
-				if ProEnchantersOptions.filters[enchantKey] == true then
+				if ProEnchantersCharOptions.filters[enchantKey] == true then
 					local enchName, enchStats = GetEnchantName(enchantKey, languageId)
 					local matsReq = ProEnchants_GetReagentList(enchantKey)
 					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
 					SendChatMessage(msgReq, "WHISPER", nil, author2)
 					return
-				elseif ProEnchantersOptions.filters[enchantKey] == false then
+				elseif ProEnchantersCharOptions.filters[enchantKey] == false then
 					local enchName, enchStats = GetEnchantName(enchantKey)
 					local enchNameLocalized, _ = GetEnchantName(enchantKey)
 					local enchType = string.match(enchName, "%-%s*(.+)")
@@ -13214,7 +13440,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								local eType = string.match(eName, "%-%s*(.+)")
 								local recommendation = eType ..
 									eStats -- Create a unique identifier for the recommendation
-								if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+								if not recommendations[k] and ProEnchantersCharOptions.filters[k] == true then
 									-- Only add if not already in the table and filter is true
 									recommendations[k] = eStats
 								end
@@ -13441,13 +13667,13 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			end
 			if enchantKey then
 				--enchantKey, languageId
-				if ProEnchantersOptions.filters[enchantKey] == true then
+				if ProEnchantersCharOptions.filters[enchantKey] == true then
 					local enchName, enchStats = GetEnchantName(enchantKey, languageId)
 					local matsReq = ProEnchants_GetReagentList(enchantKey)
 					local msgReq = enchName .. enchStats .. " Mats Required: " .. matsReq
 					SendChatMessage(msgReq, "WHISPER", nil, author2)
 					return
-				elseif ProEnchantersOptions.filters[enchantKey] == false then
+				elseif ProEnchantersCharOptions.filters[enchantKey] == false then
 					local enchName, enchStats = GetEnchantName(enchantKey)
 					local enchNameLocalized, _ = GetEnchantName(enchantKey)
 					local enchType = string.match(enchName, "%-%s*(.+)")
@@ -13463,7 +13689,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								local eType = string.match(eName, "%-%s*(.+)")
 								local recommendation = eType ..
 									eStats -- Create a unique identifier for the recommendation
-								if not recommendations[k] and ProEnchantersOptions.filters[k] == true then
+								if not recommendations[k] and ProEnchantersCharOptions.filters[k] == true then
 									-- Only add if not already in the table and filter is true
 									recommendations[k] = eStats
 								end
@@ -13699,13 +13925,27 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		if ProEnchantersOptions["DebugLevel"] == 66 then
 			print("Loading trade window buttons - not slot specific")
 		end
-		ProEnchantersLoadTradeWindowFrame(customerName)
+
+		local tItemName = GetTradeTargetItemInfo(7)
+
+		if tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 67 then
+				print("tItemName returns: " .. tItemName)
+			end
+			ProEnchantersUpdateTradeWindowButtons(customerName)
+		elseif not tItemName then
+			if ProEnchantersOptions["DebugLevel"] == 67 then
+				print("no item name found")
+			end
+			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
 		ProEnchantersUpdateTradeWindowText(customerName)
 	elseif (event == "TRADE_MONEY_CHANGED") then
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()
 		--Items Traded Start
 	elseif (event == "TRADE_PLAYER_ITEM_CHANGED") or (event == "TRADE_TARGET_ITEM_CHANGED") then
+		local eventSlot = ...
 		PEtradeWho = UnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
@@ -13761,15 +14001,22 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		local tItemName = GetTradeTargetItemInfo(7)
 
 		if tItemName then
-			if ProEnchantersOptions["DebugLevel"] == 66 then
+			if ProEnchantersOptions["DebugLevel"] == 67 then
 				print("tItemName returns: " .. tItemName)
 			end
 			ProEnchantersUpdateTradeWindowButtons(customerName)
 		elseif not tItemName then
-			if ProEnchantersOptions["DebugLevel"] == 66 then
+			if ProEnchantersOptions["DebugLevel"] == 67 then
 				print("no item name found")
 			end
 			ProEnchantersLoadTradeWindowFrame(customerName)
+		end
+
+		if eventSlot == 7 then
+			C_Timer.After(.3, function() ProEnchantersUpdateTradeWindowButtons(customerName) end)
+			if ProEnchantersOptions["DebugLevel"] == 67 then
+				print("Slot 7 found for event, attempting to update buttons an extra time in 1 second")
+			end
 		end
 		--ProEnchantersUpdateTradeWindowButtons(customerName)
 		ProEnchantersUpdateTradeWindowText(customerName)
@@ -13859,6 +14106,23 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		end
 	elseif event == "TRADE_CLOSED" then
 		RemoveTradeWindowInfo()
+	elseif event == "GET_ITEM_INFO_RECEIVED" or event == "ITEM_DATA_LOAD_RESULT" then
+		if ProEnchantersOptions["DebugLevel"] == 67 then
+			local itemID, success = ...
+			local eventType = "unknown"
+
+			if event == "GET_ITEM_INFO_RECEIVED" then
+				eventType = "GET_ITEM_INFO_RECEIVED"
+			elseif event == "ITEM_DATA_LOAD_RESULT" then
+				eventType = "ITEM_DATA_LOAD_RESULT"
+			end
+
+			if itemID then
+				print(eventType)
+				print(itemID .. " returned during item info received event")
+				print(tostring(success) .. " returned for success")
+			end
+		end
 	end
 end
 
@@ -13887,7 +14151,7 @@ ProEnchanters.frame:SetScript("OnEvent", function(self, event, ...)
 		OnAddonLoaded()
 	elseif event == "CHAT_MSG_PARTY_LEADER" or event == "CHAT_MSG_RAID_LEADER" or event == "CHAT_MSG_PARTY" or event == "CHAT_MSG_RAID" or event == "CHAT_MSG_GUILD" or event == "CHAT_MSG_SAY" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_CHANNEL" or event == "CHAT_MSG_SYSTEM" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_WHISPER_INFORM" then
 		ProEnchanters_OnChatEvent(self, event, ...)
-	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" then
+	elseif event == "TRADE_SHOW" or event == "TRADE_CLOSED" or event == "TRADE_REQUEST" or event == "TRADE_MONEY_CHANGED" or event == "TRADE_ACCEPT_UPDATE" or event == "TRADE_REQUEST_CANCEL" or event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE" or event == "TRADE_UPDATE" or event == "TRADE_PLAYER_ITEM_CHANGED" or event == "TRADE_TARGET_ITEM_CHANGED" or event == "GET_ITEM_INFO_RECEIVED" or event == "ITEM_DATA_LOAD_RESULT" then
 		ProEnchanters_OnTradeEvent(self, event, ...)
 	elseif event == "CHAT_MSG_LOOT" then 
 		ProEnchanters_OnLootEvent(self, event, ...)
