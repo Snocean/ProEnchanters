@@ -1,4 +1,4 @@
--- First Initilizations
+-- First Initializations
 local version = "v11.2"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersCharOptions = ProEnchantersCharOptions or {}
@@ -15,8 +15,8 @@ ProEnchantersOptions.recentwhispers = {}
 ProEnchantersOptions.tempignore = ProEnchantersOptions.tempignore or {}
 ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
 ProEnchantersOptions.soundsettings = ProEnchantersOptions.soundsettings or {}
-ProEnchantersTables = {} or ProEnchantersTables
-ProEnchantersTables.CombinedEnchants = {} or ProEnchantersTables.CombinedEnchants
+ProEnchantersTables = ProEnchantersTables or {}
+ProEnchantersTables.CombinedEnchants = ProEnchantersTables.CombinedEnchants or {}
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -51,6 +51,23 @@ local defchatframelimit = DEFAULT_CHAT_FRAME:GetMaxLines()
 -- Minimap Stuff done through Ace ?? NO CLUE WHAT I'M DOIN THO
 local addon = LibStub("AceAddon-3.0"):NewAddon("ProEnchanters")
 local icon = LibStub("LibDBIcon-1.0", true)
+
+local function UpdateMinimapTooltip()
+	GameTooltip:ClearLines()
+	GameTooltip:AddLine("|cFF800080ProEnchanters|r")
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
+	local autoInviteColor = ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
+	GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
+	local pauseInviteColor = ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
+	GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
+	local workClosedColor = ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
+	GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
+	GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
+	GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+	GameTooltip:Show()
+end
+
 local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 	type = "data source",
 	text = "Pro Enchanters",
@@ -67,19 +84,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				ProEnchantersCharOptions["PauseInvites"] = not ProEnchantersCharOptions["PauseInvites"]
 				print("|cFF800080ProEnchanters|r: \"Pause Invites\" is now " ..
 					(ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-				-- Update Tooltip
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-				GameTooltip:AddLine(" ");
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-				local autoInviteColor = ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
-				local pauseInviteColor = ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
-				local workClosedColor = ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
-				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+				UpdateMinimapTooltip()
 				-- Update the checkbox state
 				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
 					ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersCharOptions["PauseInvites"])
@@ -89,19 +94,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				AutoInvite = ProEnchantersCharOptions["AutoInvite"]
 				print("|cFF800080ProEnchanters|r: \"Auto Invite\" is now " ..
 					(ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-				-- Update Tooltip
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-				GameTooltip:AddLine(" ");
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-				local autoInviteColor = ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
-				local pauseInviteColor = ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
-				local workClosedColor = ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
-				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+				UpdateMinimapTooltip()
 				-- Update the checkbox state
 				if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.AutoInviteCheckbox then
 					ProEnchantersWorkOrderFrame.AutoInviteCheckbox:SetChecked(ProEnchantersCharOptions["AutoInvite"])
@@ -132,19 +125,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 				ProEnchantersCharOptions["WorkWhileClosed"] = not ProEnchantersCharOptions["WorkWhileClosed"]
 				print("|cFF800080ProEnchanters|r: \"Work while closed\" is now " ..
 					(ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00enabled|r" or "|cFFFF0000disabled|r"))
-				-- Refresh Tooltip
-				GameTooltip:ClearLines()
-				GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-				GameTooltip:AddLine(" ");
-				GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-				local autoInviteColor = ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
-				local pauseInviteColor = ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
-				local workClosedColor = ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-				GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
-				GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-				GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
+				UpdateMinimapTooltip()
 				-- Update the checkbox states
 				if ProEnchantersSettingsFrame and ProEnchantersSettingsFrame.WorkWhileClosedCheckbox then
 					ProEnchantersSettingsFrame.WorkWhileClosedCheckbox:SetChecked(ProEnchantersCharOptions["WorkWhileClosed"])
@@ -159,18 +140,7 @@ local PELDB = LibStub("LibDataBroker-1.1"):NewDataObject("ProEnchanters", {
 		GameTooltip:SetOwner(self, "ANCHOR_NONE")
 		local anchor = icon:GetMinimapButton("ProEnchanters")
 		GameTooltip:SetPoint("TOPRIGHT", anchor, "BOTTOMLEFT")
-		GameTooltip:AddLine("|cFF800080ProEnchanters|r")
-		GameTooltip:AddLine(" ");
-		GameTooltip:AddLine("|cFFFFFFFFLeftclick:|r |cFFFFFF00Open|r")
-		local autoInviteColor = ProEnchantersCharOptions["AutoInvite"] and "|cFF00FF00" or "|cFFFF0000"
-		GameTooltip:AddLine("|cFFFFFFFFShift+Leftclick:|r " .. autoInviteColor .. "Toggle: Auto Invite|r")
-		local pauseInviteColor = ProEnchantersCharOptions["PauseInvites"] and "|cFF00FF00" or "|cFFFF0000"
-		GameTooltip:AddLine("|cFFFFFFFFAlt+Leftclick:|r " .. pauseInviteColor .. "Toggle: Pause Invites|r")
-		local workClosedColor = ProEnchantersCharOptions["WorkWhileClosed"] and "|cFF00FF00" or "|cFFFF0000"
-		GameTooltip:AddLine("|cFFFFFFFFRightclick:|r " .. workClosedColor .. "Toggle: Work While Closed|r")
-		GameTooltip:AddLine("|cFFFFFFFFShift-Rightclick:|r |cFFFFFF00Reset Frame Pos and Size|r")
-		GameTooltip:AddLine("|cFFFFFFFFCtrl-Leftclick:|r |cFFFFFF00Hide button, /pe minimap to re-enable|r")
-		GameTooltip:Show()
+		UpdateMinimapTooltip()
 	end,
 	OnLeave = function(self)
 		GameTooltip:Hide()

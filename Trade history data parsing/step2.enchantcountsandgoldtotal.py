@@ -40,4 +40,4 @@ with open('enchantment_totals_with_avg_counts.csv', 'w', newline='') as csvfile:
         count = enchantment_counts[enchantment]
         csvwriter.writerow([enchantment, count, total_gold])
 
-print("Data successfully written to enchantment_totals_with_counts.csv")
+print("Data successfully written to enchantment_totals_with_avg_counts.csv")
