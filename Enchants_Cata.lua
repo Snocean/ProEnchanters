@@ -1458,7 +1458,7 @@ CombinedEnchants = {
     ["ENCH74235"] = {
     ["stats"] = " (+40 Int)", --Permanently enchant a shield or held item to increase Intellect by 40.  Requires a level 300 or higher item.",
     ["name"] = "Enchant Off-Hand - Superior Intellect",
-    ["slot"] = "Shield",
+    ["slot"] = "Weapon",
     ["spell_id"] = 74235,
     ["materials"] = {
     "6x |cffffffff|Hitem:52555::::::::1:::::::::|h[Hypnotic Dust]|h|r",

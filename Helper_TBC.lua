@@ -1455,6 +1455,7 @@ function PETestItemCacheTimed() -- Bookmark, need to add to Cata
     end
 
     -- 1381 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
+    -- Fix this for TBC -- Bookmark
     count = count - 1381 -- number of items that are not cacheable
 
     if count > 0 then

@@ -11,7 +11,9 @@ PEConvertablesName = {
 	"Lesser Eternal Essence",
 	"Greater Eternal Essence",
 	"Lesser Nether Essence",
-	"Greater Nether Essence"
+	"Greater Nether Essence",
+    "Lesser Planar Essence",
+    "Greater Planar Essence"
 }
 
 PEConvertablesId = {
@@ -24,7 +26,9 @@ PEConvertablesId = {
 	"16202",
 	"16203",
 	"11174",
-	"11175"
+	"11175",
+    "22447",
+    "22446"
 }
 
 -- Dust
@@ -33,6 +37,7 @@ local souldust = "\124cffffffff\124Hitem:11083::::::::60:::::\124h[Soul Dust]\12
 local visiondust = "\124cffffffff\124Hitem:11137::::::::60:::::\124h[Vision Dust]\124h\124r"
 local dreamdust = "\124cffffffff\124Hitem:11176::::::::60:::::\124h[Dream Dust]\124h\124r"
 local illusiondust = "\124cffffffff\124Hitem:16204::::::::60:::::\124h[Illusion Dust]\124h\124r"
+local arcanedust =  "\124cffffffff\124Hitem:22445::::::::70:::::\124h[Arcane Dust]\124h\124r"
 
 -- Shards
 local smallglimmeringshard = "\124cff0070dd\124Hitem:10978::::::::60:::::\124h[Small Glimmering Shard]\124h\124r"
@@ -43,6 +48,8 @@ local smallbrilliantshard = "\124cff0070dd\124Hitem:14343::::::::60:::::\124h[Sm
 local largebrilliantshard = "\124cff0070dd\124Hitem:14344::::::::60:::::\124h[Large Brilliant Shard]\124h\124r"
 local smallradiantshard = "\124cff0070dd\124Hitem:11177::::::::60:::::\124h[Small Radiant Shard]\124h\124r"
 local largeradiantshard = "\124cff0070dd\124Hitem:11178::::::::60:::::\124h[Large Radiant Shard]\124h\124r"
+local smallprismaticshard = "\124cff0070dd\124Hitem:22448::::::::70:::::\124h[Small Prismatic Shard]\124h\124r"
+local largeprismaticshard = "\124cff0070dd\124Hitem:22449::::::::70:::::\124h[Large Prismatic Shard]\124h\124r"
 
 -- Essence
 local lessermagicessence = "\124cff1eff00\124Hitem:10938::::::::60:::::\124h[Lesser Magic Essence]\124h\124r"
@@ -55,11 +62,11 @@ local lessereternalessence = "\124cff1eff00\124Hitem:16202::::::::60:::::\124h[L
 local greatereternalessence = "\124cff1eff00\124Hitem:16203::::::::60:::::\124h[Greater Eternal Essence]\124h\124r"
 local lessernetheressence = "\124cff1eff00\124Hitem:11174::::::::60:::::\124h[Lesser Nether Essence]\124h\124r"
 local greaternetheressence = "\124cff1eff00\124Hitem:11175::::::::60:::::\124h[Greater Nether Essence]\124h\124r"
+local lesserplanaressence = "\124cff1eff00\124Hitem:22447::::::::70:::::\124h[Lesser Planar Essence]\124h\124r"
+local greaterplanaressence = "\124cff1eff00\124Hitem:22446::::::::70:::::\124h[Greater Planar Essence]\124h\124r"
 
 -- Misc
 local aquamarine = "\124cff1eff00\124Hitem:7909::::::::60:::::\124h[Aquamarine]\124h\124r"
-local blackdiamond = "\124cff1eff00\124Hitem:11754::::::::60:::::\124h[Black Diamond]\124h\124r"
-local blacklotus = "\124cff1eff00\124Hitem:13468::::::::60:::::\124h[Black Lotus]\124h\124r"
 local blackmouthoil = "\124cffffffff\124Hitem:6370::::::::60:::::\124h[Blackmouth Oil]\124h\124r"
 local breathofwind = "\124cffffffff\124Hitem:7081::::::::60:::::\124h[Breath of Wind]\124h\124r"
 local coreofearth = "\124cffffffff\124Hitem:7075::::::::60:::::\124h[Core of Earth]\124h\124r"
@@ -79,7 +86,6 @@ local frostoil = "\124cffffffff\124Hitem:3829::::::::60:::::\124h[Frost Oil]\124
 local globeofwater = "\124cffffffff\124Hitem:7079::::::::60:::::\124h[Globe of Water]\124h\124r"
 local goldenpearl = "\124cff1eff00\124Hitem:13926::::::::60:::::\124h[Golden Pearl]\124h\124r"
 local greenwhelpscale = "\124cffffffff\124Hitem:7392::::::::60:::::\124h[Green Whelp Scale]\124h\124r"
-local guardianstone = "\124cff1eff00\124Hitem:12809::::::::60:::::\124h[Guardian Stone]\124h\124r"
 local heartoffire = "\124cffffffff\124Hitem:7077::::::::60:::::\124h[Heart of Fire]\124h\124r"
 local icecap = "\124cffffffff\124Hitem:13467::::::::60:::::\124h[Icecap]\124h\124r"
 local ichorofundeath = "\124cffffffff\124Hitem:7972::::::::60:::::\124h[Ichor of Undeath]\124h\124r"
@@ -87,7 +93,6 @@ local imbuedvial = "\124cffffffff\124Hitem:18256::::::::60:::::\124h[Imbued Vial
 local ironore = "\124cffffffff\124Hitem:2772::::::::60:::::\124h[Iron Ore]\124h\124r"
 local kingsblood = "\124cffffffff\124Hitem:3356::::::::60:::::\124h[Kingsblood]\124h\124r"
 local largefang = "\124cffffffff\124Hitem:5637::::::::60:::::\124h[Large Fang]\124h\124r"
-local larvalacid = "\124cffffffff\124Hitem:18512::::::::60:::::\124h[Larval Acid]\124h\124r"
 local leadedvial = "\124cffffffff\124Hitem:3372::::::::60:::::\124h[Leaded Vial]\124h\124r"
 local livingessence = "\124cff1eff00\124Hitem:12803::::::::60:::::\124h[Living Essence]\124h\124r"
 local mapleseed = "\124cffffffff\124Hitem:17034::::::::60:::::\124h[Maple Seed]\124h\124r"
@@ -104,15 +109,40 @@ local thoriumbar = "\124cffffffff\124Hitem:12359::::::::60:::::\124h[Thorium Bar
 local truesilverbar = "\124cff1eff00\124Hitem:6037::::::::60:::::\124h[Truesilver Bar]\124h\124r"
 local wildvine = "\124cffffffff\124Hitem:8153::::::::60:::::\124h[Wildvine]\124h\124r"
 local wintersbite = "\124cffffffff\124Hitem:3819::::::::60:::::\124h[Wintersbite]\124h\124r"
--- Phase 6 items
+-- SoD Phase 6 items
 local greaternatureprotectionpotion = "\124cffffffff\124Hitem:13458::::::::60:::::\124h[Greater Nature Protection Potion]\124h\124r"
 local qirajistalkervenom = "\124cffffffff\124Hitem:234011::::::::60:::::\124h[Qiraji Stalker Venom]\124h\124r"
 local ancientsandwormbile = "\124cffffffff\124Hitem:234010::::::::60:::::\124h[Ancient Sandworm Bile]\124h\124r"
 local stratholmeholywater = "\124cffffffff\124Hitem:13180::::::::60:::::\124h[Stratholme Holy Water]\124h\124r"
 local frayedabominationstitching = "\124cff1eff00\124Hitem:12735::::::::60:::::\124h[Frayed Abomination Stitching]\124h\124r"
 local skinofshadow = "\124cff1eff00\124Hitem:12753::::::::60:::::\124h[Skin of Shadow]\124h\124r"
--- Phase 7 items
+-- SoD Phase 7 items
 local bloodofheroes = "\124cffffffff\124Hitem:12938::::::::60:::::\124h[Blood of Heroes]\124h\124r"
+-- TBC Items
+local blackpearl = "\124cff1eff00\124Hitem:7971::::::::70:::::\124h[Black Pearl]\124h\124r"
+local bloodofthemountain = "\124cff1eff00\124Hitem:11382::::::::70:::::\124h[Blood of the Mountain]\124h\124r"
+local elixirofmajorstrength = "\124cffffffff\124Hitem:22824::::::::70:::::\124h[Elixir of Major Strength]\124h\124r"
+local eterniumore = "\124cff1eff00\124Hitem:23427::::::::70:::::\124h[Eternium Ore]\124h\124r"
+local fellotus = "\124cffffffff\124Hitem:22794::::::::70:::::\124h[Fel Lotus]\124h\124r"
+local iridescentpearl = "\124cff1eff00\124Hitem:5500::::::::70:::::\124h[Iridescent Pearl]\124h\124r"
+local majorhealingpotion = "\124cffffffff\124Hitem:13446::::::::70:::::\124h[Major Healing Potion]\124h\124r"
+local majormanapotion = "\124cffffffff\124Hitem:13444::::::::70:::::\124h[Major Mana Potion]\124h\124r"
+local moteofair = "\124cffffffff\124Hitem:22572::::::::70:::::\124h[Mote of Air]\124h\124r"
+local moteofearth = "\124cffffffff\124Hitem:22573::::::::70:::::\124h[Mote of Earth]\124h\124r"
+local moteoffire = "\124cffffffff\124Hitem:22574::::::::70:::::\124h[Mote of Fire]\124h\124r"
+local moteofwater = "\124cffffffff\124Hitem:22578::::::::70:::::\124h[Mote of Water]\124h\124r"
+local netherbloom = "\124cffffffff\124Hitem:22791::::::::70:::::\124h[Netherbloom]\124h\124r"
+local nightmarevine = "\124cffffffff\124Hitem:22792::::::::70:::::\124h[Nightmare Vine]\124h\124r"
+local primalair = "\124cff1eff00\124Hitem:22451::::::::70:::::\124h[Primal Air]\124h\124r"
+local primalearth = "\124cff1eff00\124Hitem:22452::::::::70:::::\124h[Primal Earth]\124h\124r"
+local primalfire = "\124cff1eff00\124Hitem:21884::::::::70:::::\124h[Primal Fire]\124h\124r"
+local primallife = "\124cff1eff00\124Hitem:21886::::::::70:::::\124h[Primal Life]\124h\124r"
+local primalmana = "\124cff1eff00\124Hitem:22457::::::::70:::::\124h[Primal Mana]\124h\124r"
+local primalmight = "\124cff0070dd\124Hitem:23571::::::::70:::::\124h[Primal Might]\124h\124r"
+local primalnether = "\124cff0070dd\124Hitem:23572::::::::70:::::\124h[Primal Nether]\124h\124r"
+local primalshadow = "\124cff1eff00\124Hitem:22456::::::::70:::::\124h[Primal Shadow]\124h\124r"
+local primalwater = "\124cff1eff00\124Hitem:21885::::::::70:::::\124h[Primal Water]\124h\124r"
+local voidcrystal = "\124cffa335ee\124Hitem:22450::::::::70:::::\124h[Void Crystal]\124h\124r"
 
 ProEnchantersItemCacheTable = {
     -- Dust
@@ -121,6 +151,7 @@ ProEnchantersItemCacheTable = {
     visiondust = "11137",
     dreamdust = "11176",
     illusiondust = "16204",
+    arcanedust = "22445",
 
     -- Shards
     smallglimmeringshard = "10978",
@@ -131,6 +162,8 @@ ProEnchantersItemCacheTable = {
     largebrilliantshard = "14344",
     smallradiantshard = "11177",
     largeradiantshard = "11178",
+    smallprismaticshard = "22448",
+    largeprismaticshard = "22449",
 
     -- Essence
     lessermagicessence = "10938",
@@ -143,6 +176,8 @@ ProEnchantersItemCacheTable = {
     greatereternalessence = "16203",
     lessernetheressence = "11174",
     greaternetheressence = "11175",
+    lesserplanaressence = "22447",
+    greaterplanaressence = "22446",
 
     -- Misc
     aquamarine = "7909",
@@ -192,15 +227,40 @@ ProEnchantersItemCacheTable = {
     truesilverbar = "6037",
     wildvine = "8153",
     wintersbite = "3819",
-    -- phase 6 required items
+    -- SoD phase 6 required items
     greaternatureprotectionpotion = "13458",
     qirajistalkervenom = "234011",
     ancientsandwormbile = "234010",
     stratholmeholywater = "13180",
     frayedabominationstitching = "12735",
     skinofshadow = "12753",
-    -- phase 7 required items
-    bloodofheroes = "12938"
+    -- SoD phase 7 required items
+    bloodofheroes = "12938",
+    -- TBC Items
+    blackpearl = "7971",
+    bloodofthemountain = "11382",
+    elixirofmajorstrength = "22824",
+    eterniumore = "23427",
+    fellotus = "22794",
+    iridescentpearl = "5500",
+    majorhealingpotion = "13446",
+    majormanapotion = "13444",
+    moteofair = "22572",
+    moteofearth = "22573",
+    moteoffire = "22574",
+    moteofwater = "22578",
+    netherbloom = "22791",
+    nightmarevine = "22792",
+    primalair = "22451",
+    primalearth = "22452",
+    primalfire = "21884",
+    primallife = "21886",
+    primalmana = "22457",
+    primalmight = "23571",
+    primalnether = "23572",
+    primalshadow = "22456",
+    primalwater = "21885",
+    voidcrystal = "22450"
 }
 
 CombinedEnchants = {
@@ -439,11 +499,11 @@ CombinedEnchants = {
         name = "Enchant Cloak - Dodge",
         slot = "Cloak",
         spell_id = 25086,
-        stats = " (+1% Dodge )",
+        stats = " (+12 Dodge Rating)",
         materials = {
-            "3x " .. nexuscrystal,
-            "8x " .. largebrilliantshard,
-            "8x " .. guardianstone
+            "3x " .. smallprismaticshard,
+            "3x " .. greaterplanaressence,
+            "8x " .. primalearth
         },
     },
     ENCH10025 = {
@@ -452,8 +512,8 @@ CombinedEnchants = {
         spell_id = 25081,
         stats = " (+15 Fire Res)",
         materials = {
-            "3x " .. nexuscrystal,
-            "8x " .. largebrilliantshard,
+            "3x " .. smallprismaticshard,
+            "3x " .. greaterplanaressence,
             "4x " .. essenceoffire
         },
     },
@@ -463,8 +523,8 @@ CombinedEnchants = {
         spell_id = 25082,
         stats = " (+15 Nature Res)",
         materials = {
-            "2x " .. nexuscrystal,
-            "8x " .. largebrilliantshard,
+            "2x " .. smallprismaticshard,
+            "3x " .. greaterplanaressence,
             "4x " .. livingessence
         },
     },
@@ -488,9 +548,9 @@ CombinedEnchants = {
         spell_id = 25083,
         stats = " (+1 Stealth)",
         materials = {
-            "3x " .. nexuscrystal,
-            "8x " .. largebrilliantshard,
-            "2x " .. blacklotus
+            "3x " .. smallprismaticshard,
+            "3x " .. greaterplanaressence,
+            "2x " .. fellotus
         },
     },
     ENCH10029 = {
@@ -499,9 +559,9 @@ CombinedEnchants = {
         spell_id = 25084,
         stats = " (-2% Threat Gen)",
         materials = {
-            "4x " .. nexuscrystal,
-            "6x " .. largebrilliantshard,
-            "2x " .. blackdiamond
+            "4x " .. smallprismaticshard,
+            "2x " .. greaterplanaressence,
+            "8x " .. primalshadow
         },
     },
     ENCH10030 = {
@@ -603,9 +663,9 @@ CombinedEnchants = {
         spell_id = 25080,
         stats = " (+15 Agi)",
         materials = {
-            "3x " .. nexuscrystal,
-            "8x " .. largebrilliantshard,
-            "4x " .. essenceofair
+            "3x " .. smallprismaticshard,
+            "3x " .. greaterplanaressence,
+            "2x " .. primalair
         },
     },
     ENCH10040 = {
@@ -614,9 +674,9 @@ CombinedEnchants = {
         spell_id = 25072,
         stats = " (+2% Threat Gen)",
         materials = {
-            "4x " .. nexuscrystal,
-            "6x " .. largebrilliantshard,
-            "8x " .. larvalacid
+            "4x " .. smallprismaticshard,
+            "2x " .. greaterplanaressence,
+            "8x " .. primallife
         },
     },
     ENCH10041 = {
@@ -712,7 +772,7 @@ CombinedEnchants = {
         },
     },
     ENCH10050 = {
-        name = "Enchant  Weapon - Healing Power",
+        name = "Enchant Weapon - Healing Power",
         slot = "Weapon",
         spell_id = 22750,
         stats = " (+55 Heal Power)",
@@ -770,7 +830,7 @@ CombinedEnchants = {
         },
     },
     ENCH10055 = {
-        name = "Enchant  Weapon - Spell Power",
+        name = "Enchant Weapon - Spell Power",
         slot = "Weapon",
         spell_id = 22749,
         stats = " (+30 Spell Dmg)",
@@ -974,7 +1034,8 @@ CombinedEnchants = {
             "1x " .. largeglowingshard
         },
     },
-    ENCH10075 = {
+    -- SoD Enchant
+    --[[ENCH10075 = {
         name = "Enchant Chest - Retricutioner",
         slot = "Chest",
         spell_id = 435903,
@@ -983,7 +1044,7 @@ CombinedEnchants = {
             "1x " .. smallradiantshard,
             "2x " .. dreamdust
         },
-    },
+    },]]
     ENCH10076 = {
         name = "Enchant Cloak - Greater Defense",
         slot = "Cloak",
@@ -1023,7 +1084,8 @@ CombinedEnchants = {
             "1x " .. largeglowingshard
         },
     },
-    ENCH10080 = {
+    -- SoD Enchant
+    --[[ENCH10080 = {
         name = "Enchant Weapon - Dismantle",
         slot = "Weapon",
         spell_id = 435481,
@@ -1033,7 +1095,7 @@ CombinedEnchants = {
             "2x " .. largefang,
             "2x " .. smallradiantshard
         },
-    },
+    },]]
     ENCH10081 = {
         name = "Enchant Weapon - Striking",
         slot = "Weapon",
@@ -1561,233 +1623,595 @@ CombinedEnchants = {
             "2x " .. strangedust
         },
     },
-    ENCH999 = {
-        name = "Enchant Shield - Law of Nature",
-        slot = "Shield",
-        spell_id = 463871,
-        stats = " (+30 Spell & 55 Heal Power)",
-        materials = {
-            "4x " .. largebrilliantshard,
-            "12x " .. greatereternalessence,
-            "4x " .. essenceoffire,
-            "4x " .. essenceofwater,
-            "1x " .. essenceofearth,
-            "1x " .. righteousorb
-        },
-    },
-    ENCH998 = {
-        name = "Enchant Chest - Living Stats",
+    ENCH980 = {
+        name = "Enchant Chest - Restore Mana Prime",
         slot = "Chest",
-        spell_id = 1213616,
-        stats = " (+4 All Stats, +15 Nat Res)",
+        spell_id = 33991,
+        stats = " (6 Mana/5 sec)",
         materials = {
-            "2x " .. nexuscrystal,
-            "8x " .. illusiondust,
-            "5x " .. greatereternalessence,
-            "10x " .. greaternatureprotectionpotion,
-            "2x " .. qirajistalkervenom,
-            "2x " .. ancientsandwormbile
+            "2x " .. lesserplanaressence,
+            "2x " .. arcanedust
         },
     },
-    ENCH997 = {
-        name = "Enchant Gloves - Holy Power",
-        slot = "Gloves",
-        spell_id = 1213622,
-        stats = " (+20 Holy Spell Dmg)",
-        materials = {
-            "2x " .. nexuscrystal,
-            "5x " .. largebrilliantshard,
-            "5x " .. stratholmeholywater,
-            "2x " .. frayedabominationstitching
-        },
-    },
-    ENCH996 = {
-        name = "Enchant Gloves - Arcane Power",
-        slot = "Gloves",
-        spell_id = 1213626,
-        stats = " (+20 Arcane Spell Dmg)",
-        materials = {
-            "2x " .. nexuscrystal,
-            "5x " .. largebrilliantshard,
-            "2x " .. skinofshadow
-        },
-    },
-    ENCH995 = {
-        name = "Enchant Bracer - Agility",
+    ENCH979 = {
+        name = "Enchant Bracer - Assault",
         slot = "Bracer",
-        spell_id = 1217203,
-        stats = " (+9 Agi)",
+        spell_id = 34002,
+        stats = " (+24 Attack Power)",
         materials = {
-            "2x " .. nexuscrystal,
-            "10x " .. illusiondust,
-            "2x " .. greatereternalessence,
-            "2x " .. essenceofair
+            "6x " .. arcanedust
         },
     },
-    ENCH994 = {
-        name = "Enchant Bracer - Spell Power",
-        slot = "Bracer",
-        spell_id = 1217189,
-        stats = " (+12 Spell Dmg)",
-        materials = {
-            "2x " .. largebrilliantshard,
-            "20x " .. illusiondust,
-            "4x " .. greatereternalessence,
-            "2x " .. essenceofwater,
-            "2x " .. essenceoffire,
-            "2x " .. essenceofair
-        },
-    },
-    ENCH993 = {
-        name = "Enchant 2H Weapon - Spellblasting",
-        slot = "Weapon",
-        spell_id = 1219580,
-        stats = " (+65 Spell Dmg)",
-        materials = {
-            "3x " .. nexuscrystal,
-            "24x " .. illusiondust,
-            "1x " .. bloodofheroes,
-            "6x " .. purplelotus
-        },
-    },
-    ENCH992 = {
-        name = "Enchant Off-Hand - Superior Intellect",
-        slot = "Weapon",
-        spell_id = 1219577,
-        stats = " (+9 Int)",
-        materials = {
-            "2x " .. nexuscrystal,
-            "18x " .. illusiondust,
-            "2x " .. essenceofair
-        },
-    },
-    ENCH991 = {
-        name = "Enchant Off-Hand - Wisdom",
-        slot = "Weapon",
-        spell_id = 1219579,
-        stats = " (+6 Int, +5 Spirit)",
-        materials = {
-            "6x " .. largebrilliantshard,
-            "18x " .. illusiondust,
-            "1x " .. essenceofair,
-            "1x " .. essenceofwater
-        },
-    },
-    ENCH990 = {
-        name = "Enchant Off-Hand - Excellent Spirit",
-        slot = "Weapon",
-        spell_id = 1219578,
-        stats = " (+12 Spirit)",
-        materials = {
-            "2x " .. nexuscrystal,
-            "18x " .. illusiondust,
-            "2x " .. essenceofwater
-        },
-    },
-    ENCH989 = {
-        name = "Enchant Shield - Critical Strike",
-        slot = "Shield",
-        spell_id = 1220623,
-        stats = " (+1% Crit Chance)",
-        materials = {
-            "5x " .. largebrilliantshard,
-            "15x " .. illusiondust,
-            "1x " .. bloodofheroes
-        },
-    },
-    ENCH988 = {
-        name = "Enchant Shield - Excellent Stamina",
-        slot = "Shield",
-        spell_id = 1219581,
-        stats = " (+12 Stam)",
-        materials = {
-            "6x " .. largebrilliantshard,
-            "18x " .. illusiondust,
-            "2x " .. essenceofearth
-        },
-    },
-    ENCH987 = {
-        name = "Enchant Gloves - Superior Strength",
+    ENCH978 = {
+        name = "Enchant Gloves - Blasting",
         slot = "Gloves",
-        spell_id = 1219586,
-        stats = " (+15 Str)",
+        spell_id = 33993,
+        stats = " (+10 Spell Crit Rating)",
         materials = {
-            "7x " .. greatereternalessence,
-            "21x " .. illusiondust,
-            "2x " .. essenceoffire
+            "1x " .. lesserplanaressence,
+            "4x " .. arcanedust
         },
     },
-    ENCH986 = {
-        name = "Enchant Cloak - Agility",
-        slot = "Cloak",
-        spell_id = 1219587,
-        stats = " (+5 Agi)",
-        materials = {
-            "3x " .. greatereternalessence,
-            "9x " .. illusiondust,
-            "1x " .. essenceoffire
+	ENCH977 = {
+		name = "Enchant Boots - Vitality",
+		slot = "Boots",
+		spell_id = 27948,
+		stats = " (4hp/mana per 5 sec)",
+		materials = {
+			"6x " .. arcanedust,
+			"4x " .. majorhealingpotion,
+			"4x " .. majormanapotion
         },
     },
-    ENCH985 = {
-        name = "Enchant Bracer - Greater Spellpower",
-        slot = "Bracer",
-        spell_id = 1220624,
-        stats = " (+16 Spell Dmg)",
-        materials = {
-            "3x " .. greatereternalessence,
-            "9x " .. illusiondust,
-            "12x " .. essenceofundeath,
-            "2x " .. purplelotus
-        },
-    },
-    ENCH984 = {
-        name = "Enchant Weapon - Grand Crusader",
-        slot = "Weapon",
-        spell_id = 1231128,
-        stats = " (+120 Str and Heal Chance)",
-        materials = {
-            "5x " .. largebrilliantshard,
-            "2x " .. righteousorb,
-            "2x " .. nexuscrystal,
-            "1x " .. bloodofheroes
-        },
-    },
-    ENCH983 = {
-        name = "Enchant Weapon - Grand Sorceror",
-        slot = "Weapon",
-        spell_id = 1231164,
-        stats = " (+70 Spell power/+mana Chance)",
-        materials = {
-            "6x " .. largebrilliantshard,
-            "3x " .. righteousorb,
-            "2x " .. nexuscrystal,
-            "1x " .. bloodofheroes
-        },
-    },
-    ENCH982 = {
-        name = "Enchant 2H Weapon - Grand Inquisitor",
-        slot = "Weapon",
-        spell_id = 1232172,
-        stats = " (+200 Str and Heal Chance)",
-        materials = {
-            "10x " .. largebrilliantshard,
-            "6x " .. righteousorb,
-            "4x " .. nexuscrystal,
-            "1x " .. bloodofheroes
-        },
-    },
-    ENCH981 = {
-        name = "Enchant 2H Weapon - Grand Arcanist",
-        slot = "Weapon",
-        spell_id = 1231139,
-        stats = " (+140 Spell power/+mana Chance)",
-        materials = {
-            "10x " .. largebrilliantshard,
-            "4x " .. righteousorb,
-            "4x " .. nexuscrystal,
-            "1x " .. bloodofheroes
-        },
-    },
+	ENCH976 = {
+		name = "Enchant Bracer - Major Intellect",
+		slot = "Bracer",
+		spell_id = 34001,
+		stats = " (+12 Int)",
+		materials = {
+			"3x " .. lesserplanaressence
+		},
+	},
+	ENCH975 = {
+		name = "Enchant Bracer - Brawn",
+		slot = "Bracer",
+		spell_id = 27899,
+		stats = " (+12 Str)",
+		materials = {
+			"6x " .. arcanedust
+		},
+	},
+	ENCH974 = {
+		name = "Enchant Shield - Tough Shield",
+		slot = "Shield",
+		spell_id = 27944,
+		stats = " (+18 Block value)",
+		materials = {
+			"6x " .. arcanedust,
+			"10x " .. primalearth
+		},
+	},
+	ENCH973 = {
+		name = "Enchant Gloves - Assault",
+		slot = "Gloves",
+		spell_id = 33996,
+		stats = " (+26 Attack power)",
+		materials = {
+			"8x " .. arcanedust
+		},
+	},
+	ENCH972 = {
+		name = "Enchant Cloak - Major Armor",
+		slot = "Cloak",
+		spell_id = 27961,
+		stats = " (+120 Armor)",
+		materials = {
+			"8x " .. arcanedust
+		},
+	},
+	ENCH971 = {
+		name = "Enchant Cloak - Greater Agility",
+		slot = "Cloak",
+		spell_id = 34004,
+		stats = " (+12 Agi)",
+		materials = {
+			"1x " .. greaterplanaressence,
+			"4x " .. arcanedust,
+			"1x " .. primalair
+		},
+	},
+	ENCH970 = {
+		name = "Enchant Bracer - Stats",
+		slot = "Bracer",
+		spell_id = 27905,
+		stats = " (+4 All stats)",
+		materials = {
+			"6x " .. arcanedust,
+			"6x " .. lesserplanaressence
+		},
+	},
+	ENCH969 = {
+		name = "Enchant Chest - Exceptional Health",
+		slot = "Chest",
+		spell_id = 27957,
+		stats = " (+150 Hp)",
+		materials = {
+			"8x " .. arcanedust,
+			"4x " .. majorhealingpotion,
+			"2x " .. largebrilliantshard
+		},
+	},
+	ENCH968 = {
+		name = "Enchant Bracer - Major Defense",
+		slot = "Bracer",
+		spell_id = 27906,
+		stats = " (+12 Def rating)",
+		materials = {
+			"2x " .. smallprismaticshard,
+			"10x " .. arcanedust
+		},
+	},
+	ENCH967 = {
+		name = "Enchant Boots - Fortitude",
+		slot = "Boots",
+		spell_id = 27950,
+		stats = " (+12 Stam)",
+		materials = {
+			"12x " .. arcanedust
+		},
+	},
+	ENCH966 = {
+		name = "Enchant Chest - Major Spirit",
+		slot = "Chest",
+		spell_id = 33990,
+		stats = " (+15 Spirit)",
+		materials = {
+			"2x " .. greaterplanaressence
+		},
+	},
+	ENCH965 = {
+		name = "Enchant Chest - Exceptional Mana",
+		slot = "Chest",
+		spell_id = 27958,
+		stats = " (+150 Mana)",
+		materials = {
+			"1x " .. largeprismaticshard,
+			"4x " .. majormanapotion,
+			"3x " .. greaterplanaressence
+		},
+	},
+	ENCH964 = {
+		name = "Enchant Shield - Intellect",
+		slot = "Shield",
+		spell_id = 27945,
+		stats = " (+12 Int)",
+		materials = {
+			"4x " .. greaterplanaressence
+		},
+	},
+	ENCH963 = {
+		name = "Enchant Cloak - Spell Penetration",
+		slot = "Cloak",
+		spell_id = 34003,
+		stats = " (+20 Spell pen)",
+		materials = {
+			"2x " .. greaterplanaressence,
+			"6x " .. arcanedust,
+			"2x " .. primalmana
+		},
+	},
+	ENCH962 = {
+		name = "Enchant Shield - Major Stamina",
+		slot = "Shield",
+		spell_id = 34009,
+		stats = " (+18 Stam)",
+		materials = {
+			"15x " .. arcanedust
+		},
+	},
+	ENCH961 = {
+		name = "Enchant Bracer - Superior Healing",
+		slot = "Bracer",
+		spell_id = 27911,
+		stats = " (+30 Heal/+10 Spell dmg)",
+		materials = {
+			"4x " .. greaterplanaressence,
+			"4x " .. primallife
+		},
+	},
+	ENCH960 = {
+		name = "Enchant Cloak - Major Resistance",
+		slot = "Cloak",
+		spell_id = 27962,
+		stats = " (+7 All res)",
+		materials = {
+			"4x " .. greaterplanaressence,
+			"4x " .. primalfire,
+			"4x " .. primalair,
+			"4x " .. primalearth,
+			"4x " .. primalwater
+		},
+	},
+	ENCH959 = {
+		name = "Enchant Shield - Resilience",
+		slot = "Shield",
+		spell_id = 44383,
+		stats = " (+12 Resilience)",
+		materials = {
+			"1x " .. largeprismaticshard,
+			"4x " .. lesserplanaressence
+		},
+	},
+	ENCH958 = {
+		name = "Enchant Bracer - Restore Mana Prime",
+		slot = "Bracer",
+		spell_id = 27913,
+		stats = " (6 mana per 5 sec)",
+		materials = {
+			"8x " .. greaterplanaressence
+		},
+	},
+	ENCH957 = {
+		name = "Enchant Weapon - Major Striking",
+		slot = "Weapon",
+		spell_id = 27967,
+		stats = " (+7 Dmg)",
+		materials = {
+			"2x " .. largeprismaticshard,
+			"6x " .. greaterplanaressence,
+			"6x " .. arcanedust
+		},
+	},
+	ENCH956 = {
+		name = "Enchant Shield - Shield Block",
+		slot = "Shield",
+		spell_id = 27946,
+		stats = " (+15 Block rating)",
+		materials = {
+			"12x " .. arcanedust,
+			"4x " .. greaterplanaressence,
+			"10x " .. primalearth
+		},
+	},
+	ENCH955 = {
+		name = "Enchant Weapon - Major Intellect",
+		slot = "Weapon",
+		spell_id = 27968,
+		stats = " (+30 Int)",
+		materials = {
+			"2x " .. largeprismaticshard,
+			"10x " .. greaterplanaressence
+		},
+	},
+	ENCH954 = {
+		name = "Enchant Boots - Dexterity",
+		slot = "Boots",
+		spell_id = 27951,
+		stats = " (+12 Agi)",
+		materials = {
+			"8x " .. greaterplanaressence,
+			"8x " .. arcanedust
+		},
+	},
+	ENCH953 = {
+		name = "Enchant Gloves - Major Strength",
+		slot = "Gloves",
+		spell_id = 33995,
+		stats = " (+15 Str)",
+		materials = {
+			"12x " .. arcanedust,
+			"1x " .. greaterplanaressence
+		},
+	},
+	ENCH952 = {
+		name = "Enchant Chest - Major Resilience",
+		slot = "Chest",
+		spell_id = 33992,
+		stats = " (+15 Resilience)",
+		materials = {
+			"4x " .. greaterplanaressence,
+			"10x " .. arcanedust
+		},
+	},
+	ENCH951 = {
+		name = "Enchant Chest - Exceptional Stats",
+		slot = "Chest",
+		spell_id = 27960,
+		stats = " (+6 All stats)",
+		materials = {
+			"4x " .. largeprismaticshard,
+			"4x " .. arcanedust,
+			"4x " .. greaterplanaressence
+		},
+	},
+	ENCH950 = {
+		name = "Enchant Weapon - Deathfrost",
+		slot = "Weapon",
+		spell_id = 46578,
+		stats = " (Frost dmg/Slow proc)",
+		materials = {
+			"2x " .. primalshadow,
+			"2x " .. primalwater
+		},
+	},
+	ENCH949 = {
+		name = "Enchant Weapon - Greater Agility",
+		slot = "Weapon",
+		spell_id = 42620,
+		stats = " (+20 Agi)",
+		materials = {
+			"8x " .. arcanedust,
+			"4x " .. greaterplanaressence,
+			"6x " .. largeprismaticshard,
+			"2x " .. primalair
+		},
+	},
+	ENCH948 = {
+		name = "Enchant Cloak - Greater Arcane Resistance",
+		slot = "Cloak",
+		spell_id = 34005,
+		stats = " (+15 Arcane res)",
+		materials = {
+			"4x " .. largeprismaticshard,
+			"8x " .. primalmana
+		},
+	},
+	ENCH947 = {
+		name = "Enchant Cloak - Greater Shadow Resistance",
+		slot = "Cloak",
+		spell_id = 34006,
+		stats = " (+15 Shadow res)",
+		materials = {
+			"4x " .. largeprismaticshard,
+			"8x " .. primalshadow
+		},
+	},
+	ENCH946 = {
+		name = "Enchant Weapon - Potency",
+		slot = "Weapon",
+		spell_id = 27972,
+		stats = " (+20 Str)",
+		materials = {
+			"4x " .. largeprismaticshard,
+			"5x " .. greaterplanaressence,
+			"20x " .. arcanedust
+		},
+	},
+	ENCH945 = {
+		name = "Enchant Bracer - Fortitude",
+		slot = "Bracer",
+		spell_id = 27914,
+		stats = " (+12 Stam)",
+		materials = {
+			"1x " .. largeprismaticshard,
+			"10x " .. greaterplanaressence,
+			"20x " .. arcanedust
+		},
+	},
+	ENCH944 = {
+		name = "Enchant 2H Weapon - Savagery",
+		slot = "Weapon",
+		spell_id = 27971,
+		stats = " (+70 Attack power)",
+		materials = {
+			"4x " .. largeprismaticshard,
+			"40x " .. arcanedust
+		},
+	},
+	ENCH943 = {
+		name = "Enchant Gloves - Major Healing",
+		slot = "Gloves",
+		spell_id = 33999,
+		stats = " (+35 Heal/+12 Spell dmg)",
+		materials = {
+			"6x " .. greaterplanaressence,
+			"6x " .. largeprismaticshard,
+			"6x " .. primallife
+		},
+	},
+	ENCH942 = {
+		name = "Enchant Weapon - Major Healing",
+		slot = "Weapon",
+		spell_id = 34010,
+		stats = " (+81 Heal/+27 Spell dmg)",
+		materials = {
+			"8x " .. largeprismaticshard,
+			"8x " .. primalwater,
+			"8x " .. primallife
+		},
+	},
+	ENCH941 = {
+		name = "Enchant Weapon - Major Spellpower",
+		slot = "Weapon",
+		spell_id = 27975,
+		stats = " (+40 Spell and Heal)",
+		materials = {
+			"8x " .. largeprismaticshard,
+			"8x " .. greaterplanaressence
+		},
+	},
+	ENCH940 = {
+		name = "Enchant Shield - Resistance",
+		slot = "Shield",
+		spell_id = 27947,
+		stats = " (+5 All magic res)",
+		materials = {
+			"2x " .. largeprismaticshard,
+			"1x " .. moteofearth,
+			"1x " .. moteoffire,
+			"1x " .. moteofair,
+			"1x " .. moteofwater
+		},
+	},
+	ENCH939 = {
+		name = "Enchant Chest - Defense",
+		slot = "Chest",
+		spell_id = 46594,
+		stats = " (+15 Def rating)",
+		materials = {
+			"4x " .. greaterplanaressence,
+			"8x " .. arcanedust,
+			"4x " .. eterniumore
+		},
+	},
+	ENCH938 = {
+		name = "Enchant Weapon - Battlemaster",
+		slot = "Weapon",
+		spell_id = 28004,
+		stats = " (Party heal proc chance)",
+		materials = {
+			"8x " .. voidcrystal,
+			"8x " .. largeprismaticshard,
+			"2x " .. primalwater
+		},
+	},
+	ENCH937 = {
+		name = "Enchant Weapon - Spellsurge",
+		slot = "Weapon",
+		spell_id = 28003,
+		stats = " (Party mana proc chance)",
+		materials = {
+			"12x " .. largeprismaticshard,
+			"10x " .. greaterplanaressence,
+			"20x " .. arcanedust
+		},
+	},
+	ENCH936 = {
+		name = "Enchant Gloves - Spell Strike",
+		slot = "Gloves",
+		spell_id = 33994,
+		stats = " (+15 Spell hit rating)",
+		materials = {
+			"8x " .. greaterplanaressence,
+			"2x " .. arcanedust,
+			"2x " .. largeprismaticshard
+		},
+	},
+	ENCH935 = {
+		name = "Enchant Boots - Cat's Swiftness",
+		slot = "Boots",
+		spell_id = 34007,
+		stats = " (+6 Agi, minor speed)",
+		materials = {
+			"8x " .. largeprismaticshard,
+			"8x " .. primalair
+		},
+	},
+	ENCH934 = {
+		name = "Enchant Bracer - Spellpower",
+		slot = "Bracer",
+		spell_id = 27917,
+		stats = " (+15 Spell/Heal)",
+		materials = {
+			"6x " .. largeprismaticshard,
+			"6x " .. primalfire,
+			"6x " .. primalwater
+		},
+	},
+	ENCH933 = {
+		name = "Enchant 2H Weapon - Major Agility",
+		slot = "Weapon",
+		spell_id = 27977,
+		stats = " (+35 Agi)",
+		materials = {
+			"8x " .. largeprismaticshard,
+			"6x " .. greaterplanaressence,
+			"20x " .. arcanedust
+		},
+	},
+	ENCH932 = {
+		name = "Enchant Gloves - Major Spellpower",
+		slot = "Gloves",
+		spell_id = 33997,
+		stats = " (+20 Dmg and Heal)",
+		materials = {
+			"6x " .. greaterplanaressence,
+			"6x " .. largeprismaticshard,
+			"6x " .. primalmana
+		},
+	},
+	ENCH931 = {
+		name = "Enchant Boots - Boar's Speed",
+		slot = "Boots",
+		spell_id = 34008,
+		stats = " (+9 Stam, minor speed)",
+		materials = {
+			"8x " .. largeprismaticshard,
+			"8x " .. primalearth
+		},
+	},
+	ENCH930 = {
+		name = "Enchant Boots - Surefooted",
+		slot = "Boots",
+		spell_id = 27954,
+		stats = " (+10 Hit rating, snare res)",
+		materials = {
+			"2x " .. voidcrystal,
+			"4x " .. largeprismaticshard,
+			"1x " .. primalnether
+		},
+	},
+	ENCH929 = {
+		name = "Enchant Cloak - Steelweave",
+		slot = "Cloak",
+		spell_id = 47051,
+		stats = " (+12 Def rating)",
+		materials = {
+			"8x " .. greaterplanaressence,
+			"8x " .. primalearth
+		},
+	},
+	ENCH928 = {
+		name = "Enchant Weapon - Executioner",
+		slot = "Weapon",
+		spell_id = 42974,
+		stats = " (840 Armor ignore chance)",
+		materials = {
+			"6x " .. voidcrystal,
+			"10x " .. largeprismaticshard,
+			"6x " .. greaterplanaressence,
+			"30x " .. arcanedust,
+			"3x " .. elixirofmajorstrength
+		},
+	},
+	ENCH927 = {
+		name = "Enchant Weapon - Sunfire",
+		slot = "Weapon",
+		spell_id = 27981,
+		stats = " (+50 Fire/Arcane spell dmg)",
+		materials = {
+			"12x " .. voidcrystal,
+			"10x " .. largeprismaticshard,
+			"8x " .. greaterplanaressence,
+			"6x " .. primalfire,
+			"1x " .. primalmight
+		},
+	},
+	ENCH926 = {
+		name = "Enchant Weapon - Soulfrost",
+		slot = "Weapon",
+		spell_id = 27981,
+		stats = " (+54 Frost/Shadow spell dmg)",
+		materials = {
+			"12x " .. voidcrystal,
+			"10x " .. largeprismaticshard,
+			"8x " .. greaterplanaressence,
+			"6x " .. primalwater,
+			"6x " .. primalshadow
+		},
+	},
+	ENCH925 = {
+		name = "Enchant Weapon - Mongoose",
+		slot = "Weapon",
+		spell_id = 27984,
+		stats = " (+120 Agi/minor atk spd)",
+		materials = {
+			"6x " .. voidcrystal,
+			"10x " .. largeprismaticshard,
+			"8x " .. greaterplanaressence,
+			"40x " .. arcanedust
+		},
+	},
 }
 
 ---- Craftables Tables
@@ -1800,11 +2224,14 @@ PEProfessionsOrder = {
     "ENGINEERING",
     "LEATHERWORKING",
     "TAILORING",
+    "JEWELCRAFTING",
     "SMELTING",
     "COOKING",
     "FIRSTAID",
     "POISONS"
 }
+
+--                                                          Need to update all craftIds and reagentIds and all item tables and also the cache function 
 
 PEProfessionsCombined = {
     ENCHANTING = {
@@ -3836,6 +4263,15 @@ PEProfessionsCombined = {
             19768,
             213376,
             213370
+        },
+    },
+     JEWELCRAFTING = {
+        profSpellId = 25229,
+        craftIds = {
+            1216331
+        },
+        reagentIds = {
+            71805
         },
     },
     SMELTING = { -- Mining/Smelting

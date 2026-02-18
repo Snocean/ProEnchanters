@@ -309,8 +309,8 @@ end
 
 function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
     --print("starting invite function for " .. author3 .. author2 .. msg)
-    if ProEnchantersOptions["WorkWhileClosed"] == true then
-        if ProEnchantersOptions["AutoInvite"] == true then
+    if ProEnchantersCharOptions["WorkWhileClosed"] == true then
+        if ProEnchantersCharOptions["AutoInvite"] == true then
             --AddonInvite = true
             --if AddonInvite == true then
                 InviteUnitPEAddon(author2)
@@ -321,8 +321,8 @@ function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
             if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
                 PESound(ProEnchantersOptions["PotentialCustomerSound"])
             end
-            PlaySound(SOUNDKIT.MAP_PING)
-        elseif ProEnchantersOptions["AutoInvite"] == false then
+            --PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersCharOptions["AutoInvite"] == false then
             StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
             PELogMsg(author3, msg, "invitemessage")
             if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
@@ -330,7 +330,7 @@ function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
             end
         end
     elseif author3 and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-        if ProEnchantersOptions["AutoInvite"] == true then
+        if ProEnchantersCharOptions["AutoInvite"] == true then
             --AddonInvite = true
             --if AddonInvite == true then
                 InviteUnitPEAddon(author2)
@@ -341,8 +341,8 @@ function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
             if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
                 PESound(ProEnchantersOptions["PotentialCustomerSound"])
             end
-            PlaySound(SOUNDKIT.MAP_PING)
-        elseif ProEnchantersOptions["AutoInvite"] == false then
+            --PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersCharOptions["AutoInvite"] == false then
             StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
             PELogMsg(author3, msg, "invitemessage")
             if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
@@ -1514,7 +1514,8 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
             ['INVTYPE_SHIELD'] = "Shield",
             ['INVTYPE_2HWEAPON'] = "Weapon",
             ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
-            ['INVTYPE_WEAPONOFFHAND'] = "Weapon"
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
+            ['INVTYPE_HOLDABLE'] = "Off-Hand"
         }
 
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
@@ -1537,7 +1538,8 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
             ['INVTYPE_SHIELD'] = "Shield",
             ['INVTYPE_2HWEAPON'] = "Weapon",
             ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
-            ['INVTYPE_WEAPONOFFHAND'] = "Weapon"
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
+            ['INVTYPE_HOLDABLE'] = "Off-Hand"
         }
 
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
@@ -2253,25 +2255,29 @@ function UpdateTradeHistory(customerName)
 end
 
 function UpdateGoldTraded()
-    if GoldTraded < 0 then
-        local deficitAmount = -GoldTraded
+    if PEGoldTraded < 0 then
+        local deficitAmount = -PEGoldTraded
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: -" .. GetMoneyString(deficitAmount))
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
             string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 22, 25) -- Adjust size as needed
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
             "BOTTOMRIGHT", -15, 0)
     else
-        ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+        ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(PEGoldTraded))
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
             string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25) -- Adjust size as needed
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
             "BOTTOMRIGHT", -15, 0)
     end
+    if ProEnchantersGoldFrame:IsShown() then
+        ProEnchantersGoldFrame:Hide()
+        ProEnchantersGoldFrame:Show()
+    end
 end
 
 function ResetGoldTraded()
-    GoldTraded = 0
-    ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+    PEGoldTraded = 0
+    ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(PEGoldTraded))
     ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
         string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25) -- Adjust size as needed
     ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
@@ -2322,7 +2328,7 @@ function PEdoTrade()
         if not ProEnchantersTradeHistory[customerName] then
             CreateCusWorkOrder(customerName)
         end
-        if ProEnchantersOptions["WorkWhileClosed"] == true then
+        if ProEnchantersCharOptions["WorkWhileClosed"] == true then
             OnTheClock = true
         elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
             OnTheClock = true
@@ -2330,13 +2336,13 @@ function PEdoTrade()
 
         if PlayerMoney > 0 then
             AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. GetCoinText(PlayerMoney))
-            GoldTraded = GoldTraded - PlayerMoney
+            PEGoldTraded = PEGoldTraded - PlayerMoney
             UpdateTradeHistory(customerName)
         end
 
         if TargetMoney > 0 then
             AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. GetCoinText(TargetMoney))
-            GoldTraded = GoldTraded + TargetMoney
+            PEGoldTraded = PEGoldTraded + TargetMoney
             UpdateTradeHistory(customerName)
             if OnTheClock == true then
                 if ProEnchantersLog[customerName] == nil then
@@ -3507,3 +3513,194 @@ function PEClearMsgLogs()
     ProEnchantersMsgLogHistory["orderedTimes"] = {}
     -- wipe msg log table
 end
+
+	-- Gold Log Stuff
+
+	function PEGetSessionDate()
+		local d = C_DateAndTime.GetCurrentCalendarTime()
+		local weekDay = CALENDAR_WEEKDAY_NAMES[d.weekday]
+		local month = CALENDAR_FULLDATE_MONTH_NAMES[d.month]
+		if weekDay == nil then
+			local failmsg = "Date failed to be loaded, please hit Reset Session"
+			return failmsg
+		end
+		local formatted = string.format("%02d:%02d, %s, %d %s %d", d.hour, d.minute, weekDay, d.monthDay, month, d.year)
+		if ProEnchantersOptions["GoldSessionDate"] == nil then
+			ProEnchantersOptions["GoldSessionDate"] = formatted
+		end
+		return formatted
+	end
+
+	function PEGetTotalGoldLogs()
+		local totalgold = 0
+		if next(ProEnchantersLog) == nil then
+			return totalgold
+		end
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			totalgold = totalgold + gold
+		end
+		return totalgold
+	end
+
+	function PEGetGoldLogs()
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs()
+		local totalgold = 0
+		if not check then
+			return "No text to display" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	function PEGetSessionGoldLogs()
+		local goldlog = {}
+		local check = true
+        local totalGold = 0
+
+		if next(ProEnchantersSessionLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersSessionLog) do
+			--print(name)
+			--print(amounts)
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+            totalGold = totalGold + gold
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check, totalGold
+	end
+
+	function PEGoldSessionLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetSessionGoldLogs()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		local sessionDate = ""
+
+		if ProEnchantersOptions["GoldSessionDate"] == nil then
+			sessionDate = PEGetSessionDate()
+		else
+			sessionDate = ProEnchantersOptions["GoldSessionDate"]
+		end
+
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nCurrent Session Start: " .. sessionDate .. "\nNo text to display from current session" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nCurrent Session Start: " .. sessionDate .. "\nTotal gold from this sessions trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	-- Input gold logs
+	function PEGetGoldLogs100()
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText100()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs100()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nNo text to display for top 100" -- Ensures a string is always returned
+		end
+
+		--for i = 1, 100 do 
+		--local t = goldlogs[i]
+		--for _, t in ipairs(goldlogs) do -- Simplified loop
+		for i = 1, 100 do
+			local t = goldlogs[i]
+			if t == nil then
+				break
+			end
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nTotal gold from top 100 logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	

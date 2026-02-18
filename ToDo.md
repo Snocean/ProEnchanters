@@ -2,8 +2,6 @@
 
 - Figure out why slot based trade buttons are not working
 
-- Add a way to 'test' filters and triggers
-
 - Check into being able to swap work order sorting in the window from high to low
 Add a button on the main window with a v^ type symbol to swap sorting order
 

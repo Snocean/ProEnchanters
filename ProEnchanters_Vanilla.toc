@@ -1,17 +1,17 @@
-## Interface: 11507, 11506, 11505
+## Interface: 11508, 11507, 11506, 11505
 ## Title: ProEnchanters
 ## Notes: Set of tools used for creating a better work flow while running enchanting services for other players
 ## IconTexture: Interface\AddOns\ProEnchanters\custom_icon.tga
 ## Author: EffinOwen
-## Version: 10.7.4
-## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB, ProEnchantersTables, ProEnchantersMsgLogHistory
+## Version: 11.1
+## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersSessionLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB, ProEnchantersTables, ProEnchantersMsgLogHistory
 ## SavedVariablesPerCharacter: ProEnchantersCharOptions
 
 # External code
 embeds.xml
 
 # Main
-PELocalization.lua
+PELocalization_classic.lua
 Enchants_Vanilla.lua
 Helper_Vanilla.lua
 ProEnchanters.lua

@@ -4,7 +4,56 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
-## Update 10.7.4 Beta
+## Update 11.2.1
+- **Added** Add-on now checks if the player is in an instance or combat and will not show the trade window buttons and bottom window if so.
+
+## Update 11.2
+- **Added** New TBC enchant recipes/reagents/localizations for main enchanting functions
+- **To be added** Crafting section requires all new recipes/reagents
+
+## Update 11.1
+- **Added** New setting checkbox to disable the Pro Enchanters specific trade window buttons and display (default disabled)
+- **Fixed** Target button works again
+- **Fixed** Enchant Weapon - Spell Power and Healing Power name fixed
+
+## Update 11.0
+- **Modified** Changed existing enchant recipes within the add-ons database to reflect changed recipes.
+- **Reverted** 1 click enchanting macro re-enabled
+
+## Update 10.9.3.1
+- **Added** .toc file so that the new TBC client recognizes the add-on
+- **Modified** Separated TBC and Vanilla enchants files as the TBC client does not have the SoD enchants listed and was causing the add-on to throw errors
+
+## Update 10.9.2.2 Beta
+- **Potential fix** Taint issue related to trade window that causes WoW to disable the add-on sometimes
+
+## Update 10.9.2.1
+- **Potential fix** Set the initial trade window frames to hide when addon loads, should fix the PE Trade screen windows from showing on addon launch until you open and close trade with someone
+
+## Update 10.9.2
+- **Potential Fix** Random taint issues with the trade window, they are very intermittent and I was not able to reproduce the issue however this change might fix it from coming back, will have to rely on the community to report back if the issue comes back or not
+
+## Update 10.9.1
+- **Fix** Off-hand's that are not a "Weapon" off-hand type should now report back as specific "Off-Hand" slot type for enchants
+
+## Update 10.8.3 Beta
+- **Fix** Session log should not be reset on add-on load anymore
+
+## Update 10.8.2 Beta
+- **New** Setting added to allow the "Whispered Invite Commands" to bypass the max party size setting (still maxes out at 40 due to WoW raid party max size)
+
+## Update 10.8.1
+- **Fixed** LUA error caused by changing a variable name (This error happens when you would receive or send gold)
+- **Changed** The "Party Full" message should now be sent for potential customer invites too, not just on Whispered invite commands
+
+## Update 10.8
+- **Changed** Session Gold Log tracking is now persistent between game sessions and displays the time and date that the session was started, added a 'reset session' button in the gold log frame as well
+
+## Update 10.7.5
+- **Changed** Auto Invite, Work While Closed, Pause Invites, Trim Server Name settings migrated to be character specific settings instead of global settings.
+- **Changed** Added a check on Add-on Load to see if Work While Closed and Auto Invite are both enabled from last session and if so it will turn Auto Invite off and print a message.
+
+## Update 10.7.4
 - **Changed** Tooltip for the minimap button should now anchor to the bottom left of the minimap icon instead of the top right overlapping with the minimap
 - **New** Added Context menu for Message Logged players that can be accessed by Right Clicking the players name in the message log window
 - Context menu lets you Whisper your Auto Inv Msg, Invite them, Create a Work Order, or add them to Temporary Ignore list
