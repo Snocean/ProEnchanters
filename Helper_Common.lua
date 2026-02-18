@@ -1,31 +1,305 @@
--- THIS FILE IS NO LONGER USED
+-- Shared helper logic for all game flavors (Vanilla, TBC, Cata)
+-- ProEnchantersWoWFlavor must be set by the flavor-specific Helper_*.lua before this file's logic runs
 
--- PE Convertables
-PEConvertablesName = {
-	"Lesser Magic Essence",
-	"Greater Magic Essence",
-	"Lesser Astral Essence",
-	"Greater Astral Essence",
-	"Lesser Mystic Essence",
-	"Greater Mystic Essence",
-	"Lesser Eternal Essence",
-	"Greater Eternal Essence",
-	"Lesser Nether Essence",
-	"Greater Nether Essence"
-}
+-- Returns true if word is found in msg; use plain (literal) find when word has no regex chars
+local function PECheckWordInMessage(msg2, filteredWord, hasRegexChars)
+	if hasRegexChars then
+		return string.find(msg2, filteredWord) ~= nil
+	else
+		return string.find(msg2, filteredWord, 1, true) ~= nil
+	end
+end
 
-PEConvertablesId = {
-	"10938",
-	"10939",
-	"10998",
-	"11082",
-	"11134",
-	"11135",
-	"16202",
-	"16203",
-	"11174",
-	"11175"
-}
+-- Returns true if word contains %, ^, or $ (regex chars that need special handling)
+local function PEWordHasRegexChars(filteredWord)
+	return string.find(filteredWord, "%", 1, true) ~= nil
+		or string.find(filteredWord, "^", 1, true) ~= nil
+		or string.find(filteredWord, "$", 1, true) ~= nil
+end
+
+function PEfilterCheck(msg, author2) -- Need to sort this
+
+    local author = string.gsub(author2, "%-.*", "")
+    local msg2 = string.lower(msg)
+	local finalcheck = "nofilter"
+	local printout = "Filter Check Passed"
+    --[[local filterspatterns = {
+        "^WORD%s",
+        "^WORD%p",
+        "%sWORD%s",
+        "%pWORD%s",
+        "%sWORD%p",
+        "%pWORD%p",
+        "%sWORD$",
+        "%pWORD$"
+    }]]
+
+    local filterspatterns = {
+        "^WORD[%s%p]",
+        "[%s%p]WORD[%s%p]",
+        "[%s%p]WORD$",
+        "^WORD$"
+    }
+
+	if LocalLanguage == nil then
+		LocalLanguage = "English"
+	end
+
+    -- Check for Filtered words within message - move this OUT OF the for loop and into it's own function maybe?
+    for _, word in pairs(ProEnchantersOptions.filteredwords) do
+
+        local filteredWord = word
+
+        if string.find(filteredWord, "%[.-%]") then
+
+            for _, filter in ipairs(filterspatterns) do -- fix this
+                local filteredWordFinal = ""
+                local filtersubbed = ""
+                local filter1 = ""
+                local filter2 = ""
+                local filter3 = ""
+                filter1, filter2, filter3 = string.match(filteredWord, "(.*)%[(.-)%](.*)")
+
+                filtersubbed = string.gsub(filter, "WORD", filter2, 1)
+                --filtersubbed = string.gsub(filtersubbed, "*", ".-")
+
+                if filter1 ~= "" then
+                    --remove trailing whitespace if it exists
+                    filter1 = string.gsub(filter1, "%s$", "")
+                    filteredWordFinal = filter1
+                end
+                if filter2 ~= "" then
+                    filteredWordFinal = filteredWordFinal .. filtersubbed
+                end
+                if filter3 ~= "" then
+                    --remove starting whitespace if it exists
+                    filter3 = string.gsub(filter3, "^%s", "")
+                    filteredWordFinal = filteredWordFinal .. filter3
+                end
+
+                filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
+
+                if string.find(msg2, filteredWordFinal) then
+                    local msg4 = string.gsub(msg2, filter, RED .. "*" .. ColorClose .. filter, 1)
+                    printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                    finalcheck = "filterfound"
+                    return finalcheck, printout
+                end
+            end
+
+        else
+            local hasRegex = PEWordHasRegexChars(filteredWord)
+            if PECheckWordInMessage(msg2, filteredWord, hasRegex) then
+                local msg4 = string.gsub(msg2, filteredWord, RED .. "*" .. ColorClose .. filteredWord, 1)
+                printout = "filter: " .. RED .. word .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+                finalcheck = "filterfound"
+                return finalcheck, printout
+            end
+        end
+   end
+
+   -- Check for Usernames within message that are added to the filters - move this OUT OF the for loop and into it's own function maybe?
+   for _, word in pairs(ProEnchantersOptions.filteredwords) do
+       if word:match("^%u") then			
+           if word == author then
+               --print("name in filter list")
+               printout = "Sender: " .. author2 .. " name found in filter list, check 3 returning false"
+               finalcheck = "senderfound"
+               return finalcheck, printout
+           end
+       end
+   end
+   return finalcheck, printout
+end
+
+function PEMsgCheck(msg, author2, tword) -- To be worked on
+    --print("checking tword: " .. tword)
+
+	local check1 = false
+	local check2 = false
+	local check3 = false
+	local check4 = false
+    local author = string.gsub(author2, "%-.*", "")
+    local msg2 = string.lower(msg)
+	local finalcheck = "notrigger"
+	local printout = ""
+    local tfound = ""
+    local breakloop = false
+
+    local filterspatterns = {
+        "^WORD[%s%p]",
+        "[%s%p]WORD[%s%p]",
+        "[%s%p]WORD$",
+        "^WORD$"
+    }
+
+	if LocalLanguage == nil then
+		LocalLanguage = "English"
+	end
+
+    local filteredWord = tword
+
+    if string.find(filteredWord, "%[.*%]") then
+        for _, filter in ipairs(filterspatterns) do -- fix this
+            local filteredWordFinal = ""
+            local filtersubbed = ""
+            local filter1 = ""
+            local filter2 = ""
+            local filter3 = ""
+            filter1, filter2, filter3 = string.match(filteredWord, "(.*)%[(.*)%](.*)")
+
+            filtersubbed = string.gsub(filter, "WORD", filter2, 1)
+            --filtersubbed = string.gsub(filtersubbed, "*", ".-")
+
+            if filter1 ~= "" then
+                --remove trailing whitespace if it exists
+                filter1 = string.gsub(filter1, "%s$", "")
+                filteredWordFinal = filter1
+            end
+            if filter2 ~= "" then
+                filteredWordFinal = filteredWordFinal .. filtersubbed
+            end
+            if filter3 ~= "" then
+                --remove starting whitespace if it exists
+                filter3 = string.gsub(filter3, "^%s", "")
+                filteredWordFinal = filteredWordFinal .. filter3
+            end
+
+            filteredWordFinal = string.gsub(filteredWordFinal, "*", ".-")
+            filteredWordFinal = string.gsub(filteredWordFinal, "%s", "%%s")
+            --print(filteredWordFinal)
+            -- Check for Trigger Word within Message
+            if string.find(msg2, filteredWordFinal) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            --print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+            end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            else
+                local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
+                printout = tword .. " was not found as an explicit word or phrase"
+                finalcheck = "inword"
+                if ProEnchantersOptions["DebugLevel"] == 2 then
+                    --print(printout)
+                end
+                if ProEnchantersOptions["DebugLevel"] == 3 then
+                    print(printout)
+                end
+            end
+
+        end
+        return finalcheck, printout, tfound, breakloop
+    elseif PEWordHasRegexChars(filteredWord) then
+        if string.find(msg2, tword) then
+            check1 = true
+            check2 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+        end
+        if check1 == true and check2 == true and check3 == false and check4 == false then
+            finalcheck = "passed"
+            printout = "All checks passed, proceeding with invites/messages"
+            breakloop = true
+            return finalcheck, printout, tfound, breakloop
+        else
+            return finalcheck, printout, tfound, breakloop
+        end
+    else
+        local tword = string.gsub(tword, "+", "")
+	    local msg3 = string.gsub(msg2, "+", "")
+        local startPos, endPos = string.find(msg3, tword)
+
+        if string.find(msg2, tword, 1, true) then
+
+            check1 = true
+            local msg4 = string.gsub(msg2, tword, GREEN .. "*" .. ColorClose .. tword, 1)
+            --print("found: " .. msg4)
+            tfound = "trigger: " .. GREEN .. tword .. ColorClose .. " found within " .. LIGHTBLUE .. author2 .. ColorClose .. ": " .. msg4
+
+            -- Check if Trigger Word within Message is contained within a word or not
+            if startPos then
+                if startPos == 1 or string.sub(msg3, startPos - 1, startPos - 1) == " " then
+                    check2 = true
+                    printout = tword .. " does not have any leading characters, returning check2 as true"
+                    --print(tword .. " not within word")
+                else
+                    local msg4 = string.gsub(msg2, tword, RED .. "*" .. ColorClose .. tword, 1)
+                    printout = tword .. " is contained within a word: " .. msg4
+                    finalcheck = "inword"
+                    if ProEnchantersOptions["DebugLevel"] == 2 then
+                        --print(printout)
+                    end
+                    if ProEnchantersOptions["DebugLevel"] == 3 then
+                        print(printout)
+                    end
+                    return finalcheck, printout, tfound, breakloop
+                end
+            end
+
+            -- If all checks passed, return true
+            if check1 == true and check2 == true and check3 == false and check4 == false then
+                finalcheck = "passed"
+                printout = "All checks passed, proceeding with invites/messages"
+                breakloop = true
+                return finalcheck, printout, tfound, breakloop
+            end
+        end
+        return finalcheck, printout, tfound, breakloop
+    end
+end
+
+function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
+    --print("starting invite function for " .. author3 .. author2 .. msg)
+    if ProEnchantersCharOptions["WorkWhileClosed"] == true then
+        if ProEnchantersCharOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+                -- Add message to msg logs as well
+                PELogMsg(author3, msg, "invitemessage")
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            --PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersCharOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            PELogMsg(author3, msg, "invitemessage")
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    elseif author3 and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
+        if ProEnchantersCharOptions["AutoInvite"] == true then
+            --AddonInvite = true
+            --if AddonInvite == true then
+                InviteUnitPEAddon(author2)
+                PEPlayerInvited[author3] = msg
+                -- Add message to msg logs as well
+                PELogMsg(author3, msg, "invitemessage")
+            --end
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+            --PlaySound(SOUNDKIT.MAP_PING)
+        elseif ProEnchantersCharOptions["AutoInvite"] == false then
+            StaticPopup_Show("INVITE_PLAYER_POPUP", author3, msg).data = { author3, msg, author2 }
+            PELogMsg(author3, msg, "invitemessage")
+            if ProEnchantersOptions["EnablePotentialCustomerSound"] == true then
+                PESound(ProEnchantersOptions["PotentialCustomerSound"])
+            end
+        end
+    end
+end
 
 function GroupLeaderCheck()
     if UnitIsGroupAssistant("player") == true then
@@ -80,24 +354,37 @@ function ProEnchants_GetReagentList(SpellID, reqQuantity)
     --print(tostring(SpellID))
     local id = SpellID
     local AllMatsReq = ""
+    if SpellID == nil then
+        --print("SpellID is nil")
+        AllMatsReq = "0x Unknown"
+        return AllMatsReq
+    end
+    --print(tostring(SpellID))
     if reqQuantity == nil then
         reqQuantity = 1
     end
-    local reqQuantity = reqQuantity
-    
     if CombinedEnchants[id].materials then
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
             -- Extract quantity and material name
             local quantity, material = matsReq:match("(%d+)x (.+)")
+           --print(quantity .. " x " .. material)
            --print(tostring(quantity) .. " " .. tostring(material))
             local itemId = material:match(":(%d+):")
             --print(tostring(itemId))
+            --local test = PEItemCache(itemId)
+            --print(test)
             local material = select(2, C_Item.GetItemInfo(itemId))
             --print(tostring(material))
             quantity = tonumber(quantity) * reqQuantity
             --print(tostring(quantity))
 
             -- Append to the AllMatsReq string
+            if material == nil then
+                material = C_Item.GetItemNameByID(itemId)--"Unknown"
+            end
+            if material == nil then
+                material = "Unknown"
+            end
             if AllMatsReq ~= "" then
                 AllMatsReq = AllMatsReq .. ", " .. quantity .. "x " .. material
             else
@@ -115,7 +402,6 @@ function ProEnchants_GetReagentListNoLink(SpellID, reqQuantity)
     if reqQuantity == nil then
         reqQuantity = 1
     end
-    local reqQuantity = reqQuantity
 
     if CombinedEnchants[id].materials then
         for _, matsReq in ipairs(CombinedEnchants[id].materials) do
@@ -307,25 +593,40 @@ function PEStripColourCodes(txt)
 	return txt
 end
 
-function PEItemCache()
-    local NoneCachedItems = ""
+function PEItemCache(id)
+    local NonCachedItems = ""
     local CachedItems = ""
     local CachedSpells = ""
-    for _, itemID in pairs(ProEnchantersItemCacheTable) do
-        local itemLink = select(2, C_Item.GetItemInfoInstant(itemID))
+    local cachedCount = 0
+    local noncachedCount = 0
+    if id then
+        local itemLink = select(2, C_Item.GetItemInfo(id))
+        --print(itemLink)
         if not itemLink then
-            NoneCachedItems = NoneCachedItems .. itemID .. ", "
+            NonCachedItems = NonCachedItems .. id .. ", "
+            noncachedCount = 1
         elseif itemLink then
             CachedItems = CachedItems .. itemLink .. ", "
+            cachedCount = 1
         end
-    end
-    for _, profType in ipairs(PEProfessionsOrder) do
-        for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
-            GameTooltip:AddSpellByID(spellId)
+        return cachedCount, noncachedCount, CachedItems, NonCachedItems
+    else
+        for _, itemID in pairs(ProEnchantersItemCacheTable) do
+            local itemLink = select(2, C_Item.GetItemInfo(itemID))
+            if not itemLink then
+                NonCachedItems = NonCachedItems .. itemID .. ", "
+            elseif itemLink then
+                CachedItems = CachedItems .. itemLink .. ", "
+            end
         end
-    end
-    for _, id in pairs(PEReagentItems) do
-        local itemInfo = C_Item.GetItemInfoInstant(id)
+        for _, profType in ipairs(PEProfessionsOrder) do
+            for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
+                GameTooltip:AddSpellByID(spellId)
+            end
+        end
+        for _, id in pairs(PEReagentItems) do
+            local itemInfo = C_Item.GetItemInfo(id)
+        end
     end
     -- print("Item Cache complete")
 end
@@ -571,9 +872,14 @@ function ProEnchantersGetSingleMatsDiff(customerName, enchantID)
 
 
             -- Convert the totalMaterials table back into a string and add to matsNeeded table
+            local itemName
             for material, quantity in pairs(totalMaterials) do
                 local itemId = material:match(":(%d+):")
-                local itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
+                if itemId then
+                    itemName = select(2, C_Item.GetItemInfo(itemId)) or "Unknown Item"
+                else
+                    itemName = "Unknown Item"
+                end
                 matsNeeded[itemName] = quantity
             end
 
@@ -1040,6 +1346,71 @@ function ProEnchantersConvertMats(customerName, index)
     end
 end
 
+function PETestItemInfo(input)
+    -- Attempt to return item name once
+    local itemName = C_Item.GetItemNameByID(input)
+
+    -- Start repeating timer attempting to input name = id into a table per item ID
+    local myTimer = C_Timer.NewTicker(2, function(self)
+        -- once itemName returns properly, add it to table as name = id
+            if itemName then
+                if ProEnchantersTables then
+                    if not ProEnchantersTables.ItemCache then
+                        ProEnchantersTables.ItemCache = {}
+                    end
+                end
+                ProEnchantersTables.ItemCache[itemName] = input
+                self:Cancel()
+            else
+                -- repeat trying to get itemName on each timer loop if it did not exist previously
+                itemName = C_Item.GetItemNameByID(input)
+            end
+        end, 15) -- repeat 15 times per item ID to ensuse all item IDs are entered
+end
+
+function PETestItemCacheTimed() -- Bookmark, need to add to Cata
+
+    local count = 0
+
+    -- Create tables if not existing
+    if not ProEnchantersTables then
+        ProEnchantersTables = {}
+    end
+    if not ProEnchantersTables.ItemCache then
+        ProEnchantersTables.ItemCache = {}
+    end
+
+    -- Start loop for all items, items in PEAllItems are all available equipable items in chest/gloves/wrists/boots/weapons
+    for _, input in ipairs(PEAllItems) do
+        local flag = false
+        local itemname = ""
+        -- If item already exists in item cache, set flag to true to skip it
+        for name, id in pairs(ProEnchantersTables.ItemCache) do
+            if id == input then
+                flag = true
+                itemname = name
+                break
+            end
+        end
+        -- if item did not exist in cache table, start timer for putting it into the table
+        if flag == false then
+            PETestItemInfo(input)
+            count = count + 1
+        end
+    end
+
+    -- 1381 items currently fail to cache in WoW classic that were exported from wowhead, this number will need to be adjusted next phase when items are added
+    count = count - 1381 -- number of items that are not cacheable
+
+    if count > 0 then
+        print(count .. " items attempting to cache, please wait 30 seconds for cacheing to complete (when all items are cached this message should no longer display on addon load)")
+        local myTimer2 = C_Timer.NewTicker(30, function(self) print("Caching should be completed") end, 1)
+    end
+    if count == 0 then
+        --print("all items cached")
+    end
+end
+
 function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName == nil then
         return
@@ -1048,13 +1419,34 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     ProEnchantersUpdateTradeWindowText(customerName)
     local SlotTypeInput = ""
     local tItemLink = GetTradeTargetItemLink(7)
+    local tItemName = GetTradeTargetItemInfo(7)
+    local tItemID
 
-    if not tItemLink then
+    if tItemName then
+        tItemID = ProEnchantersTables.ItemCache[tItemName]
+    end
+
+    if tItemID then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("tItemID returns: " .. tItemID)
+        end
+    elseif tItemLink then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("no itemID found, try doing a /pe cacheitems")
+            print("tItemLink returns: " .. tItemLink)
+        end
+    else
+        print("exiting function - no itemID or itemLink found, try doing a /pe cacheitems")
         return
     end
 
-    if tItemLink then
-        local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+    if tItemID then
+        --local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
 
         local tEQLoc = {
             ['INVTYPE_CHEST'] = "Chest",
@@ -1067,13 +1459,45 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
             ['INVTYPE_SHIELD'] = "Shield",
             ['INVTYPE_2HWEAPON'] = "Weapon",
             ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
-            ['INVTYPE_WEAPONOFFHAND'] = "Weapon"
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
+            ['INVTYPE_HOLDABLE'] = "Off-Hand"
+        }
+
+        SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
+    elseif tItemLink then
+        local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
+        --local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print(itemEquipLoc .. " for item slot found")
+        end
+
+        local tEQLoc = {
+            ['INVTYPE_CHEST'] = "Chest",
+            ['INVTYPE_ROBE'] = "Chest",
+            ['INVTYPE_FEET'] = "Boots",
+            ['INVTYPE_WRIST'] = "Bracer",
+            ['INVTYPE_HAND'] = "Gloves",
+            ['INVTYPE_CLOAK'] = "Cloak",
+            ['INVTYPE_WEAPON'] = "Weapon",
+            ['INVTYPE_SHIELD'] = "Shield",
+            ['INVTYPE_2HWEAPON'] = "Weapon",
+            ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
+            ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
+            ['INVTYPE_HOLDABLE'] = "Off-Hand"
         }
 
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
     end
 
+    if ProEnchantersOptions["DebugLevel"] == 66 then
+        print("Slot Type returned: " .. SlotTypeInput)
+    end
+
     if SlotTypeInput == "Unknown" or SlotTypeInput == nil then
+        if ProEnchantersOptions["DebugLevel"] == 66 then
+            print("Slot Type invalid, breaking function")
+        end
         return
     end
 
@@ -1090,6 +1514,11 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
     if customerName then
         for _, frameInfo in pairs(ProEnchantersWorkOrderFrames) do
             if not frameInfo.Completed and frameInfo.Frame.customerName == customerName then
+
+                if ProEnchantersOptions["DebugLevel"] == 66 then
+                    print("updating slot specific trade buttons for " .. customerName)
+                end
+
                 local function alphanumericSort(a, b)
                     -- Extract number from the string
                     local numA = tonumber(a:match("%d+"))
@@ -1110,13 +1539,20 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 table.sort(keys, alphanumericSort) -- Sorts the keys in natural alphanumeric order
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("10 buttons loaded, breaking loop")
+                            end
                             break
                         end
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
+                        
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1127,7 +1563,10 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck ~= true then
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats available, setting button to available")
+                                end
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1163,13 +1602,16 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 end
 
                 for _, enchantID in ipairs(frameInfo.Enchants) do
-                    if ProEnchantersOptions.filters[enchantID] == true then
+                    if ProEnchantersCharOptions.filters[enchantID] == true then
                         if buttoncount >= 10 then
                             break
                         end
                         local enchantName = CombinedEnchants[enchantID].name
                         local key = enchantID
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[enchantID].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1180,7 +1622,10 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local matsDiff = {}
                             local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, enchantID)
                             if matsMissingCheck == true then
-                                if ProEnchantersOptions.filters[key] == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print(enchantName .. " mats missing, setting button to announce")
+                                end
+                                if ProEnchantersCharOptions.filters[key] == true then
                                     -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
                                     local matsDiff = {}
                                     local matsDiff, matsMissingCheck = ProEnchantersGetSingleMatsDiff(customerName, key)
@@ -1241,7 +1686,23 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                 frame.otherEnchants:SetScript("OnClick", function()
                     local customerName = PEtradeWho
                     customerName = string.lower(customerName)
-                    ProEnchantersUpdateTradeWindowButtons(customerName)
+                    if ProEnchantersOptions["DebugLevel"] == 66 then
+                        print("Loading trade window buttons - slot specific")
+                    end
+
+                    local tItemName = GetTradeTargetItemInfo(7)
+
+                    if tItemName then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("tItemName returns: " .. tItemName)
+                        end
+                        ProEnchantersUpdateTradeWindowButtons(customerName)
+                    elseif not tItemName then
+                        if ProEnchantersOptions["DebugLevel"] == 66 then
+                            print("no item name found")
+                        end
+                        ProEnchantersLoadTradeWindowFrame(customerName)
+                    end
                 end)
 
                 enchyOffset = enchyOffset + 25
@@ -1251,9 +1712,12 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
+                            if ProEnchantersOptions["DebugLevel"] == 66 then
+                                print("found " .. enchantName .. " includes slot type: " .. slotType)
+                            end
                             local enchantStats1 = CombinedEnchants[key].stats
                             local enchantStats2 = string.gsub(enchantStats1, "%(", "")
                             local enchantStats3 = string.gsub(enchantStats2, "%)", "")
@@ -1267,6 +1731,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                             local buttonName = key .. "buttonactive"
                             local buttonNameBg = key .. "buttonactivebg"
                             if matsMissingCheck ~= true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " mats, setting button to active")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg]:Show()
@@ -1294,7 +1761,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                     if buttoncount >= 10 then
                         break
                     end
-                    if ProEnchantersOptions.filters[key] == true then
+                    if ProEnchantersCharOptions.filters[key] == true then
                         local enchantName = CombinedEnchants[key].name
                         if string.find(enchantName, slotType, 1, true) then
                             -- if Mats Not Available, create additional small button with "Missing\nMats" button, else create button
@@ -1310,6 +1777,9 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
                                     frame.namedButtons[buttonNameBg2]:Hide()
                                 end
                             elseif matsMissingCheck == true then
+                                if ProEnchantersOptions["DebugLevel"] == 66 then
+                                    print("found " .. enchantName .. " but mats missing, setting button to announce")
+                                end
                                 if frame.namedButtons[buttonName] then
                                     frame.namedButtons[buttonName]:Show()
                                     frame.namedButtons[buttonNameBg1]:Show()
@@ -1584,7 +2054,7 @@ function FinishedEnchant(customerName, reqEnchant)
             else
                 local enchCompleted = reqEnchant
                 local reqQuantity = 1
-                if ProEnchantersOptions["DebugLevel"] >= 9 then
+                if ProEnchantersOptions["DebugLevel"] == 99 then
                     if enchCompleted ~= nil or "" then
                         print("enchCompleted set to " .. tostring(enchCompleted))
                     else
@@ -1673,7 +2143,7 @@ function RemoveAllRequestedEnchant(customerName)
     UpdateTradeHistory(customerName)
 end
 
--- Get name of Ench
+-- Get name of Ench -- Cata Specific
 function GetEnchantName(reqEnchant, languageId)
     local language = ""
     if languageId == nil then
@@ -1683,7 +2153,7 @@ function GetEnchantName(reqEnchant, languageId)
     else
         language = languageId
     end
-    local enchName = PEenchantingLocales["Enchants"][reqEnchant][language]
+    local enchName = ProEnchantersTables.Locales[reqEnchant] -- bookmark
     local enchStats = CombinedEnchants[reqEnchant].stats
     return enchName, enchStats
 end
@@ -1730,25 +2200,29 @@ function UpdateTradeHistory(customerName)
 end
 
 function UpdateGoldTraded()
-    if GoldTraded < 0 then
-        local deficitAmount = -GoldTraded
+    if PEGoldTraded < 0 then
+        local deficitAmount = -PEGoldTraded
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: -" .. GetMoneyString(deficitAmount))
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
             string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 22, 25) -- Adjust size as needed
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
             "BOTTOMRIGHT", -15, 0)
     else
-        ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+        ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(PEGoldTraded))
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
             string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25) -- Adjust size as needed
         ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
             "BOTTOMRIGHT", -15, 0)
     end
+    if ProEnchantersGoldFrame:IsShown() then
+        ProEnchantersGoldFrame:Hide()
+        ProEnchantersGoldFrame:Show()
+    end
 end
 
 function ResetGoldTraded()
-    GoldTraded = 0
-    ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(GoldTraded))
+    PEGoldTraded = 0
+    ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetText("Gold Traded: " .. GetMoneyString(PEGoldTraded))
     ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetSize(
         string.len(ProEnchantersWorkOrderFrame.GoldTradedDisplay:GetText()) + 20, 25) -- Adjust size as needed
     ProEnchantersWorkOrderFrame.GoldTradedDisplay:SetPoint("BOTTOMRIGHT", ProEnchantersWorkOrderFrame.closeBg,
@@ -1799,7 +2273,7 @@ function PEdoTrade()
         if not ProEnchantersTradeHistory[customerName] then
             CreateCusWorkOrder(customerName)
         end
-        if ProEnchantersOptions["WorkWhileClosed"] == true then
+        if ProEnchantersCharOptions["WorkWhileClosed"] == true then
             OnTheClock = true
         elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
             OnTheClock = true
@@ -1807,19 +2281,23 @@ function PEdoTrade()
 
         if PlayerMoney > 0 then
             AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. GetCoinText(PlayerMoney))
-            GoldTraded = GoldTraded - PlayerMoney
+            PEGoldTraded = PEGoldTraded - PlayerMoney
             UpdateTradeHistory(customerName)
         end
 
         if TargetMoney > 0 then
             AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. GetCoinText(TargetMoney))
-            GoldTraded = GoldTraded + TargetMoney
+            PEGoldTraded = PEGoldTraded + TargetMoney
             UpdateTradeHistory(customerName)
             if OnTheClock == true then
                 if ProEnchantersLog[customerName] == nil then
                     ProEnchantersLog[customerName] = {}
                 end
+                if ProEnchantersSessionLog[customerName] == nil then --ProEnchantersSessionLog
+                    ProEnchantersSessionLog[customerName] = {}
+                end
                 table.insert(ProEnchantersLog[customerName], TargetMoney)
+                table.insert(ProEnchantersSessionLog[customerName], TargetMoney)
                 if ProEnchantersOptions["TipMsg"] then
                     local tip = ""
                     if ProEnchantersOptions["SimplifyTips"] == true then
@@ -1874,6 +2352,7 @@ function PEdoTrade()
                     end
                 end
             end
+            ProEnchantersGoldFrame.goldLogEditBox:SetText(PEGoldSessionLogText())
         end
 
         if ItemsTraded == true then
@@ -1937,7 +2416,7 @@ function PEdoTrade()
                                 end
                             end
                             --bookmark
-                            if ProEnchantersOptions["DebugLevel"] >= 9 then
+                            if ProEnchantersOptions["DebugLevel"] == 99 then
                                 if enchantId ~= nil or "" then
                                     print("item.enchant set to " .. tostring(item.enchant))
                                     print("enchantId set to " .. tostring(enchantId))
@@ -2063,22 +2542,22 @@ function ClearTempIgnored(name)
 end
 
 function ClearAllTempIgnored()
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print("Attempting to clear all temp ignored")
     end
     if type(ProEnchantersOptions["tempignore"]) == "table" then
         for i = #ProEnchantersOptions.tempignore, 1, -1 do  -- Iterate backwards
             local name = ProEnchantersOptions.tempignore[i]
-            if ProEnchantersOptions["DebugLevel"] >= 6 then
+            if ProEnchantersOptions["DebugLevel"] == 6 then
                 print("index " .. i .. " Attempting to clear " .. name .. " from temp ignore and filtered words")
             end
             for i2, n2 in pairs(ProEnchantersOptions.filteredwords) do
                 if name == n2 then
-                    if ProEnchantersOptions["DebugLevel"] >= 6 then
+                    if ProEnchantersOptions["DebugLevel"] == 6 then
                         print("index " .. i2 .. " " .. name .. " found, removing from filtered words")
                     end
                     table.remove(ProEnchantersOptions.filteredwords, i2)
-                    if ProEnchantersOptions["DebugLevel"] >= 6 then
+                    if ProEnchantersOptions["DebugLevel"] == 6 then
                         print("index " .. i .. " " .. name .. " found, removing from tempignore")
                     end
                     table.remove(ProEnchantersOptions.tempignore, i)
@@ -2116,12 +2595,12 @@ end
 -- Addon Invite Functions
 
 function RemoveFromAddonInvited(name)
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print("Checking to remove " .. name .. " from addon invited table")
     end
     for n, _ in pairs(ProEnchantersOptions.addoninvited) do
         if n == name then
-            if ProEnchantersOptions["DebugLevel"] >= 6 then
+            if ProEnchantersOptions["DebugLevel"] == 6 then
                 print("Removing " .. name .. " from addon invited table")
             end
             ProEnchantersOptions.addoninvited[n] = nil
@@ -2130,7 +2609,7 @@ function RemoveFromAddonInvited(name)
 end
 
 function AddToAddonInvited(name, invtype)
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print("adding " .. name .. " to addon invited table")
     end
     if invtype == nil then
@@ -2141,7 +2620,7 @@ function AddToAddonInvited(name, invtype)
     else
         ProEnchantersOptions.addoninvited[name] = invtype
     end
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         for n, t in pairs(ProEnchantersOptions.addoninvited) do
             if n == name then
                 print(name .. " added with reason " .. t)
@@ -2151,7 +2630,7 @@ function AddToAddonInvited(name, invtype)
 end
 
 function UpdateAddonInvited(name, invtype)
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print("updating " .. name .. " with invtype " .. invtype)
     end
     if invtype == nil then
@@ -2160,7 +2639,7 @@ function UpdateAddonInvited(name, invtype)
     if ProEnchantersOptions.addoninvited[name] then
         ProEnchantersOptions.addoninvited[name] = invtype
     else
-        if ProEnchantersOptions["DebugLevel"] >= 6 then
+        if ProEnchantersOptions["DebugLevel"] == 6 then
             print(name .. " not found")
         end
     end
@@ -2171,23 +2650,23 @@ function ClearAllAddonInvited()
 end
 
 function CheckIfAddonInvited(name)
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print("checking to remove " .. name .. " from addon invited table")
     end
     if ProEnchantersOptions.addoninvited then
-        if ProEnchantersOptions["DebugLevel"] >= 6 then
+        if ProEnchantersOptions["DebugLevel"] == 6 then
             print("starting check loop")
         end
         for n, t in pairs(ProEnchantersOptions.addoninvited) do
             if n == name then
-                if ProEnchantersOptions["DebugLevel"] >= 6 then
+                if ProEnchantersOptions["DebugLevel"] == 6 then
                     print(name .. " found, returning true with type " .. t)
                 end
                 return true, t
             end
         end
     end
-    if ProEnchantersOptions["DebugLevel"] >= 6 then
+    if ProEnchantersOptions["DebugLevel"] == 6 then
         print(name .. " not found, returning false")
     end
 	return false
@@ -2238,7 +2717,7 @@ function PEafkMode(volume)
         afk = true
         }
 
-        if ProEnchantersOptions["DebugLevel"] >= 6 then
+        if ProEnchantersOptions["DebugLevel"] == 7 then
             for n, v in pairs(PESoundSettings) do
                 print(n .. ": " .. tostring(v))
             end
@@ -2257,7 +2736,7 @@ function PEafkMode(volume)
         SetCVar("Sound_EnableSoundWhenGameIsInBG", true)
 
     elseif ProEnchantersOptions.soundsettings["afk"] == true then
-        if ProEnchantersOptions["DebugLevel"] >= 6 then
+        if ProEnchantersOptions["DebugLevel"] == 7 then
             for n, v in pairs(ProEnchantersOptions.soundsettings) do
                 print(n .. ": " .. tostring(v))
             end
@@ -2279,7 +2758,7 @@ end
 
 function PEGetSpellName(id) -- Getting Localized Names
     local name = C_Spell.GetSpellName(id)
-    if ProEnchantersOptions["DebugLevel"] >= 5 then
+    if ProEnchantersOptions["DebugLevel"] == 8 then
         if name ~= nil then
             print(name .. " found for spell name")
         else
@@ -2310,7 +2789,7 @@ function PECreateLocaleProfessionsTable()
                     table.insert(professions[profLocalizedName]["LocalizedNames"], spellLocalizedName)
                     table.insert(professions[profLocalizedName]["SpellIDs"], profData.craftIds[craftIndex])
                 else
-                    if ProEnchantersOptions["DebugLevel"] >= 4 then
+                    if ProEnchantersOptions["DebugLevel"] == 8 then
                         print(spellLocalizedName .. " matches profession name, skipping")
                     end
                 end
@@ -2325,7 +2804,7 @@ end
 
 --[[function PEGetSpellUsable(id) -- Worthless always returns true, not sure why
     local boolean, _ = C_Spell.IsSpellUsable(id)
-    if ProEnchantersOptions["DebugLevel"] >= 5 then
+    if ProEnchantersOptions["DebugLevel"] == 5 then
         print(tostring(boolean) .. " returned for usable")
     end
     return boolean
@@ -2334,7 +2813,7 @@ end]]
 function PETestCastable(id) -- Counts how many times the spell could be cast currently, great for checking how many times you can do an enchant or craft an item
     local count = C_Spell.GetSpellCastCount(id)
     local name = PEGetSpellName(id)
-    if ProEnchantersOptions["DebugLevel"] >= 5 then
+    if ProEnchantersOptions["DebugLevel"] == 8 then
         print(tostring(count) .. " available casts on " .. name)
     end
     return name, count
@@ -2348,31 +2827,6 @@ function PECreateItemLocalizations()
     end
 end
 
--- Expand Trade Skill Headers - Maybe can use for later for other types of trade skill stuff
--- Macro for casting trade skill stuff, can do /cast Tailoring to open tailoring first, CloseTradeSkill() to close it
---[[ start comment: Macro for casting Non-enchanting trade skills, might be able to just do the /cast enchValue version for single crafts for other tradeskills but not multiples
-local macro1 = [=[
-/cast Tailoring
-/run CloseTradeSkill()
-/run for i=1,GetNumTradeSkills() do if GetTradeSkillInfo(i)=="CRAFTNAME" then CloseTradeSkill() DoTradeSkill(i, n) break end end
-
-REPLACE: 'CRAFTNAME' with Full Localized Name, 'n' with number to do, 1 time or multiple
-
-Macro for casting Enchanting trade skills
-
-local macro1 = [=[
-/cast enchValue
-]=]
-
-local macro2 = string.gsub(macro1, "enchValue", enchValue)
-
-REPLACE: 'enchValue' with Full Localized Name
-
-]] -- end comment
-
-
-
-
 
 -- Unused by maybe helpful in the future
 function PEExpandTSHeaders()
@@ -2384,7 +2838,7 @@ function PEExpandTSHeaders()
     end
 end
 
-function PEReplaceItemNamesWithLinks(spellId, amtreq)
+function PEReplaceItemNamesWithLinks(spellId, amtreq) -- Cata Specific
     local craftmsg = ""
     local msg = ""
     local tempitemName = ""
@@ -2392,22 +2846,47 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
     local spellName = spell:GetSpellName()
     local LocalLanguage = PELocales[GetLocale()]
     
+    
         spell:ContinueOnSpellLoad(function()
         GameTooltip:AddSpellByID(spellId)end)
+
+        if ProEnchantersOptions["DevMode"] == true then
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId] = {}
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["name"] = spellName
+            --print(spellName)
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["slot"] = "temp"
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["spell_id"] = tonumber(spellId)
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["stats"] = spell:GetSpellDescription()
+            ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"] = {}
+        end
+
+        if ProEnchantersOptions["DebugLevel"] == 56 then
+            print(LocalLanguage)
+        end
         
         for i=1, GameTooltip:NumLines() do
             local text = _G["GameTooltipTextLeft"..i]:GetText()
+            
             if text ~= nil then
+                --print(i .. " " .. text)
             -- Reagent Section
             local filterCheck = PEenchantingLocales["Reagents"][LocalLanguage]
-            --print(LocalLanguage)
+            --print(string.lower(filterCheck))
             
             local filtertext = string.lower(text)
+            if ProEnchantersOptions["DebugLevel"] == 56 then
+                print(filtertext .. i)
+            end
                     if filtertext:find(string.lower(filterCheck), 1, true) then
                         --print("filtercheck matched: " .. filterCheck .. " in " .. filtertext)
                         msg = PEStripColourCodes(text)
                         msg = string.gsub(msg, filterCheck, "" )
-                        --print("msg: " .. msg)
+                        msg = string.sub(msg, 3)
+                        --local firstCharPos = string.find(msg, "%S")
+                        --msg = string.sub(msg, firstCharPos)
+                        if ProEnchantersOptions["DebugLevel"] == 56 then
+                            print("msg: " .. msg)
+                        end
                         local newmsg = ""
                         local items = {}
                         -- Create Table of each Reagent
@@ -2415,6 +2894,9 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
                             -- Trim whitespace from start and end
                             item = item:gsub("^%s*(.-)%s*$", "%1")
                             table.insert(items, item)
+                            if ProEnchantersOptions["DebugLevel"] == 56 then
+                                print("item: " .. item)
+                            end
                             
                         end
 
@@ -2438,9 +2920,12 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
                             
                             return name, quantity
                         end
-    
+                        
                         for i = 1, #items do 
                             local reagent, quantity = parseItem(items[i])
+                            if ProEnchantersOptions["DebugLevel"] == 56 then
+                                print("reagent: " .. reagent)
+                            end
                             for id , t in pairs(ProEnchantersOptions.reagents) do
                             --print(t.itemName)
                                 if t.itemName then
@@ -2452,15 +2937,34 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
                                 if quantity == nil then
                                     quantity = 1
                                 end
+                               
                                 if reagent == tempitemName then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
+                                if ProEnchantersOptions["DebugLevel"] == 56 then
+                                        print("tempitemName: " .. tempitemName .. " matches " .. reagent)
+                                    end
                                     --print(t.itemName .. " found in " .. msg)
                                     local material = select(2, C_Item.GetItemInfo(id))
                                     local quant = tonumber(quantity) * tonumber(amtreq)
+                                    if ProEnchantersOptions["DebugLevel"] == 56 then
+                                        if material ~= nil then
+                                            print("material: " .. material)
+                                        else
+                                            print("material is nil")
+                                        end
+                                    end
                                     --print(material)
+                                    if ProEnchantersOptions["DevMode"] == true then
+                                        print(tostring(quant) .. "x " .. material)
+                                        table.insert(ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"], tostring(quant) .. "x " .. material)
+                                    end
+
                                     if newmsg == "" then
                                         newmsg = material .. " x " .. quant
                                     else
                                         newmsg = newmsg .. ", " .. material .. " x " .. quant
+                                    end
+                                    if ProEnchantersOptions["DebugLevel"] == 56 then
+                                        print("newmsg: " .. newmsg)
                                     end
                                     --print(msg)
                                 end
@@ -2471,3 +2975,677 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
                 end
             end
         end
+
+function PECreateCombinedEnchants(spellId)
+            local craftmsg = ""
+            local msg = ""
+            local tempitemName = ""
+            print(tostring(type(spellId)) .. " type found for spellId " .. spellId)
+            local spell = Spell:CreateFromSpellID(spellId)
+            print(spell:GetSpellName())
+            local LocalLanguage = PELocales[GetLocale()]
+        
+                if spell:GetSpellName() == nil then
+                    return
+                end
+                spell:ContinueOnSpellLoad(function() end)
+                GameTooltip:AddSpellByID(spellId)
+                GameTooltip:Show()
+                local spellName = spell:GetSpellName()
+        
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId] = {}
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["name"] = spellName
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["slot"] = "temp"
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["spell_id"] = tonumber(spellId)
+                ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"] = {}
+                print("tables created")
+                for i=1, GameTooltip:NumLines() do
+                    print("checking gametooltip " .. i)
+                    local text = _G["GameTooltipTextLeft"..i]:GetText()
+                    print(text)
+                    if text ~= nil then
+                    -- Reagent Section
+                    local filterCheck = PEenchantingLocales["Reagents"][LocalLanguage]
+                    --print(LocalLanguage)
+                    
+                    local filtertext = string.lower(text)
+                            if filtertext:find(string.lower(filterCheck), 1, true) then
+                                --print("filtercheck matched: " .. filterCheck .. " in " .. filtertext)
+                                msg = PEStripColourCodes(text)
+                                msg = string.gsub(msg, filterCheck, "" )
+                                --print("msg: " .. msg)
+                                local newmsg = ""
+                                local items = {}
+                                -- Create Table of each Reagent
+                                for item in string.gmatch(msg, '([^,]+)') do
+                                    -- Trim whitespace from start and end
+                                    item = item:gsub("^%s*(.-)%s*$", "%1")
+                                    table.insert(items, item)
+                                    
+                                end
+        
+                                for i, v in ipairs(items) do
+                                    print(v)
+                                end
+        
+                                local function parseItem(str)
+                                    -- Extract item name and quantity inside parentheses
+                                    local name, quantity = string.match(str, "^(.-)%s*%((%d+)%)%s*$")
+                                    
+                                    if name then
+                                        -- Trim whitespace from name
+                                        name = name:gsub("^%s*(.-)%s*$", "%1")
+                                        quantity = tonumber(quantity) -- Convert quantity to number
+                                    else
+                                        -- No quantity found, name is entire string
+                                        name = str:gsub("^%s*(.-)%s*$", "%1")
+                                        quantity = nil
+                                    end
+                                    
+                                    return name, quantity
+                                end
+            
+                                for i = 1, #items do 
+                                    local reagent, quantity = parseItem(items[i])
+                                    for id , t in pairs(ProEnchantersOptions.reagents) do
+                                    --print(t.itemName)
+                                        if t.itemName then
+                                            tempitemName = t.itemName
+                                            --print(tempitemName)
+                                        else
+                                            tempitemName = "skipthisone"
+                                        end
+                                        if quantity == nil then
+                                            quantity = 1
+                                        end
+                                        if reagent == tempitemName then -- Need to find a way to not replace Enchanted Iron Bar with Iron Bar during the check
+                                            --print(t.itemName .. " found in " .. msg)
+                                            local material = select(2, C_Item.GetItemInfo(id))
+                                            local quant = tonumber(quantity)
+                                            print(tostring(quant) .. "x " .. material)
+                                            table.insert(ProEnchantersTables.CombinedEnchants["ENCH" .. spellId]["materials"], tostring(quant) .. "x " .. material)
+                                            --print(msg)
+                                        end
+                                    end
+                                end
+                                GameTooltip:ClearLines()
+                                return newmsg
+                            end
+                        end
+                    end
+                
+        
+            
+end
+
+function PECreateCombinedEnchantsAll()
+    local key = PEProfessionsOrder[1]
+    local profData = PEProfessionsCombined[key]
+    local profLocalizedName = PEGetSpellName(profData.profSpellId)
+    for i = 1, 50 do --#profData.craftIds do
+        print(tostring((profData.craftIds[i])))
+        PECreateCombinedEnchants(profData.craftIds[i])
+    end
+end
+
+function PECreateLocalesAllEnchants()
+    if ProEnchantersTables == nil then
+        ProEnchantersTables = {}
+    else
+        --print("ProEnchantersTables exists")
+    end
+    if ProEnchantersTables.Locales == nil then
+        ProEnchantersTables.Locales = {}
+    else
+        --print("ProEnchantersTables.Locales exists")
+    end
+    --print("starting loop")
+    for i, t in pairs(CombinedEnchants) do
+    --print(tostring(i))
+    local enchKey = tostring(i)
+    --print(enchKey)
+    local profLocalizedName = PEGetSpellName(t.spell_id)
+    --print(profLocalizedName)
+    ProEnchantersTables.Locales[enchKey] = profLocalizedName
+    end
+end
+
+-- Msg Log Stuff
+
+function PEUpdateMsgLog(name)--ProEnchantersMsgLogFrame.currentLogs
+    ProEnchantersMsgLogFrame.textLogHeader:SetHeight(10000)
+    local lowerName = string.lower(name)
+    local currentLogs = ProEnchantersMsgLogFrame.currentLogs
+    local fulltext = {}
+    local existcheck = false
+    local title = "All"
+
+    if lowerName and lowerName ~= "" then
+        -- Check for chat logs for name
+        for _, n in pairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == lowerName then
+                existcheck = true
+                break
+            end
+        end
+
+        if existcheck then
+        -- If exists, Update currentLogs to name
+            currentLogs = lowerName
+        else 
+            currentLogs = "all"
+        end
+    else
+        currentLogs = "all"
+    end
+
+    if currentLogs == "all" then
+        -- Get all messages for current open work orders
+        if ProEnchantersMsgLogHistory["orderedTimes"][1] then
+            for i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+                -- Msg creation
+                local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+                local line = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msg"]
+                local msgtype = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msgtype"]
+
+                -- Time Formatting
+                local hour = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["hour"]
+                local minute = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["minute"]
+                local timeentry = ""
+                if minute == 0 then
+                    minute = "00"
+                elseif minute < 10 then
+                    minute = "0" .. tostring(minute)
+                end
+
+                if hour > 12 then
+                    hour = hour - 12
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "pm) " .. ColorClose
+                else
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "am) " .. ColorClose
+                end
+
+                -- Name Formatting 
+                local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+                local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
+
+                --[[ Final Formatting
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. "[" .. capitalizedName .. "] says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "[" .. capitalizedName .. "] yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "[" .. capitalizedName .. "] triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. capitalizedName .. ": " .. line
+                end
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
+
+                table.insert(fulltext, fullentry)
+            end
+        else
+            fulltext = {"nothing to display"}
+        end
+        title = "All"
+    else
+        -- For i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+        -- local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+        -- Get all messages where name matches ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+        local capitalizedName = currentLogs:sub(1,1):upper() .. currentLogs:sub(2):lower()
+        if ProEnchantersMsgLogHistory["orderedTimes"][1] then
+            for i = #ProEnchantersMsgLogHistory["orderedTimes"], 1, -1 do
+                local loggedTime = ProEnchantersMsgLogHistory["orderedTimes"][i]
+                if ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"] == lowerName then
+                -- Msg creation
+                local line = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msg"]
+                local msgtype = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["msgtype"]
+
+                -- Time Formatting
+                local hour = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["hour"]
+                local minute = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["minute"]
+                local timeentry = ""
+                if minute == 0 then
+                    minute = "00"
+                elseif minute < 10 then
+                    minute = "0" .. tostring(minute)
+                end
+
+                if hour > 12 then
+                    hour = hour - 12
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "pm) " .. ColorClose
+                else
+                    timeentry = SUBWHITE .. "(" .. hour .. ":" .. minute .. "am) " .. ColorClose
+                end
+
+                -- Name Formatting 
+                local name = ProEnchantersMsgLogHistory["timesTables"][loggedTime]["name"]
+                local capitalizedName = name:sub(1,1):upper() .. name:sub(2):lower()
+
+                
+
+                --[[ Final Formatting
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "[" .. capitalizedName .. "] whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. "[" .. capitalizedName .. "]: " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. "[" .. capitalizedName .. "] says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "[" .. capitalizedName .. "] yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "[" .. capitalizedName .. "] triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. capitalizedName .. ": " .. line
+                end
+                --fullentry = timeentry .. capitalizedName .. ": " .. line]]
+
+                -- Create Hyperlink out of name
+                -- "|cFFDA70D6|Haddon:ProEnchanters:" .. "msglog" .. ":" .. line .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r"
+                -- Final Formatting
+
+                local realmName = GetNormalizedRealmName()
+                local hlinkname = capitalizedName .. "-" .. realmName
+
+                local fullentry = ""
+                if msgtype == "whisper" then
+                    fullentry = timeentry .. ORCHID .. "|Haddon:ProEnchanters:msglog:" .. "whisper" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORCHID .. " whispers: " .. line .. ColorClose
+                elseif msgtype == "party" then
+                    fullentry = timeentry .. CORNFLOWERBLUE .. "[Party] " .. ColorClose .. CORNFLOWERBLUE .. "|Haddon:ProEnchanters:msglog:" .. "party" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CORNFLOWERBLUE .. ": " .. line .. ColorClose
+                elseif msgtype == "raid" then
+                    fullentry = timeentry .. ORANGERED .. "[Raid] " .. ColorClose .. ORANGERED .. "|Haddon:ProEnchanters:msglog:" .. "raid" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGERED .. ": " .. line .. ColorClose
+                elseif msgtype == "say" then
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "say" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r says: " .. line
+                elseif msgtype == "yell" then
+                    fullentry = timeentry .. CRIMSON .. "|Haddon:ProEnchanters:msglog:" .. "yell" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. CRIMSON ..  " yells: " .. line .. ColorClose
+                elseif msgtype == "invitemessage" then
+                    fullentry = timeentry .. ORANGE .. "|Haddon:ProEnchanters:msglog:" .. "invitemessage" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ORANGE .. " triggered invite: " .. line .. ColorClose
+                else
+                    fullentry = timeentry .. WHITE .. "|Haddon:ProEnchanters:msglog:" .. "unknown" .. ":" .. capitalizedName .. ":1234|h[" .. capitalizedName .. "]|h|r" .. ": " .. line
+                end
+
+                table.insert(fulltext, fullentry)
+                        
+                end
+            end
+        else
+            fulltext = {"nothing to display for " .. lowerName}
+        end
+        title = capitalizedName
+    end
+
+    --[[for _, item in ipairs(fulltext) do
+        print(item)
+    end]]
+
+    -- Set Text
+    local text = table.concat(fulltext, "\n")
+    ProEnchantersMsgLogFrame.title:SetText("Pro Enchanters Customer Chat Log - " .. title)
+	ProEnchantersMsgLogFrame.textLogHeader:SetText(text)
+    ProEnchantersMsgLogFrame.textLogHeaderSize:SetText(text)
+	ProEnchantersMsgLogFrame.currentLogs = currentLogs
+    -- Update Scroll Height
+    local height = ProEnchantersMsgLogFrame.textLogHeaderSize:GetStringHeight()--GetStringHeight()
+    --print(height)
+	ProEnchantersMsgLogFrame.textLogHeader:SetHeight(height)
+	ProEnchantersMsgLogFrame.ScrollChild:SetHeight(height)
+end
+
+function PECheckIfMsgShouldLog(name, checktype)
+    local check = "unknown"
+    if checktype and checktype ~= "" then
+        check = checktype
+    end
+    if not ProEnchantersMsgLogHistory then
+        ProEnchantersMsgLogHistory = {}
+    end
+    if not ProEnchantersMsgLogHistory["loggedPlayers"] then
+        ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    end
+
+    if check == "groupjoin" then
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == name then
+            return false
+            end
+        end
+        table.insert( ProEnchantersMsgLogHistory["loggedPlayers"], name)
+        return true
+    elseif check == "sayyell" then
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            if n == name then
+                return true
+            end
+        end
+    else
+        return false
+    end
+    return false
+end
+
+function PELogMsg(name, msg, msgtype)
+
+    local lowerName = ""
+    local newmsg = ""
+    local msgflag = "unknown"
+    local currentTime = GetTime() * 1000
+    local hour, minute = GetGameTime()
+
+    if name and name ~= "" then
+        lowerName = string.lower(name)
+    else
+        print("no name for function, howd you even do this")
+        return
+    end
+
+    if msg and msg ~= "" then
+        newmsg = msg
+    else
+        print("no msg to add")
+        return
+    end
+
+    if msgtype and msgtype ~= "" then
+        msgflag = msgtype
+    end
+
+    if not ProEnchantersMsgLogHistory then
+        ProEnchantersMsgLogHistory = {}
+    end
+    if not ProEnchantersMsgLogHistory["orderedTimes"] then 
+        ProEnchantersMsgLogHistory["orderedTimes"] = {}
+    end
+    if not ProEnchantersMsgLogHistory["loggedPlayers"] then 
+        ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    end
+    if not ProEnchantersMsgLogHistory["timesTables"] then 
+        ProEnchantersMsgLogHistory["timesTables"] = {}
+    end
+
+    local currentTime = GetTime() * 1000
+    local loggingcheck = "no"
+
+    if lowerName and lowerName ~= "" then
+        for _, ct in ipairs(ProEnchantersMsgLogHistory["orderedTimes"]) do
+            if currentTime == ct then
+                currentTime = currentTime + 1
+            end
+        end
+        table.insert( ProEnchantersMsgLogHistory["orderedTimes"], currentTime)
+        for i, n in ipairs(ProEnchantersMsgLogHistory["loggedPlayers"]) do
+            --print(name .. " being compared to " .. n)
+            if n == lowerName then
+                loggingcheck = "yes"
+                break
+            end
+        end
+        if loggingcheck ~= "yes" then
+            --print("inserting loggedplayers")
+            table.insert( ProEnchantersMsgLogHistory["loggedPlayers"], lowerName)
+        end
+        ProEnchantersMsgLogHistory["timesTables"][currentTime] = {
+            ["name"] = lowerName,
+            ["msg"] = msg,
+            ["msgtype"] = msgflag,
+            ["time"] = currentTime,
+            ["hour"] = hour,
+            ["minute"] = minute
+        }
+    end
+    PEUpdateMsgLog("addedmessage")
+end
+
+function PEClearPlayerMsgLogs(name)
+    --print(name .. " received to clear")
+    local lowerName = string.lower(name)
+
+    -- if name then set players msg logs to nil when work order is closed
+    for i = #ProEnchantersMsgLogHistory["loggedPlayers"], 1, -1 do
+        local n = ProEnchantersMsgLogHistory["loggedPlayers"][i]
+        if n == lowerName then
+            table.remove(ProEnchantersMsgLogHistory["loggedPlayers"], i)
+            -- loop backwards through
+            for time, data in pairs(ProEnchantersMsgLogHistory["timesTables"]) do
+                --print(data.name .. " comparing to " .. lowerName)
+                if data.name == lowerName then
+                    local timestring = data.time
+                    for i, tn in ipairs(ProEnchantersMsgLogHistory["orderedTimes"]) do
+                        --print(timestring .. " comparing to " .. tn)
+                        if tn == timestring then
+                            table.remove(ProEnchantersMsgLogHistory["orderedTimes"], i)
+                            break
+                        end
+                    end
+                    ProEnchantersMsgLogHistory["timesTables"][time] = nil
+                end
+            end
+        end
+    end
+end
+
+function PEClearMsgLogs()
+    ProEnchantersMsgLogHistory = {}
+    ProEnchantersMsgLogHistory["loggedPlayers"] = {}
+    ProEnchantersMsgLogHistory["timesTables"] = {}
+    ProEnchantersMsgLogHistory["orderedTimes"] = {}
+    -- wipe msg log table
+end
+
+	-- Gold Log Stuff
+
+	function PEGetSessionDate()
+		local d = C_DateAndTime.GetCurrentCalendarTime()
+		local weekDay = CALENDAR_WEEKDAY_NAMES[d.weekday]
+		local month = CALENDAR_FULLDATE_MONTH_NAMES[d.month]
+		if weekDay == nil then
+			local failmsg = "Date failed to be loaded, please hit Reset Session"
+			return failmsg
+		end
+		local formatted = string.format("%02d:%02d, %s, %d %s %d", d.hour, d.minute, weekDay, d.monthDay, month, d.year)
+		if ProEnchantersOptions["GoldSessionDate"] == nil then
+			ProEnchantersOptions["GoldSessionDate"] = formatted
+		end
+		return formatted
+	end
+
+	function PEGetTotalGoldLogs()
+		local totalgold = 0
+		if next(ProEnchantersLog) == nil then
+			return totalgold
+		end
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			totalgold = totalgold + gold
+		end
+		return totalgold
+	end
+
+	function PEGetGoldLogs()
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs()
+		local totalgold = 0
+		if not check then
+			return "No text to display" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	function PEGetSessionGoldLogs()
+		local goldlog = {}
+		local check = true
+        local totalGold = 0
+
+		if next(ProEnchantersSessionLog) == nil then
+			check = false
+			return {}, check
+		end
+		for name, amounts in pairs(ProEnchantersSessionLog) do
+			--print(name)
+			--print(amounts)
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+            totalGold = totalGold + gold
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check, totalGold
+	end
+
+	function PEGoldSessionLogText()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetSessionGoldLogs()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		local sessionDate = ""
+
+		if ProEnchantersOptions["GoldSessionDate"] == nil then
+			sessionDate = PEGetSessionDate()
+		else
+			sessionDate = ProEnchantersOptions["GoldSessionDate"]
+		end
+
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nCurrent Session Start: " .. sessionDate .. "\nNo text to display from current session" -- Ensures a string is always returned
+		end
+
+		for _, t in ipairs(goldlogs) do -- Simplified loop
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nCurrent Session Start: " .. sessionDate .. "\nTotal gold from this sessions trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	-- Input gold logs
+	function PEGetGoldLogs100()
+		local goldlog = {}
+		local check = true
+		if next(ProEnchantersLog) == nil then
+			check = false
+			return {}, check
+		end
+
+		for name, amounts in pairs(ProEnchantersLog) do
+			local gold = 0
+			for _, amount in ipairs(amounts) do -- Corrected to iterate over amounts
+				gold = gold + tonumber(amount)
+			end
+			goldlog[name] = gold
+		end
+
+		local goldsorttable = {}
+		for name, gold in pairs(goldlog) do
+			table.insert(goldsorttable, { name = name, gold = gold })
+		end
+
+		-- Sort the table based on the gold values
+		table.sort(goldsorttable, function(a, b) return a.gold > b.gold end)
+		return goldsorttable, check
+	end
+
+	function PEGoldLogText100()
+		local messageboxtext = ""
+		local goldlogs, check = PEGetGoldLogs100()
+		local totalgold = 0
+		local allgold = PEGetTotalGoldLogs()
+		if not check then
+			return "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nNo text to display for top 100" -- Ensures a string is always returned
+		end
+
+		--for i = 1, 100 do 
+		--local t = goldlogs[i]
+		--for _, t in ipairs(goldlogs) do -- Simplified loop
+		for i = 1, 100 do
+			local t = goldlogs[i]
+			if t == nil then
+				break
+			end
+			local gold = t.gold
+			totalgold = totalgold + gold
+			local tradeMessage = gold < 0 and "You have traded " or (t.name .. " has traded you ")
+			messageboxtext = messageboxtext ..
+				(messageboxtext == "" and "" or "\n") .. tradeMessage .. GetMoneyString(math.abs(gold))
+		end
+
+		messageboxtext = "Total gold from all trades: " .. GetMoneyString(allgold) .. "\nTotal gold from top 100 logged trades: " .. GetMoneyString(totalgold) .. "\n" .. messageboxtext
+		return messageboxtext
+	end
+
+	

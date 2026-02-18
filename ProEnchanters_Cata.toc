@@ -13,5 +13,6 @@ embeds.xml
 # Main
 PELocalization.lua
 Enchants_Cata.lua
+Helper_Common.lua
 Helper_Cata.lua
 ProEnchanters.lua

@@ -4,6 +4,15 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 11.2.2 (Code Refactor)
+- **Fixed** ProEnchantersTables and CombinedEnchants SavedVariables init logic (was wiping on reload)
+- **Fixed** Python trade parsing script print statement filename mismatch
+- **Changed** Extracted UpdateMinimapTooltip function to reduce duplication
+- **Changed** Consolidated Helper logic into Helper_Common.lua (Vanilla/TBC/Cata now thin flavor wrappers)
+- **Changed** Abstracted filter/trigger pattern matching (PECheckWordInMessage, PEWordHasRegexChars)
+- **Removed** Helper.lua (superseded by Helper_Common + flavor files)
+- **Removed** Redundant reqQuantity local assignments
+
 ## Update 11.2.1
 - **Added** Add-on now checks if the player is in an instance or combat and will not show the trade window buttons and bottom window if so.
 
