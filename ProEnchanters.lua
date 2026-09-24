@@ -17,6 +17,26 @@ ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
 ProEnchantersOptions.soundsettings = ProEnchantersOptions.soundsettings or {}
 ProEnchantersTables = {} or ProEnchantersTables
 ProEnchantersTables.CombinedEnchants = {} or ProEnchantersTables.CombinedEnchants
+
+-- Mainline-engine clients (WoW Forever) no longer have GameTooltip:AddSpellByID
+function PEAddSpellToTooltip(spellId)
+	if GameTooltip.AddSpellByID then
+		GameTooltip:AddSpellByID(spellId)
+	else
+		GameTooltip:SetSpellByID(spellId)
+	end
+end
+
+-- SetRaidTarget is a protected function on the mainline UI engine (WoW Forever):
+-- calling it from addon code raises ADDON_ACTION_FORBIDDEN and the "blocked from
+-- an action only available to the Blizzard UI" popup. The raid icon put on the
+-- player when a customer joins the group is therefore only set on Classic clients.
+function PESetPlayerRaidIcon(iconIndex)
+	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+		return
+	end
+	SetRaidTarget(GetUnitName("player"), iconIndex)
+end
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -1280,6 +1300,14 @@ PEWhisperTriggersOriginal = {
 		"I am using the Pro Enchanter's add-on on curseforge: https://www.curseforge.com/wow/addons/pro-enchanters :)"
 	}
 }
+
+-- Drop enchants whose spell does not exist in this client (e.g. Season of Discovery
+-- enchants on WoW Forever), otherwise their localized name is nil and frame creation fails
+for key, enchant in pairs(CombinedEnchants) do
+	if enchant.spell_id and C_Spell.GetSpellName(enchant.spell_id) == nil then
+		CombinedEnchants[key] = nil
+	end
+end
 
 -- Enchants Names
 EnchantsName = {}
@@ -2802,7 +2830,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 				local spell = Spell:CreateFromSpellID(spellId)
 				spell:ContinueOnSpellLoad(function()
 					GameTooltip:ClearLines()
-					GameTooltip:AddSpellByID(spellId)
+					PEAddSpellToTooltip(spellId)
 				end)
 				--GameTooltip:AddLine("Test")
 				GameTooltip:Show()
@@ -3557,7 +3585,7 @@ for _, profType in ipairs(PEProfessionsOrder) do
 					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 					local spell = Spell:CreateFromSpellID(spellId)
 					spell:ContinueOnSpellLoad(function()
-						GameTooltip:AddSpellByID(spellId)
+						PEAddSpellToTooltip(spellId)
 					end)
 					
 				end
@@ -3609,7 +3637,7 @@ for _, profType in ipairs(PEProfessionsOrder) do
 					local amtreq = tonumber(craftNumBox:GetText())
 						local spell = Spell:CreateFromSpellID(spellId)
 						spell:ContinueOnSpellLoad(function()
-							GameTooltip:AddSpellByID(spellId)
+							PEAddSpellToTooltip(spellId)
 							end)
 							msg = PEReplaceItemNamesWithLinks(spellId, amtreq)
 							craftmsg = _G["GameTooltipTextLeft"..1]:GetText() .. " x " .. tostring(amtreq)
@@ -11017,7 +11045,7 @@ function PESearchInventoryForItems()
 						local info = C_Container.GetContainerItemInfo(bag, slot)
 						if info and info.stackCount then
 							local quantity = info.stackCount
-							local itemName = select(2, GetItemInfo(itemID)) or "Unknown Item"
+							local itemName = select(2, C_Item.GetItemInfo(itemID)) or "Unknown Item"
 							if availableMats[itemName] then
 								availableMats[itemName] = availableMats[itemName] + quantity
 								availableMatsIds[itemID] = availableMatsIds[itemID] + quantity
@@ -12144,8 +12172,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			PECheckIfMsgShouldLog(name, "groupjoin")
 
 			if ProEnchantersCharOptions["WorkWhileClosed"] == true then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12238,8 +12265,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12352,8 +12378,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			PECheckIfMsgShouldLog(name, "groupjoin")
 
 			if ProEnchantersCharOptions["WorkWhileClosed"] == true then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12449,8 +12474,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -13180,7 +13204,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end
@@ -13432,7 +13456,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end
@@ -13662,7 +13686,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end

@@ -676,7 +676,11 @@ function PEItemCache(id)
         end
         for _, profType in ipairs(PEProfessionsOrder) do
             for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
-                GameTooltip:AddSpellByID(spellId)
+                if GameTooltip.AddSpellByID then
+                    GameTooltip:AddSpellByID(spellId)
+                else
+                    C_Spell.RequestLoadSpellData(spellId)
+                end
             end
         end
         for _, id in pairs(PEReagentItems) do
@@ -2374,6 +2378,19 @@ function PEgetItemIDFromLink(itemLink)
     return itemID;
 end
 
+-- GetCoinText is gone on the mainline UI engine (WoW Forever); its replacement
+-- lives in C_CurrencyInfo. Both return plain text ("1 Gold, 20 Silver"), which
+-- matters because the tip amount is also sent in chat messages, where coin
+-- textures (GetMoneyString) would not display.
+local function PEGetCoinText(amount)
+    if GetCoinText then
+        return GetCoinText(amount)
+    elseif C_CurrencyInfo and C_CurrencyInfo.GetCoinText then
+        return C_CurrencyInfo.GetCoinText(amount)
+    end
+    return string.format("%dg %ds %dc", floor(amount / 10000), floor((amount % 10000) / 100), amount % 100)
+end
+
 function PEdoTrade()
     local traded = false
     local customerName = PEtradeWho
@@ -2418,13 +2435,13 @@ function PEdoTrade()
         end
 
         if PlayerMoney > 0 then
-            AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. GetCoinText(PlayerMoney))
+            AddTradeLine(customerName, RED .. "OUT: " .. ColorClose .. PEGetCoinText(PlayerMoney))
             PEGoldTraded = PEGoldTraded - PlayerMoney
             UpdateTradeHistory(customerName)
         end
 
         if TargetMoney > 0 then
-            AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. GetCoinText(TargetMoney))
+            AddTradeLine(customerName, YELLOW .. "IN: " .. ColorClose .. PEGetCoinText(TargetMoney))
             PEGoldTraded = PEGoldTraded + TargetMoney
             UpdateTradeHistory(customerName)
             if OnTheClock == true then
@@ -2460,7 +2477,7 @@ function PEdoTrade()
                             end
                         end
                     else
-                        tip = tostring(GetCoinText(TargetMoney))
+                        tip = tostring(PEGetCoinText(TargetMoney))
                     end
                     local tipMsg = ProEnchantersOptions["TipMsg"]
                     local capPlayerName = CapFirstLetter(PEtradeWho)
@@ -2479,7 +2496,7 @@ function PEdoTrade()
                     end
                 else
                     DoEmote(ProEnchantersOptions["TipEmote"], PEtradeWho)
-                    local tip = tostring(GetCoinText(TargetMoney))
+                    local tip = tostring(PEGetCoinText(TargetMoney))
                     local capPlayerName = CapFirstLetter(PEtradeWho)
                     if CheckIfPartyMember(PEtradeWho) == true then
                         SendChatMessage("Thanks for the " .. tip .. " tip " .. capPlayerName .. " <3",
@@ -2985,7 +3002,7 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
     local LocalLanguage = PELocales[GetLocale()]
     
         spell:ContinueOnSpellLoad(function()
-        GameTooltip:AddSpellByID(spellId)end)
+        PEAddSpellToTooltip(spellId)end)
 
         if ProEnchantersOptions["DevMode"] == true then
             ProEnchantersTables.CombinedEnchants["ENCH" .. spellId] = {}
@@ -3092,7 +3109,7 @@ function PECreateCombinedEnchants(spellId)
             return
         end
         spell:ContinueOnSpellLoad(function() end)
-        GameTooltip:AddSpellByID(spellId)
+        PEAddSpellToTooltip(spellId)
         GameTooltip:Show()
         local spellName = spell:GetSpellName()
 
