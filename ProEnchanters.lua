@@ -11769,6 +11769,13 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			ProEnchantersWorkOrderEnchantsFrame:Show()
 			ResetFrames()
 		end
+	elseif msg == "msgtest" or string.find(msg, "^msgtest ") then
+		-- Whispers yourself a text through the same path as the addon's automatic
+		-- messages, to check LOCATION, MAPPIN and PROFLINK (MessageVariables.lua).
+		-- Typing the words in the chat box would not work: only addon messages
+		-- are expanded.
+		local text = string.match(msg, "^msgtest%s+(.+)$") or "Test: LOCATION | MAPPIN | PROFLINK"
+		SendChatMessage(text, "WHISPER", nil, GetUnitName("player", true))
 	else
 		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset/cleartempignores available as options, /pehelp for more info")
 	end
@@ -11989,7 +11996,8 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 			ColorClose)
 		print(ORANGE ..
 			"Msg Settings: LOCATION is replaced by where you stand, MAPPIN by a clickable map pin on your position (it moves your own map pin), " ..
-			"PROFLINK by a link to your Enchanting recipes (remembered each time you open Enchanting)" ..
+			"PROFLINK by a link to your Enchanting recipes (remembered each time you open Enchanting). " ..
+			"Try them with /pe msgtest [text], which whispers you the result" ..
 			ColorClose)
 		print(ORANGE ..
 			"Auto Raid Icon: When a player joins your party it will set your raid icon to the selected icon so customers can spot you easier" ..
