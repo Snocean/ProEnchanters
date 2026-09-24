@@ -1,3 +1,7 @@
+-- Output goes through PEPrint (ChatTab.lua) so it can use the optional
+-- ProEnchanters chat tab; plain print if ChatTab.lua is not loaded.
+local print = PEPrint or print
+
 --- Game Flavor
 ProEnchantersWoWFlavor = "Cata"
 
