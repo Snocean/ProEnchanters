@@ -3,7 +3,7 @@
 local print = PEPrint or print
 
 -- First Initilizations
-local version = "v11.2"
+local version = "v12.0"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersCharOptions = ProEnchantersCharOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
