@@ -1504,7 +1504,7 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
 
     if tItemID then
         --local _, _, _, _, _, _, _, _, itemEquipLoc = C_Item.GetItemInfo(tItemLink)
-        local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --Water Treads C_Item.GetItemInfoInstant("Water Treads")
+        local _, _, _, itemEquipLoc, _, _, _ = C_Item.GetItemInfoInstant(tItemID) --
 
         if ProEnchantersOptions["DebugLevel"] == 66 then
             print(itemEquipLoc .. " for item slot found")

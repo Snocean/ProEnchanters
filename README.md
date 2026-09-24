@@ -4,6 +4,10 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 11.2.2
+- **Fixed** Soulfrost enchant should now work from the trade window enchant buttons (had wrong spellID listed on addon side)
+- **Changed** Party to raid conversion changed to use C_PartyInfo.ConfirmConvertToRaid() instead of C_PartyInfo.ConvertToRaid(), untested but should help make sure the party converts to raid when inviting a 5th+ person to your group
+
 ## Update 11.2.1
 - **Added** Add-on now checks if the player is in an instance or combat and will not show the trade window buttons and bottom window if so.
 
