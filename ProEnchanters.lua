@@ -11777,7 +11777,9 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		-- messages, to check LOCATION, MAPPIN and PROFLINK (MessageVariables.lua).
 		-- Typing the words in the chat box would not work: only addon messages
 		-- are expanded.
-		local text = string.match(msg, "^msgtest%s+(.+)$") or "Test: LOCATION | MAPPIN | PROFLINK"
+		-- No bare "|" in the default text: chat treats it as an escape code and
+		-- rejects the message ("Invalid escape code in chat message")
+		local text = string.match(msg, "^msgtest%s+(.+)$") or "Test: LOCATION - MAPPIN - PROFLINK"
 		SendChatMessage(text, "WHISPER", nil, GetUnitName("player", true))
 	else
 		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset/cleartempignores available as options, /pehelp for more info")
