@@ -1524,7 +1524,10 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
             ['INVTYPE_2HWEAPON'] = "Weapon",
             ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
             ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
-            ['INVTYPE_HOLDABLE'] = "Off-Hand"
+            ['INVTYPE_HOLDABLE'] = "Off-Hand",
+            -- WoW Forever adds necklace enchants (Enchants_Forever.lua); harmless on
+            -- Classic, which has no enchant with this slot
+            ['INVTYPE_NECK'] = "Necklace"
         }
 
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
@@ -1548,7 +1551,10 @@ function ProEnchantersUpdateTradeWindowButtons(customerName)
             ['INVTYPE_2HWEAPON'] = "Weapon",
             ['INVTYPE_WEAPONMAINHAND'] = "Weapon",
             ['INVTYPE_WEAPONOFFHAND'] = "Weapon",
-            ['INVTYPE_HOLDABLE'] = "Off-Hand"
+            ['INVTYPE_HOLDABLE'] = "Off-Hand",
+            -- WoW Forever adds necklace enchants (Enchants_Forever.lua); harmless on
+            -- Classic, which has no enchant with this slot
+            ['INVTYPE_NECK'] = "Necklace"
         }
 
         SlotTypeInput = tEQLoc[itemEquipLoc] or "Unknown"
