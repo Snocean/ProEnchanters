@@ -1901,7 +1901,7 @@ function ProEnchantersUpdateTradeWindowText(customerName)
     -- Get Trade Window Frame
     local frame = _G["ProEnchantersTradeWindowFrame"]
     local matsDiff = {}
-    local currentTradeTarget = UnitName("NPC")
+    local currentTradeTarget = PEGetUnitName("NPC")
 
     matsDiff = ProEnchantersGetMatsDiff(currentTradeTarget)
     if type(matsDiff) ~= "table" then
