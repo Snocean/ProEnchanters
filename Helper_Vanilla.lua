@@ -676,7 +676,11 @@ function PEItemCache(id)
         end
         for _, profType in ipairs(PEProfessionsOrder) do
             for _, spellId in ipairs(PEProfessionsCombined[profType].craftIds) do
-                GameTooltip:AddSpellByID(spellId)
+                if GameTooltip.AddSpellByID then
+                    GameTooltip:AddSpellByID(spellId)
+                else
+                    C_Spell.RequestLoadSpellData(spellId)
+                end
             end
         end
         for _, id in pairs(PEReagentItems) do
@@ -2985,7 +2989,7 @@ function PEReplaceItemNamesWithLinks(spellId, amtreq)
     local LocalLanguage = PELocales[GetLocale()]
     
         spell:ContinueOnSpellLoad(function()
-        GameTooltip:AddSpellByID(spellId)end)
+        PEAddSpellToTooltip(spellId)end)
 
         if ProEnchantersOptions["DevMode"] == true then
             ProEnchantersTables.CombinedEnchants["ENCH" .. spellId] = {}
@@ -3092,7 +3096,7 @@ function PECreateCombinedEnchants(spellId)
             return
         end
         spell:ContinueOnSpellLoad(function() end)
-        GameTooltip:AddSpellByID(spellId)
+        PEAddSpellToTooltip(spellId)
         GameTooltip:Show()
         local spellName = spell:GetSpellName()
 

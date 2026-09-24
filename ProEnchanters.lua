@@ -17,6 +17,15 @@ ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
 ProEnchantersOptions.soundsettings = ProEnchantersOptions.soundsettings or {}
 ProEnchantersTables = {} or ProEnchantersTables
 ProEnchantersTables.CombinedEnchants = {} or ProEnchantersTables.CombinedEnchants
+
+-- Mainline-engine clients (WoW Forever) no longer have GameTooltip:AddSpellByID
+function PEAddSpellToTooltip(spellId)
+	if GameTooltip.AddSpellByID then
+		GameTooltip:AddSpellByID(spellId)
+	else
+		GameTooltip:SetSpellByID(spellId)
+	end
+end
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -2810,7 +2819,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 				local spell = Spell:CreateFromSpellID(spellId)
 				spell:ContinueOnSpellLoad(function()
 					GameTooltip:ClearLines()
-					GameTooltip:AddSpellByID(spellId)
+					PEAddSpellToTooltip(spellId)
 				end)
 				--GameTooltip:AddLine("Test")
 				GameTooltip:Show()
@@ -3565,7 +3574,7 @@ for _, profType in ipairs(PEProfessionsOrder) do
 					GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 					local spell = Spell:CreateFromSpellID(spellId)
 					spell:ContinueOnSpellLoad(function()
-						GameTooltip:AddSpellByID(spellId)
+						PEAddSpellToTooltip(spellId)
 					end)
 					
 				end
@@ -3617,7 +3626,7 @@ for _, profType in ipairs(PEProfessionsOrder) do
 					local amtreq = tonumber(craftNumBox:GetText())
 						local spell = Spell:CreateFromSpellID(spellId)
 						spell:ContinueOnSpellLoad(function()
-							GameTooltip:AddSpellByID(spellId)
+							PEAddSpellToTooltip(spellId)
 							end)
 							msg = PEReplaceItemNamesWithLinks(spellId, amtreq)
 							craftmsg = _G["GameTooltipTextLeft"..1]:GetText() .. " x " .. tostring(amtreq)
