@@ -11780,7 +11780,14 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		-- No bare "|" in the default text: chat treats it as an escape code and
 		-- rejects the message ("Invalid escape code in chat message")
 		local text = string.match(msg, "^msgtest%s+(.+)$") or "Test: LOCATION - MAPPIN - PROFLINK"
-		SendChatMessage(text, "WHISPER", nil, GetUnitName("player", true))
+		-- Shown locally first, so what was sent can be compared with the whisper
+		-- received (links the server drops, the 255 character limit)
+		local expanded = PEExpandMessageVariables and PEExpandMessageVariables(text) or text
+		print("|cFF800080ProEnchanters|r msgtest (" .. string.len(expanded) .. "/255 characters): " .. expanded)
+		if ProEnchantersCharOptions["EnchantingProfessionLink"] then
+			print("|cFF800080ProEnchanters|r msgtest: PROFLINK is remembered for this character.")
+		end
+		SendChatMessage(expanded, "WHISPER", nil, GetUnitName("player", true))
 	else
 		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset/cleartempignores available as options, /pehelp for more info")
 	end

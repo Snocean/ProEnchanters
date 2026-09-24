@@ -28,6 +28,7 @@
 local ENCHANTING_SKILL_LINE_ID = 333
 
 local blizzardSendChatMessage = SendChatMessage
+local professionLinkHintShown = false -- the "open Enchanting once" hint, once per session
 
 local function IsSecret(value)
 	return issecretvalue ~= nil and issecretvalue(value) or false
@@ -81,6 +82,10 @@ function PEExpandMessageVariables(text)
 	end
 	if string.find(text, "PROFLINK", 1, true) then
 		local replacement = ProEnchantersCharOptions and ProEnchantersCharOptions["EnchantingProfessionLink"] or ""
+		if replacement == "" and not professionLinkHintShown then
+			professionLinkHintShown = true
+			print("|cFF800080ProEnchanters|r: PROFLINK stays empty until you open your Enchanting window once on this character.")
+		end
 		text = string.gsub(text, "PROFLINK", function() return replacement end)
 	end
 	return text
