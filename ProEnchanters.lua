@@ -10016,6 +10016,21 @@ end
 -- Function to handle "Create Workorder" button press
 function OnCreateWorkorderButtonClick()
 	local customerName = ProEnchantersCustomerNameEditBox:GetText()
+	-- An empty name box falls back to the current target when it is a player, so
+	-- "target someone, then Create Workorder" works without typing the name.
+	-- The name is written back into the box because the callers read it again
+	-- afterwards (UpdateTradeHistory).
+	if customerName == "" and UnitIsPlayer("target") then
+		-- PEGetUnitName (forever/character-names) gives WoW Forever's full "First Last"
+		-- name; UnitName alone would return the first name only there.
+		local targetName = PEGetUnitName and PEGetUnitName("target") or UnitName("target")
+		-- Mainline-engine clients (WoW Forever) can return "secret" values that
+		-- addon code is not allowed to read; skip those instead of erroring.
+		if targetName and not (issecretvalue and issecretvalue(targetName)) then
+			customerName = targetName
+			ProEnchantersCustomerNameEditBox:SetText(customerName)
+		end
+	end
 	customerName = string.lower(customerName)
 	if ProEnchantersOptions["DebugLevel"] == 50 then
 		-- line to add to table
