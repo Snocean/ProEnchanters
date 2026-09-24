@@ -4654,10 +4654,26 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersCharOptions["TrimServerName"] = self:GetChecked()
 	end)
 
+	-- Create a header for using the current target as the work order customer
+	local UseTargetForWorkOrderHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	UseTargetForWorkOrderHeader:SetFontObject(UIFontBasic)
+	UseTargetForWorkOrderHeader:SetPoint("TOPLEFT", TrimServerNameHeader, "TOPLEFT", 0, -30)
+	UseTargetForWorkOrderHeader:SetText("Use your current target when creating a work order with an empty customer name?")
+
+	-- Use target for work order Checkbox
+	local UseTargetForWorkOrderCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	UseTargetForWorkOrderCb:SetPoint("LEFT", UseTargetForWorkOrderHeader, "RIGHT", 10, 0)
+	UseTargetForWorkOrderCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	UseTargetForWorkOrderCb:SetHitRectInsets(0, 0, 0, 0)
+	UseTargetForWorkOrderCb:SetChecked(ProEnchantersOptions["UseTargetForWorkOrder"])
+	UseTargetForWorkOrderCb:SetScript("OnClick", function(self)
+		ProEnchantersOptions["UseTargetForWorkOrder"] = self:GetChecked()
+	end)
+
 	-- Create a header for Whisper forced for mats
 	local WhisperMatsHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	WhisperMatsHeader:SetFontObject(UIFontBasic)
-	WhisperMatsHeader:SetPoint("TOPLEFT", TrimServerNameHeader, "TOPLEFT", 0, -30)
+	WhisperMatsHeader:SetPoint("TOPLEFT", UseTargetForWorkOrderHeader, "TOPLEFT", 0, -30)
 	WhisperMatsHeader:SetText("Always whisper the players mats and requested enchants instead of party chat?")
 
 	local WhisperMatsCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -10245,6 +10261,21 @@ end
 -- Function to handle "Create Workorder" button press
 function OnCreateWorkorderButtonClick()
 	local customerName = ProEnchantersCustomerNameEditBox:GetText()
+	-- Optional (UseTargetForWorkOrder, off by default): an empty name box falls
+	-- back to the current target when it is a player, so "target someone, then
+	-- Create Workorder" works without typing the name. The name is written back
+	-- into the box because the callers read it again afterwards (UpdateTradeHistory).
+	if customerName == "" and ProEnchantersOptions["UseTargetForWorkOrder"] == true and UnitIsPlayer("target") then
+		-- PEGetUnitName (forever/character-names) gives WoW Forever's full "First Last"
+		-- name; UnitName alone would return the first name only there.
+		local targetName = PEGetUnitName and PEGetUnitName("target") or UnitName("target")
+		-- Mainline-engine clients (WoW Forever) can return "secret" values that
+		-- addon code is not allowed to read; skip those instead of erroring.
+		if targetName and not (issecretvalue and issecretvalue(targetName)) then
+			customerName = targetName
+			ProEnchantersCustomerNameEditBox:SetText(customerName)
+		end
+	end
 	customerName = string.lower(customerName)
 	if ProEnchantersOptions["DebugLevel"] == 50 then
 		-- line to add to table
@@ -11556,6 +11587,11 @@ local function OnAddonLoaded()
 
 	if ProEnchantersCharOptions["TrimServerName"] == nil then
 		ProEnchantersCharOptions["TrimServerName"] = ProEnchantersOptions["TrimServerName"]
+	end
+
+	-- Off by default: Create Workorder only uses the target when the player opts in
+	if ProEnchantersOptions["UseTargetForWorkOrder"] ~= true then
+		ProEnchantersOptions["UseTargetForWorkOrder"] = false
 	end
 
 	-- Setting AutoInviteOptions
