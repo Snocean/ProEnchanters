@@ -1,0 +1,6 @@
+## Interface: 16001
+## Title: PEProbe (ProEnchanters API check)
+## Notes: Temporary diagnostic: records API availability and the open profession's recipes
+## SavedVariables: PEProbeDB
+
+PEProbe.lua
