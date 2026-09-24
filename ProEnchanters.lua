@@ -1,3 +1,7 @@
+-- Output goes through PEPrint (ChatTab.lua) so it can use the optional
+-- ProEnchanters chat tab; plain print if ChatTab.lua is not loaded.
+local print = PEPrint or print
+
 -- First Initilizations
 local version = "v11.2"
 ProEnchantersOptions = ProEnchantersOptions or {}
@@ -4733,10 +4737,27 @@ function ProEnchantersCreateOptionsFrame()
 	ProEnchantersSettingsFrame = ProEnchantersSettingsFrame or {}
 	ProEnchantersSettingsFrame.ShowMinimapButton = MinimapButtonEnableCb
 
+	-- Create a header for the ProEnchanters chat tab (see ChatTab.lua)
+	local ChatTabEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	ChatTabEnableHeader:SetFontObject(UIFontBasic)
+	ChatTabEnableHeader:SetPoint("TOPLEFT", MinimapButtonEnableHeader, "TOPLEFT", 0, -30)
+	ChatTabEnableHeader:SetText("Show ProEnchanters messages in their own chat tab? (flashes on new messages, keeps history)")
+
+	local ChatTabEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	ChatTabEnableCb:SetPoint("LEFT", ChatTabEnableHeader, "RIGHT", 10, 0)
+	ChatTabEnableCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	ChatTabEnableCb:SetHitRectInsets(0, 0, 0, 0)
+	ChatTabEnableCb:SetChecked(ProEnchantersCharOptions["UseChatTab"])
+	ChatTabEnableCb:SetScript("OnClick", function(self)
+		if PEChatTabSetEnabled then
+			PEChatTabSetEnabled(self:GetChecked())
+		end
+	end)
+
 	-- Create a header for Tooltips
 	local TooltipsEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	TooltipsEnableHeader:SetFontObject(UIFontBasic)
-	TooltipsEnableHeader:SetPoint("TOPLEFT", MinimapButtonEnableHeader, "TOPLEFT", 0, -30)
+	TooltipsEnableHeader:SetPoint("TOPLEFT", ChatTabEnableHeader, "TOPLEFT", 0, -30)
 	TooltipsEnableHeader:SetText("Enable tooltips?")
 
 	local TooltipsEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
