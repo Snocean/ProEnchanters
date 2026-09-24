@@ -2,7 +2,10 @@
 -- On login it records which APIs ProEnchanters relies on exist on this client.
 -- When a profession window opens it dumps every recipe (learned or not) with
 -- its reagents into SavedVariables, so the enchant tables can be rebuilt from
--- what the live client actually exposes. Remove once the port is done.
+-- what the live client actually exposes. It also logs blocked/forbidden addon
+-- actions and samples of the name formats (target, chat authors, unit menus),
+-- since Forever characters have a first and a last name. Remove once the port
+-- is done. SavedVariables contain character names: never commit them.
 
 PEProbeDB = PEProbeDB or {}
 
@@ -253,15 +256,109 @@ local function ScheduleTradeSkillDump()
 	end)
 end
 
+-- Keeps only the most recent entries of a sample list in PEProbeDB.
+local function PushSample(listName, sample, limit)
+	PEProbeDB[listName] = PEProbeDB[listName] or {}
+	local list = PEProbeDB[listName]
+	table.insert(list, sample)
+	while #list > (limit or 5) do
+		table.remove(list, 1)
+	end
+end
+
+local function SafeString(value)
+	if value == nil then
+		return nil
+	end
+	if IsSecret(value) then
+		return "<secret>"
+	end
+	return tostring(value)
+end
+
+-- Blocked / forbidden actions: the "blocked from an action only available to the
+-- Blizzard UI" popup never says which function was refused, these events do.
+local function RecordBlockedAction(event, addonName, functionName)
+	PushSample("blockedActions", {
+		event = event,
+		addon = SafeString(addonName),
+		func = SafeString(functionName),
+		at = date("%Y-%m-%d %H:%M:%S"),
+	}, 20)
+	print("|cff33ff99PEProbe|r: " .. event .. " " .. tostring(addonName) .. " -> " .. tostring(functionName))
+end
+
+-- Forever characters have a first and a last name. Record what each name API
+-- returns for a targeted player so ProEnchanters can pick the right one.
+local function RecordTargetName()
+	if not UnitIsPlayer("target") then
+		return
+	end
+	local name, realm = UnitName("target")
+	local sample = { unitName = SafeString(name), unitRealm = SafeString(realm) }
+	if UnitFullName then
+		local fullName, fullRealm = UnitFullName("target")
+		sample.fullName, sample.fullRealm = SafeString(fullName), SafeString(fullRealm)
+	end
+	if GetUnitName then
+		sample.getUnitNameWithRealm = SafeString(GetUnitName("target", true))
+	end
+	if UnitNameUnmodified then
+		sample.unmodified = SafeString(UnitNameUnmodified("target"))
+	end
+	local guid = UnitGUID and UnitGUID("target")
+	if guid and not IsSecret(guid) and GetPlayerInfoByGUID then
+		sample.guidName = SafeString(select(6, GetPlayerInfoByGUID(guid)))
+		sample.guidRealm = SafeString(select(7, GetPlayerInfoByGUID(guid)))
+	end
+	PushSample("targetNames", sample)
+end
+
+-- Author fields of chat events (arg2 and arg5), which ProEnchanters uses to
+-- invite and whisper. Message text is only kept for system messages, where the
+-- addon parses "<name> joins the party".
+local function RecordChatAuthor(event, ...)
+	local sample = { event = event, author = SafeString(select(2, ...)), author2 = SafeString(select(5, ...)) }
+	if event == "CHAT_MSG_SYSTEM" then
+		sample.text = SafeString(select(1, ...))
+	end
+	PushSample("chatAuthors", sample, 10)
+end
+
+-- contextData of the unit menus ProEnchanters adds "Create Work Order" to.
+if Menu and Menu.ModifyMenu then
+	for _, menuName in ipairs({ "MENU_UNIT_PLAYER", "MENU_UNIT_PARTY", "MENU_UNIT_RAID", "MENU_UNIT_FRIEND", "MENU_CHAT" }) do
+		Menu.ModifyMenu(menuName, function(_, _, contextData)
+			local sample = CopyScalars(contextData)
+			sample.menu = menuName
+			PushSample("menuContexts", sample)
+		end)
+	end
+end
+
+local CHAT_EVENTS = {
+	CHAT_MSG_WHISPER = true, CHAT_MSG_CHANNEL = true, CHAT_MSG_SAY = true, CHAT_MSG_SYSTEM = true,
+}
+
 local frame = CreateFrame("Frame")
-for _, event in ipairs({ "PLAYER_LOGIN", "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "CRAFT_SHOW" }) do
+for _, event in ipairs({
+	"PLAYER_LOGIN", "TRADE_SKILL_SHOW", "TRADE_SKILL_LIST_UPDATE", "CRAFT_SHOW",
+	"ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN", "PLAYER_TARGET_CHANGED",
+	"CHAT_MSG_WHISPER", "CHAT_MSG_CHANNEL", "CHAT_MSG_SAY", "CHAT_MSG_SYSTEM",
+}) do
 	pcall(frame.RegisterEvent, frame, event)
 end
-frame:SetScript("OnEvent", function(_, event)
+frame:SetScript("OnEvent", function(_, event, ...)
 	if event == "PLAYER_LOGIN" then
 		ProbeApis()
 	elseif event == "CRAFT_SHOW" then
 		DumpCraftRecipes()
+	elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
+		RecordBlockedAction(event, ...)
+	elseif event == "PLAYER_TARGET_CHANGED" then
+		RecordTargetName()
+	elseif CHAT_EVENTS[event] then
+		RecordChatAuthor(event, ...)
 	else
 		ScheduleTradeSkillDump()
 	end
