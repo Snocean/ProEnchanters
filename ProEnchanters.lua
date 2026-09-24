@@ -25,6 +25,20 @@ PEtradeWhoItems = PEtradeWhoItems or {}
 PEtradeWhoItems.player = PEtradeWhoItems.player or {}
 PEtradeWhoItems.target = PEtradeWhoItems.target or {}
 -- local AddonInvite = false
+-- Opens the chat edit box ready to whisper playerName. WoW Forever character
+-- names contain a space ("First Last"), which "/w First Last " would split into
+-- a target ("First") and a message ("Last"), so the whisper target is set
+-- directly whenever the client provides a helper for it.
+function PEOpenWhisper(playerName)
+	if ChatFrameUtil and ChatFrameUtil.SendTell then
+		ChatFrameUtil.SendTell(playerName)
+	elseif ChatFrame_SendTell then
+		ChatFrame_SendTell(playerName)
+	else
+		ChatFrame_OpenChat("/w " .. playerName .. " ")
+	end
+end
+
 local selfPlayerName = GetUnitName("player")
 -- local NonAddonInvite = true
 local LocalLanguage = PELocales[GetLocale()]
@@ -9088,7 +9102,7 @@ function ProEnchantersCreateMsgLogFrame()
 				local hlType = param1 -- type = msglog
 				local hlInfo = param2 -- info = line
 				local customerName = param3 -- name
-				ChatFrame_OpenChat("/w " .. customerName .." ")
+				PEOpenWhisper(customerName)
 				--print("hyplink leftclicked: " .. customerName .. " " .. hlInfo)
 			end
 		elseif button == "RightButton" then
@@ -9121,7 +9135,7 @@ function ProEnchantersCreateMsgLogFrame()
 					local autoInvMsg = AutoInviteMsg
 					local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", customerName)
 						if autoInvMsg2 == "" then
-							ChatFrame_OpenChat("/w " .. customerName .." ")
+							PEOpenWhisper(customerName)
 						else
 							SendChatMessage(autoInvMsg2, "WHISPER", nil, customerName)
 							UpdateAddonInvited(customerName, "msgsent")
