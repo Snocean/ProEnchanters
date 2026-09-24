@@ -2190,7 +2190,7 @@ CombinedEnchants = {
 	ENCH926 = {
 		name = "Enchant Weapon - Soulfrost",
 		slot = "Weapon",
-		spell_id = 27981,
+		spell_id = 27982,
 		stats = " (+54 Frost/Shadow spell dmg)",
 		materials = {
 			"12x " .. voidcrystal,

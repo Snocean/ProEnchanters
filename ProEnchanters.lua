@@ -330,12 +330,38 @@ function InviteUnitPEAddon(name, invtype)
 		currentPartySize = tonumber(GetNumGroupMembers())
 	end
 
+	if ProEnchantersOptions["DebugLevel"] == 40 then
+		-- line to add to table
+		local debugline = "Current party size is " .. tostring(currentPartySize)
+		table.insert(ProEnchantersTables["DebugResult"], debugline)
+	end
+
 	if ProEnchantersOptions["DelayInviteTime"] > 0 then
 		C_Timer.After(ProEnchantersOptions["DelayInviteTime"], function()
 			if maxPartySize > currentPartySize then
+
+				if ProEnchantersOptions["DebugLevel"] == 40 then
+					-- line to add to table
+					local debugline = "maxPartySize is greater than currentPartySize, continuing"
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
+
 				if not IsInRaid() then
+
+					if ProEnchantersOptions["DebugLevel"] == 40 then
+						-- line to add to table
+						local debugline = "IsInRaid() returned false, continuing"
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
+
 					if currentPartySize >= 4 then
-						C_PartyInfo.ConvertToRaid()
+						if ProEnchantersOptions["DebugLevel"] == 40 then
+							-- line to add to table
+							local debugline = "Current party is is greater than 4, converting to raid"
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
+						--C_PartyInfo.ConvertToRaid()
+						C_PartyInfo.ConfirmConvertToRaid() -- maybe?
 						--ConvertToRaid()
 						print("Converting party to raid")
 						raidConvert = true
@@ -344,7 +370,7 @@ function InviteUnitPEAddon(name, invtype)
 				if raidConvert == true then
 					if not string.find(selfnameCheck, nameCheck, 1, true) then
 						if ProEnchantersCharOptions["TrimServerName"] == true then
-							C_Timer.After(1, function() 
+							C_Timer.After(1, function()
 								C_PartyInfo.InviteUnit(nametrim)
 								--print(nametrim)
 								AddToAddonInvited(capPlayerName, invtype)
@@ -392,10 +418,30 @@ function InviteUnitPEAddon(name, invtype)
 		end)
 	else
 		if maxPartySize > currentPartySize then
-			if not IsInRaid() then
-				if currentPartySize >= 4 then
+
+				if ProEnchantersOptions["DebugLevel"] == 40 then
+					-- line to add to table
+					local debugline = "maxPartySize is greater than currentPartySize, continuing"
+					table.insert(ProEnchantersTables["DebugResult"], debugline)
+				end
+
+				if not IsInRaid() then
+
+					if ProEnchantersOptions["DebugLevel"] == 40 then
+						-- line to add to table
+						local debugline = "IsInRaid() returned false, continuing"
+						table.insert(ProEnchantersTables["DebugResult"], debugline)
+					end
+
+					if currentPartySize >= 4 then
+						if ProEnchantersOptions["DebugLevel"] == 40 then
+							-- line to add to table
+							local debugline = "Current party is is greater than 4, converting to raid"
+							table.insert(ProEnchantersTables["DebugResult"], debugline)
+						end
 					--ConvertToRaid()
-					C_PartyInfo.ConvertToRaid()
+					--C_PartyInfo.ConvertToRaid()
+					C_PartyInfo.ConfirmConvertToRaid() -- maybe?
 					print("Converting party to raid")
 					raidConvert = true
 				end
@@ -11786,6 +11832,11 @@ SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 			ProEnchantersTables["DebugResult"] = {}
 			print(ORANGE ..
 				"Debugging set to 50, use /pe debugresult to print results, either /reload or do /pedebug 0 to disable." ..
+				ColorClose)
+		elseif convertedNumber == 40 then
+			ProEnchantersTables["DebugResult"] = {}
+			print(ORANGE ..
+				"Debugging set to 40, use /pe debugresult to print results, either /reload or do /pedebug 0 to disable." ..
 				ColorClose)
 		elseif convertedNumber == 77 then
 			print(ORANGE ..
