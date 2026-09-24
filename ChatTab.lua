@@ -32,11 +32,11 @@ local ready = false    -- chat windows are only restored after PLAYER_ENTERING_W
 local pendingLines = {} -- lines waiting for the frame or for the lockdown to end
 local flushTicker
 
--- SavedVariables are loaded before the addon's files run, so this is the number
--- of lines kept from earlier sessions; lines printed during this session's
--- loading come after it and are written from pendingLines instead.
-local previousSessionCount = (ProEnchantersCharOptions and ProEnchantersCharOptions.chatTabHistory
-	and #ProEnchantersCharOptions.chatTabHistory) or 0
+-- Number of stored lines that come from earlier sessions. SavedVariables are
+-- loaded after the addon's files run and before its ADDON_LOADED event, so it is
+-- read there (see the event handler below); lines printed later in this session
+-- come after it and are written from pendingLines instead.
+local previousSessionCount = 0
 
 local function IsEnabled()
 	return ProEnchantersCharOptions ~= nil and ProEnchantersCharOptions["UseChatTab"] == true
@@ -219,8 +219,19 @@ function PEChatTabSetEnabled(enabled)
 end
 
 local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("ADDON_LOADED")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-eventFrame:SetScript("OnEvent", function(self)
+eventFrame:SetScript("OnEvent", function(self, event, addonName)
+	if event == "ADDON_LOADED" then
+		-- This frame was created before ProEnchanters.lua's, so this runs before the
+		-- addon's own ADDON_LOADED handler prints anything
+		if addonName == "ProEnchanters" then
+			self:UnregisterEvent("ADDON_LOADED")
+			local history = ProEnchantersCharOptions and ProEnchantersCharOptions.chatTabHistory
+			previousSessionCount = history and #history or 0
+		end
+		return
+	end
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	ready = true
 	if not IsEnabled() then
