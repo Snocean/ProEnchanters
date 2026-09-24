@@ -4028,9 +4028,8 @@ local function GetEnchantingProfessionState()
 	return true, nil
 end
 
--- Same result as the Classic sync: only the enchants the player has learned stay
--- visible, and ProEnchantersCharOptions.filters is rebuilt to match.
-local function SyncLearnedEnchantsFromProfessions()
+-- Learned recipe spell IDs as the open Professions window reports them
+local function GetLearnedSpellIdsFromProfessions()
 	local learnedSpellIds = {}
 	for _, recipeId in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
 		local recipeInfo = C_TradeSkillUI.GetRecipeInfo(recipeId)
@@ -4038,7 +4037,33 @@ local function SyncLearnedEnchantsFromProfessions()
 			learnedSpellIds[recipeId] = true
 		end
 	end
+	return learnedSpellIds
+end
 
+-- Learned recipe spell IDs without any window. On the mainline engine a learned
+-- recipe is a known spell: PEProbe found IsPlayerSpell giving exactly the
+-- Professions window's "learned" answer for all 261 WoW Forever Enchanting
+-- recipes (11 learned, 250 not).
+local function GetLearnedSpellIdsFromSpellbook()
+	local learnedSpellIds = {}
+	for _, enchant in pairs(CombinedEnchants) do
+		if enchant.spell_id and IsPlayerSpell(enchant.spell_id) then
+			learnedSpellIds[enchant.spell_id] = true
+		end
+	end
+	return learnedSpellIds
+end
+
+-- Can this client sync without the Professions window? (mainline engine only;
+-- Classic keeps its craft window based sync)
+local function CanSyncFromSpellbook()
+	return WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and IsPlayerSpell ~= nil
+end
+
+-- Same result as the Classic sync: only the enchants the player has learned stay
+-- visible, and ProEnchantersCharOptions.filters is rebuilt to match.
+-- quiet skips the chat confirmation (automatic syncs).
+local function ApplyLearnedEnchants(learnedSpellIds, quiet)
 	for key in pairs(ProEnchantersCharOptions.filters) do
 		ProEnchantersCharOptions.filters[key] = nil
 	end
@@ -4067,8 +4092,27 @@ local function SyncLearnedEnchantsFromProfessions()
 		end
 	end
 	FilterEnchantButtons()
-	print("Sync Completed (" .. learnedCount .. " enchants learned)")
+	UpdateCheckboxesBasedOnFilters()
+	if not quiet then
+		print("Sync Completed (" .. learnedCount .. " enchants learned)")
+	end
 end
+
+-- Optional automatic sync (ProEnchantersCharOptions.AutoSyncRecipes, off by
+-- default): on the mainline engine, after login and whenever a spell is learned,
+-- the enchant list follows the learned recipes without opening any window.
+-- It overwrites manual changes to the enchant list checkboxes, which is the
+-- point of turning it on.
+local autoSyncFrame = CreateFrame("Frame")
+for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "LEARNED_SPELL_IN_SKILL_LINE", "NEW_RECIPE_LEARNED" }) do
+	pcall(autoSyncFrame.RegisterEvent, autoSyncFrame, event)
+end
+autoSyncFrame:SetScript("OnEvent", function()
+	if ProEnchantersCharOptions and ProEnchantersCharOptions["AutoSyncRecipes"] == true
+		and CanSyncFromSpellbook() and FilterEnchantButtons then
+		ApplyLearnedEnchants(GetLearnedSpellIdsFromSpellbook(), true)
+	end
+end)
 
 function ProEnchantersCreateOptionsFrame()
 	local OptionsFrame = CreateFrame("Frame", "ProEnchantersOptionsFrame", UIParent, "BackdropTemplate")
@@ -4587,10 +4631,28 @@ function ProEnchantersCreateOptionsFrame()
 		end
 	end)
 
+	-- Create a header for the automatic recipe sync (mainline engine only)
+	local AutoSyncRecipesHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	AutoSyncRecipesHeader:SetFontObject(UIFontBasic)
+	AutoSyncRecipesHeader:SetPoint("TOPLEFT", EscCloseHeader, "TOPLEFT", 0, -30)
+	AutoSyncRecipesHeader:SetText("Automatically sync the enchant list to your learned recipes? (WoW Forever, no window needed)")
+
+	local AutoSyncRecipesCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	AutoSyncRecipesCb:SetPoint("LEFT", AutoSyncRecipesHeader, "RIGHT", 10, 0)
+	AutoSyncRecipesCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	AutoSyncRecipesCb:SetHitRectInsets(0, 0, 0, 0)
+	AutoSyncRecipesCb:SetChecked(ProEnchantersCharOptions["AutoSyncRecipes"])
+	AutoSyncRecipesCb:SetScript("OnClick", function(self)
+		ProEnchantersCharOptions["AutoSyncRecipes"] = self:GetChecked()
+		if self:GetChecked() and CanSyncFromSpellbook() then
+			ApplyLearnedEnchants(GetLearnedSpellIdsFromSpellbook())
+		end
+	end)
+
 	-- Create a header for Minimap toggle
 	local MinimapButtonEnableHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	MinimapButtonEnableHeader:SetFontObject(UIFontBasic)
-	MinimapButtonEnableHeader:SetPoint("TOPLEFT", EscCloseHeader, "TOPLEFT", 0, -30)
+	MinimapButtonEnableHeader:SetPoint("TOPLEFT", AutoSyncRecipesHeader, "TOPLEFT", 0, -30)
 	MinimapButtonEnableHeader:SetText("Hide Minimap Button?")
 
 	local MinimapButtonEnableCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
@@ -5154,10 +5216,13 @@ function ProEnchantersCreateOptionsFrame()
 				print(RED .. "Enchanting Trade Skill Window needs to be open to sync to skill list." .. ColorClose)
 			end
 		else
-			-- Mainline engine (WoW Forever): no CraftFrame, read the Professions data
+			-- Mainline engine (WoW Forever): no CraftFrame. Use the Professions data
+			-- when Enchanting is open, the spellbook otherwise (no window needed).
 			local canSync, reason = GetEnchantingProfessionState()
 			if canSync then
-				SyncLearnedEnchantsFromProfessions()
+				ApplyLearnedEnchants(GetLearnedSpellIdsFromProfessions())
+			elseif CanSyncFromSpellbook() then
+				ApplyLearnedEnchants(GetLearnedSpellIdsFromSpellbook())
 			else
 				print(RED .. "Enchanting Trade Skill Window needs to be open to sync to skill list." ..
 					(reason and (" (" .. reason .. ")") or "") .. ColorClose)
