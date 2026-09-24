@@ -3995,6 +3995,73 @@ end
 	return WorkOrderEnchantsFrame
 end
 
+-- Recipe sync for clients running the mainline UI engine (WoW Forever).
+-- The Classic sync in the options frame reads the old craft window API
+-- (CraftFrame, GetNumCrafts, GetCraftInfo), which does not exist there:
+-- Enchanting opens in the modern Professions window instead. These helpers read
+-- C_TradeSkillUI and match learned recipes to enchants by spell ID (a recipe ID
+-- is the recipe's spell ID), so the result does not depend on localized names.
+local ENCHANTING_SKILL_LINE_ID = 333
+
+-- True when the player's own Enchanting is open in the Professions window
+-- (not a linked profession from chat, not a guild crafter list).
+local function IsEnchantingProfessionOpen()
+	if not (C_TradeSkillUI and C_TradeSkillUI.GetBaseProfessionInfo and C_TradeSkillUI.GetAllRecipeIDs) then
+		return false
+	end
+	if not (ProfessionsFrame and ProfessionsFrame:IsShown()) then
+		return false
+	end
+	if (C_TradeSkillUI.IsTradeSkillLinked and C_TradeSkillUI.IsTradeSkillLinked())
+		or (C_TradeSkillUI.IsTradeSkillGuild and C_TradeSkillUI.IsTradeSkillGuild()) then
+		return false
+	end
+	local professionInfo = C_TradeSkillUI.GetBaseProfessionInfo()
+	return professionInfo ~= nil and professionInfo.professionID == ENCHANTING_SKILL_LINE_ID
+end
+
+-- Same result as the Classic sync: only the enchants the player has learned stay
+-- visible, and ProEnchantersCharOptions.filters is rebuilt to match.
+local function SyncLearnedEnchantsFromProfessions()
+	local learnedSpellIds = {}
+	for _, recipeId in ipairs(C_TradeSkillUI.GetAllRecipeIDs()) do
+		local recipeInfo = C_TradeSkillUI.GetRecipeInfo(recipeId)
+		if recipeInfo and recipeInfo.learned then
+			learnedSpellIds[recipeId] = true
+		end
+	end
+
+	for key in pairs(ProEnchantersCharOptions.filters) do
+		ProEnchantersCharOptions.filters[key] = nil
+	end
+
+	local learnedCount = 0
+	for enchKey, _ in pairs(EnchantsName) do
+		local isLearned = learnedSpellIds[CombinedEnchants[enchKey].spell_id] == true
+		ProEnchantersCharOptions.filters[enchKey] = isLearned
+		local enchantButton = enchantButtons[enchKey]
+		if enchantButton then
+			if isLearned then
+				enchantButton.button:Show()
+				enchantButton.background:Show()
+				enchantButton.inficon:Show()
+				enchantButton.infbtn:Show()
+			else
+				enchantButton.button:Hide()
+				enchantButton.background:Hide()
+				enchantButton.favicon:Hide()
+				enchantButton.inficon:Hide()
+				enchantButton.infbtn:Hide()
+			end
+		end
+		if isLearned then
+			learnedCount = learnedCount + 1
+		end
+	end
+	FilterEnchantButtons()
+	print("Sync Completed (" .. learnedCount .. " enchants learned)")
+end
+
 function ProEnchantersCreateOptionsFrame()
 	local OptionsFrame = CreateFrame("Frame", "ProEnchantersOptionsFrame", UIParent, "BackdropTemplate")
 	OptionsFrame:SetFrameStrata("FULLSCREEN")
@@ -5078,6 +5145,9 @@ function ProEnchantersCreateOptionsFrame()
 			else
 				print(RED .. "Enchanting Trade Skill Window needs to be open to sync to skill list." .. ColorClose)
 			end
+		elseif IsEnchantingProfessionOpen() then
+			-- Mainline engine (WoW Forever): no CraftFrame, read the Professions window
+			SyncLearnedEnchantsFromProfessions()
 		else
 			print(RED .. "Enchanting Trade Skill Window needs to be open to sync to skill list." .. ColorClose)
 		end
