@@ -36,6 +36,9 @@ local normHeight = 630
 local tradeYoffset = 0
 local target = ""
 local isConnected = true
+-- Outgoing messages go through PESendChatMessage (MessageVariables.lua), which
+-- expands LOCATION, MAPPIN and PROFLINK; plain SendChatMessage without it.
+local SendChatMessage = PESendChatMessage or SendChatMessage
 local LSM = LibStub("LibSharedMedia-3.0")
 local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local mouseFocus = ""
@@ -11983,6 +11986,10 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 			ColorClose)
 		print(ORANGE ..
 			"Tip Msg Settings: Adding the word MONEY will be replaced by the amount of money received from a trade" ..
+			ColorClose)
+		print(ORANGE ..
+			"Msg Settings: LOCATION is replaced by where you stand, MAPPIN by a clickable map pin on your position (it moves your own map pin), " ..
+			"PROFLINK by a link to your Enchanting recipes (remembered each time you open Enchanting)" ..
 			ColorClose)
 		print(ORANGE ..
 			"Auto Raid Icon: When a player joins your party it will set your raid icon to the selected icon so customers can spot you easier" ..
