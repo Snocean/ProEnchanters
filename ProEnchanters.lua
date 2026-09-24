@@ -1281,6 +1281,14 @@ PEWhisperTriggersOriginal = {
 	}
 }
 
+-- Drop enchants whose spell does not exist in this client (e.g. Season of Discovery
+-- enchants on WoW Forever), otherwise their localized name is nil and frame creation fails
+for key, enchant in pairs(CombinedEnchants) do
+	if enchant.spell_id and C_Spell.GetSpellName(enchant.spell_id) == nil then
+		CombinedEnchants[key] = nil
+	end
+end
+
 -- Enchants Names
 EnchantsName = {}
 
