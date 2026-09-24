@@ -5,3 +5,18 @@ tempcolorsfile.lua
 utftablecreation.xlsx
 Copy_of_Ench_commands_list.xlsx
 .vscode/
+
+# Machine-specific settings (WoW install path), never committed
+scripts/dev.local.ps1
+*.local.ps1
+
+# In-game captures and client data (SavedVariables hold account/character names)
+WTF/
+SavedVariables/
+tools/captures/
+*.xlsx
+*.zip
+*.log
+
+# Python bytecode from the dev scripts in tools/
+__pycache__/
