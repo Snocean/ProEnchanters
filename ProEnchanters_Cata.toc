@@ -14,4 +14,5 @@ embeds.xml
 PELocalization.lua
 Enchants_Cata.lua
 Helper_Cata.lua
+MessageVariables.lua
 ProEnchanters.lua

@@ -83,6 +83,12 @@ local normHeight = 630
 local tradeYoffset = 0
 local target = ""
 local isConnected = true
+-- Outgoing messages go through PESendChatMessage (MessageVariables.lua), which
+-- expands LOCATION, MAPPIN and PROFLINK; plain SendChatMessage without it.
+-- Resolved at call time, so the TOC load order of the two files does not matter.
+local SendChatMessage = function(...)
+	return (PESendChatMessage or _G.SendChatMessage)(...)
+end
 local LSM = LibStub("LibSharedMedia-3.0")
 local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local mouseFocus = ""
@@ -11968,6 +11974,22 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 			ProEnchantersWorkOrderEnchantsFrame:Show()
 			ResetFrames()
 		end
+	elseif msg == "msgtest" or string.find(msg, "^msgtest ") then
+		-- Whispers yourself a text through the same path as the addon's automatic
+		-- messages, to check LOCATION, MAPPIN and PROFLINK (MessageVariables.lua).
+		-- Typing the words in the chat box would not work: only addon messages
+		-- are expanded.
+		-- No bare "|" in the default text: chat treats it as an escape code and
+		-- rejects the message ("Invalid escape code in chat message")
+		local text = string.match(msg, "^msgtest%s+(.+)$") or "Test: LOCATION - MAPPIN - PROFLINK"
+		-- Shown locally first, so what was sent can be compared with the whisper
+		-- received (links the server drops, the 255 character limit)
+		local expanded = PEExpandMessageVariables and PEExpandMessageVariables(text) or text
+		print("|cFF800080ProEnchanters|r msgtest (" .. string.len(expanded) .. "/255 characters): " .. expanded)
+		if ProEnchantersCharOptions["EnchantingProfessionLink"] then
+			print("|cFF800080ProEnchanters|r msgtest: PROFLINK is remembered for this character.")
+		end
+		SendChatMessage(expanded, "WHISPER", nil, GetUnitName("player", true))
 	else
 		print("/pe " .. msg .. " cmd not found, minimap/wwc/ai/pi/goldreset/reset/cleartempignores available as options, /pehelp for more info")
 	end
@@ -12185,6 +12207,11 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 			ColorClose)
 		print(ORANGE ..
 			"Tip Msg Settings: Adding the word MONEY will be replaced by the amount of money received from a trade" ..
+			ColorClose)
+		print(ORANGE ..
+			"Msg Settings: LOCATION is replaced by where you stand, MAPPIN by a clickable map pin on your position (it moves your own map pin), " ..
+			"PROFLINK by a link to your Enchanting recipes (remembered each time you open Enchanting). " ..
+			"Try them with /pe msgtest [text], which whispers you the result" ..
 			ColorClose)
 		print(ORANGE ..
 			"Auto Raid Icon: When a player joins your party it will set your raid icon to the selected icon so customers can spot you easier" ..

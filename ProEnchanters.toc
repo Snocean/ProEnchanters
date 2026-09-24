@@ -14,4 +14,5 @@ embeds.xml
 PELocalization.lua
 Enchants_Forever.lua
 Helper_Vanilla.lua
+MessageVariables.lua
 ProEnchanters.lua
