@@ -3,9 +3,10 @@
 -- When a profession window opens it dumps every recipe (learned or not) with
 -- its reagents into SavedVariables, so the enchant tables can be rebuilt from
 -- what the live client actually exposes. It also logs blocked/forbidden addon
--- actions and samples of the name formats (target, chat authors, unit menus),
--- since Forever characters have a first and a last name. Remove once the port
--- is done. SavedVariables contain character names: never commit them.
+-- actions, samples of the name formats (target, chat authors, unit menus), since
+-- Forever characters have a first and a last name, and whether learned recipes
+-- can be read without opening the Professions window. Remove once the port is
+-- done. SavedVariables contain character names: never commit them.
 
 PEProbeDB = PEProbeDB or {}
 
@@ -279,6 +280,15 @@ local function DumpTradeSkillRecipes()
 		count = #recipeIds,
 		capturedAt = date("%Y-%m-%d %H:%M:%S"),
 	}
+	-- Profession link as the "link" button builds it (only valid while open)
+	if C_TradeSkillUI.GetTradeSkillListLink then
+		local okLink, link = pcall(C_TradeSkillUI.GetTradeSkillListLink)
+		PEProbeDB.professions[name].listLink = okLink and SafeString(link) or nil
+	end
+	if C_TradeSkillUI.CanTradeSkillListLink then
+		local okCan, canLink = pcall(C_TradeSkillUI.CanTradeSkillListLink)
+		PEProbeDB.professions[name].canListLink = okCan and canLink or nil
+	end
 	CacheReagentItems(recipes)
 	print("|cff33ff99PEProbe|r: " .. #recipeIds .. " recipes captured for " .. name .. ", /reload to save them")
 end
@@ -305,6 +315,53 @@ local function DumpCraftRecipes()
 	end
 	PEProbeDB.craft = { recipes = recipes, count = #recipes, capturedAt = date("%Y-%m-%d %H:%M:%S") }
 	print("|cff33ff99PEProbe|r: " .. #recipes .. " craft recipes captured, /reload to save them")
+end
+
+-- Whether learned recipes can be read without opening the Professions window.
+-- Runs a few seconds after login on the recipe IDs of the last capture and
+-- records what each API answers; ProEnchanters could then sync by itself.
+local function ProbeWindowlessKnowledge()
+	local capture = PEProbeDB.professions and PEProbeDB.professions["Enchanting"]
+	if not capture or not capture.recipes then
+		return
+	end
+	local results = {}
+	local summary = {}
+	for recipeId, entry in pairs(capture.recipes) do
+		local learned = entry.info and entry.info.learned or false
+		local result = { learnedWhenOpen = learned }
+		if C_TradeSkillUI and C_TradeSkillUI.GetRecipeInfo then
+			local okInfo, info = pcall(C_TradeSkillUI.GetRecipeInfo, recipeId)
+			result.recipeInfoLearned = okInfo and info and info.learned or nil
+		end
+		if IsPlayerSpell then
+			result.isPlayerSpell = IsPlayerSpell(recipeId)
+		end
+		if C_SpellBook and C_SpellBook.IsSpellKnown then
+			local okKnown, known = pcall(C_SpellBook.IsSpellKnown, recipeId)
+			result.isSpellKnown = okKnown and known or nil
+		end
+		results[recipeId] = result
+		for _, key in ipairs({ "recipeInfoLearned", "isPlayerSpell", "isSpellKnown" }) do
+			summary[key] = summary[key] or { match = 0, mismatch = 0 }
+			if (result[key] == true) == learned then
+				summary[key].match = summary[key].match + 1
+			else
+				summary[key].mismatch = summary[key].mismatch + 1
+			end
+		end
+	end
+	local windowless = { results = results, summary = summary, capturedAt = date("%Y-%m-%d %H:%M:%S") }
+	if C_TradeSkillUI and C_TradeSkillUI.GetTradeSkillListLink then
+		local okLink, link = pcall(C_TradeSkillUI.GetTradeSkillListLink)
+		windowless.listLinkWithoutWindow = okLink and SafeString(link) or nil
+	end
+	PEProbeDB.windowless = windowless
+	local parts = {}
+	for key, counts in pairs(summary) do
+		table.insert(parts, key .. " " .. counts.match .. "/" .. (counts.match + counts.mismatch))
+	end
+	print("|cff33ff99PEProbe|r: learned recipes without the window: " .. table.concat(parts, ", "))
 end
 
 local pending = false
@@ -410,6 +467,7 @@ end
 frame:SetScript("OnEvent", function(_, event, ...)
 	if event == "PLAYER_LOGIN" then
 		ProbeApis()
+		C_Timer.After(5, ProbeWindowlessKnowledge)
 	elseif event == "CRAFT_SHOW" then
 		DumpCraftRecipes()
 	elseif event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
