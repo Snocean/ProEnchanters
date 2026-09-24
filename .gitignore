@@ -17,3 +17,6 @@ tools/captures/
 *.xlsx
 *.zip
 *.log
+
+# Python bytecode from the dev scripts in tools/
+__pycache__/
