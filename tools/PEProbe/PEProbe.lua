@@ -11,7 +11,7 @@ PEProbeDB = PEProbeDB or {}
 
 local GLOBALS = {
 	-- Used directly by ProEnchanters.lua / Helper_Vanilla.lua
-	"ChatFrame_OpenChat", "CreateFont", "CreateFrame", "DoEmote", "ExpandTradeSkillSubClass",
+	"ChatFrame_OpenChat", "ChatFrame_SendTell", "CreateFont", "CreateFrame", "DoEmote", "ExpandTradeSkillSubClass",
 	"GetCVar", "SetCVar", "GetCoinText", "GetMoneyString", "GetCursorPosition", "GetGameTime",
 	"GetItemInfo", "GetLocale", "GetNormalizedRealmName", "GetNumGroupMembers", "GetRaidRosterInfo",
 	"GetPlayerTradeMoney", "GetTargetTradeMoney", "GetTradePlayerItemInfo", "GetTradePlayerItemLink",
@@ -46,7 +46,8 @@ local NAMESPACED = {
 	"C_TradeSkillUI.GetRecipeSchematic", "C_TradeSkillUI.CraftRecipe", "C_TradeSkillUI.OpenTradeSkill",
 	"C_TradeSkillUI.GetBaseProfessionInfo", "C_TradeSkillUI.GetChildProfessionInfo",
 	"C_TradeSkillUI.GetCategoryInfo", "C_TradeSkillUI.IsTradeSkillReady", "C_TradeSkillUI.CloseTradeSkill",
-	"C_Seasons.GetActiveSeason", "Settings.RegisterCanvasLayoutCategory",
+	"C_Seasons.GetActiveSeason", "Settings.RegisterCanvasLayoutCategory", "ChatFrameUtil.SendTell",
+	"C_CurrencyInfo.GetCoinText",
 }
 
 local METHODS = {
@@ -67,6 +68,17 @@ local EVENTS = {
 
 local function IsSecret(value)
 	return issecretvalue and issecretvalue(value) or false
+end
+
+-- Printable form of a value that may be a mainline "secret" (unreadable by addons)
+local function SafeString(value)
+	if value == nil then
+		return nil
+	end
+	if IsSecret(value) then
+		return "<secret>"
+	end
+	return tostring(value)
 end
 
 local function Resolve(path)
@@ -137,9 +149,52 @@ local function ProbeApis()
 		report.client.proEnchantersVersion = GetMetadata("ProEnchanters", "Version")
 	end
 
+	-- Own character name formats: available at login, no other player needed
+	local playerName, playerRealm = UnitName("player")
+	report.player = {
+		unitName = SafeString(playerName), unitRealm = SafeString(playerRealm),
+		getUnitNameWithRealm = SafeString(GetUnitName and GetUnitName("player", true)),
+		realmName = SafeString(GetRealmName and GetRealmName()),
+		normalizedRealm = SafeString(GetNormalizedRealmName and GetNormalizedRealmName()),
+	}
+	if UnitFullName then
+		local fullName, fullRealm = UnitFullName("player")
+		report.player.fullName, report.player.fullRealm = SafeString(fullName), SafeString(fullRealm)
+	end
+
 	report.capturedAt = date("%Y-%m-%d %H:%M:%S")
 	PEProbeDB.api = report
 	print("|cff33ff99PEProbe|r: " .. #report.missing .. " API missing: " .. table.concat(report.missing, ", "))
+end
+
+-- Stores name, quality and the client's own item link for every reagent, so the
+-- generated enchant table uses links exactly as this client builds them. Item
+-- data loads asynchronously; each entry is written when its item is ready.
+local function CacheReagentItems(recipes)
+	if not (Item and Item.CreateFromItemID) then
+		return
+	end
+	PEProbeDB.items = PEProbeDB.items or {}
+	local seen = {}
+	for _, entry in pairs(recipes) do
+		for _, reagent in ipairs(entry.reagents or {}) do
+			for _, itemId in ipairs(reagent.itemIds) do
+				if not seen[itemId] then
+					seen[itemId] = true
+					local item = Item:CreateFromItemID(itemId)
+					if not item:IsItemEmpty() then
+						item:ContinueOnItemLoad(function()
+							PEProbeDB.items[itemId] = {
+								name = item:GetItemName(),
+								quality = item:GetItemQuality(),
+								link = item:GetItemLink(),
+							}
+						end)
+					end
+				end
+			end
+		end
+	end
 end
 
 -- Modern profession window (C_TradeSkillUI)
@@ -205,6 +260,13 @@ local function DumpTradeSkillRecipes()
 				entry.description = description
 			end
 		end
+		if IsPlayerSpell then
+			entry.isPlayerSpell = IsPlayerSpell(recipeId)
+		end
+		if C_SpellBook and C_SpellBook.IsSpellKnown then
+			local okKnown, known = pcall(C_SpellBook.IsSpellKnown, recipeId)
+			entry.isSpellKnown = okKnown and known or nil
+		end
 		recipes[recipeId] = entry
 	end
 
@@ -217,6 +279,7 @@ local function DumpTradeSkillRecipes()
 		count = #recipeIds,
 		capturedAt = date("%Y-%m-%d %H:%M:%S"),
 	}
+	CacheReagentItems(recipes)
 	print("|cff33ff99PEProbe|r: " .. #recipeIds .. " recipes captured for " .. name .. ", /reload to save them")
 end
 
@@ -266,15 +329,6 @@ local function PushSample(listName, sample, limit)
 	end
 end
 
-local function SafeString(value)
-	if value == nil then
-		return nil
-	end
-	if IsSecret(value) then
-		return "<secret>"
-	end
-	return tostring(value)
-end
 
 -- Blocked / forbidden actions: the "blocked from an action only available to the
 -- Blizzard UI" popup never says which function was refused, these events do.
@@ -321,6 +375,11 @@ local function RecordChatAuthor(event, ...)
 	local sample = { event = event, author = SafeString(select(2, ...)), author2 = SafeString(select(5, ...)) }
 	if event == "CHAT_MSG_SYSTEM" then
 		sample.text = SafeString(select(1, ...))
+	end
+	local guid = select(12, ...)
+	if guid and guid ~= "" and not IsSecret(guid) and GetPlayerInfoByGUID then
+		local _, _, _, _, _, guidName, guidRealm = GetPlayerInfoByGUID(guid)
+		sample.guidName, sample.guidRealm = SafeString(guidName), SafeString(guidRealm)
 	end
 	PushSample("chatAuthors", sample, 10)
 end
