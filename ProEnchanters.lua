@@ -45,7 +45,34 @@ PEtradeWhoItems = PEtradeWhoItems or {}
 PEtradeWhoItems.player = PEtradeWhoItems.player or {}
 PEtradeWhoItems.target = PEtradeWhoItems.target or {}
 -- local AddonInvite = false
-local selfPlayerName = GetUnitName("player")
+-- Name of a unit in the form ProEnchanters stores and compares names. WoW Forever
+-- characters have a first and a last name: UnitName returns only the first name
+-- (the last name comes back as the second, normally realm, value), while chat
+-- events and GetUnitName(unit, true) give the full "First Last". Work orders and
+-- trade history are keyed by the chat name, so the full name is used there.
+-- Classic clients keep UnitName, whose result is unchanged.
+function PEGetUnitName(unit)
+	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+		return GetUnitName(unit, true)
+	end
+	return (UnitName(unit))
+end
+
+-- Opens the chat edit box ready to whisper playerName. WoW Forever character
+-- names contain a space ("First Last"), which "/w First Last " would split into
+-- a target ("First") and a message ("Last"), so the whisper target is set
+-- directly whenever the client provides a helper for it.
+function PEOpenWhisper(playerName)
+	if ChatFrameUtil and ChatFrameUtil.SendTell then
+		ChatFrameUtil.SendTell(playerName)
+	elseif ChatFrame_SendTell then
+		ChatFrame_SendTell(playerName)
+	else
+		ChatFrame_OpenChat("/w " .. playerName .. " ")
+	end
+end
+
+local selfPlayerName = PEGetUnitName("player")
 -- local NonAddonInvite = true
 local LocalLanguage = PELocales[GetLocale()]
 local FontSize = 12
@@ -2962,12 +2989,12 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					end
 				elseif IsControlKeyDown() and IsAltKeyDown() then -- Remove from current trade target
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-					local currentTradeTarget = UnitName("NPC")
+					local currentTradeTarget = PEGetUnitName("NPC")
 					if currentTradeTarget ~= nil then
 						RemoveRequestedEnchant(currentTradeTarget, reqEnchant)
 						ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
 					end
-					local confirmTradeTarget = UnitName("NPC")
+					local confirmTradeTarget = PEGetUnitName("NPC")
 					if confirmTradeTarget == currentTradeTarget then
 						local tItemName = GetTradeTargetItemInfo(7)
 
@@ -2988,7 +3015,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 				elseif IsControlKeyDown() then -- Remove from current customer
 					RemoveRequestedEnchant(customerName, reqEnchant)
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-					local currentTradeTarget = UnitName("NPC")
+					local currentTradeTarget = PEGetUnitName("NPC")
 					if currentCusFocus == currentTradeTarget then
 						local tItemName = GetTradeTargetItemInfo(7)
 
@@ -3008,12 +3035,12 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					end
 				elseif IsAltKeyDown() then -- Add to current trade target
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-					local currentTradeTarget = UnitName("NPC")
+					local currentTradeTarget = PEGetUnitName("NPC")
 					if currentTradeTarget ~= nil then
 						AddRequestedEnchant(currentTradeTarget, reqEnchant)
 						ProEnchantersCustomerNameEditBox:SetText(currentCusFocus)
 					end
-					local confirmTradeTarget = UnitName("NPC")
+					local confirmTradeTarget = PEGetUnitName("NPC")
 					if confirmTradeTarget and confirmTradeTarget ~= "Player" and confirmTradeTarget == currentTradeTarget then
 						local tItemName = GetTradeTargetItemInfo(7)
 
@@ -3035,7 +3062,7 @@ function ProEnchantersCreateWorkOrderEnchantsFrame(ProEnchantersWorkOrderFrame)
 					-- Actions to perform if no modifier is held down
 					AddRequestedEnchant(customerName, reqEnchant)
 					local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-					local currentTradeTarget = UnitName("NPC")
+					local currentTradeTarget = PEGetUnitName("NPC")
 					if currentCusFocus == currentTradeTarget then
 						local tItemName = GetTradeTargetItemInfo(7)
 
@@ -9116,7 +9143,7 @@ function ProEnchantersCreateMsgLogFrame()
 				local hlType = param1 -- type = msglog
 				local hlInfo = param2 -- info = line
 				local customerName = param3 -- name
-				ChatFrame_OpenChat("/w " .. customerName .." ")
+				PEOpenWhisper(customerName)
 				--print("hyplink leftclicked: " .. customerName .. " " .. hlInfo)
 			end
 		elseif button == "RightButton" then
@@ -9149,7 +9176,7 @@ function ProEnchantersCreateMsgLogFrame()
 					local autoInvMsg = AutoInviteMsg
 					local autoInvMsg2 = string.gsub(autoInvMsg, "CUSTOMER", customerName)
 						if autoInvMsg2 == "" then
-							ChatFrame_OpenChat("/w " .. customerName .." ")
+							PEOpenWhisper(customerName)
 						else
 							SendChatMessage(autoInvMsg2, "WHISPER", nil, customerName)
 							UpdateAddonInvited(customerName, "msgsent")
@@ -9547,7 +9574,7 @@ function CreateCusWorkOrder(customerName, bypass)
 				end
 			end
 			local currentCusFocus = ProEnchantersCustomerNameEditBox:GetText()
-			local currentTradeTarget = UnitName("NPC")
+			local currentTradeTarget = PEGetUnitName("NPC")
 			if currentCusFocus == currentTradeTarget then
 				local tItemName = GetTradeTargetItemInfo(7)
 
@@ -9734,7 +9761,7 @@ function CreateCusWorkOrder(customerName, bypass)
 					return
 				end
 				RemoveRequestedEnchant(customerName, hlInfo)
-					local currentTradeTarget = UnitName("NPC")
+					local currentTradeTarget = PEGetUnitName("NPC")
 					if customerName == currentTradeTarget then
 						local tItemName = GetTradeTargetItemInfo(7)
 
@@ -10371,7 +10398,7 @@ function ProEnchantersTradeWindowCreateFrame()
 			end
 		end)
 		enchantButton:SetScript("OnClick", function()
-			local customerName = string.lower(UnitName("NPC"))
+			local customerName = string.lower(PEGetUnitName("NPC"))
 			LinkMissingMats(key, customerName)
 		end)
 		enchantButton:Hide()
@@ -10542,7 +10569,7 @@ function ProEnchantersTradeWindowCreateFrame()
 			end
 		end)
 		enchantButton:SetScript("OnClick", function()
-			local customerName = string.lower(UnitName("NPC"))
+			local customerName = string.lower(PEGetUnitName("NPC"))
 			LinkMissingMats(key, customerName)
 		end)
 		enchantButton:Hide()
@@ -12043,7 +12070,7 @@ function ProEnchanters_OnLootEvent(self, event, ...)
 	if event == "CHAT_MSG_LOOT" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
 		if ProEnchantersOptions["CraftingMode"] then
-		local playerSelf = GetUnitName("player")
+		local playerSelf = PEGetUnitName("player")
 			if ProEnchantersOptions["DebugLevel"] == 8 then
 				print("Crafting mode is on, comparing " .. playerName2 .. " against " .. playerSelf .. " for loot message")
 			end
@@ -13840,8 +13867,8 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 			end
 		end
 
-		PEtradeWho = UnitName("NPC")
-		LastTradedPlayer = UnitName("NPC")
+		PEtradeWho = PEGetUnitName("NPC")
+		LastTradedPlayer = PEGetUnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
 		-- AddTradeLine() to generate a work order for all trades? Optional
@@ -14005,17 +14032,17 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		end
 		ProEnchantersUpdateTradeWindowText(customerName)
 	elseif (event == "TRADE_MONEY_CHANGED") then
-		PEtradeWho = UnitName("NPC")
+		PEtradeWho = PEGetUnitName("NPC")
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()
 		--Items Traded Start
 	elseif (event == "TRADE_PLAYER_ITEM_CHANGED") or (event == "TRADE_TARGET_ITEM_CHANGED") then
 		local eventSlot = ...
-		PEtradeWho = UnitName("NPC")
+		PEtradeWho = PEGetUnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
 		local target = customerName
-		local player = UnitName("player")
+		local player = PEGetUnitName("player")
 		player = string.lower(player)
 		local SlotTypeInput = ""
 
@@ -14089,11 +14116,11 @@ function ProEnchanters_OnTradeEvent(self, event, ...)
 		-- ItemsTraded = true
 		-- Items Traded End
 	elseif (event == "TRADE_ACCEPT_UPDATE") then
-		PEtradeWho = UnitName("NPC")
+		PEtradeWho = PEGetUnitName("NPC")
 		local customerName = PEtradeWho
 		customerName = string.lower(customerName)
 		local target = customerName
-		local player = UnitName("player")
+		local player = PEGetUnitName("player")
 		player = string.lower(player)
 		PlayerMoney = GetPlayerTradeMoney()
 		TargetMoney = GetTargetTradeMoney()

@@ -362,13 +362,12 @@ end
 
 function CapFirstLetter(word)
     if word == nil or word == "" then return word end -- Check for empty or nil word
-    local firstLetter = string.sub(word, 1, 1)
-    local mappedLetter = utf8_lc_uc[firstLetter]      -- Direct lookup
-    if mappedLetter then
-        firstLetter = mappedLetter
-    end
-    local restOfWord = string.sub(word, 2)
-    return firstLetter .. restOfWord
+    -- WoW Forever character names have two parts ("tree boggler" -> "Tree Boggler"),
+    -- so the first letter of every space-separated part is capitalized. Classic
+    -- names are a single word and come out exactly as before.
+    return (string.gsub(word, "(%S)(%S*)", function(firstLetter, restOfWord)
+        return (utf8_lc_uc[firstLetter] or firstLetter) .. restOfWord -- Direct lookup
+    end))
 end
 
 function stringshorten(enchName)
@@ -1906,7 +1905,7 @@ function ProEnchantersUpdateTradeWindowText(customerName)
     -- Get Trade Window Frame
     local frame = _G["ProEnchantersTradeWindowFrame"]
     local matsDiff = {}
-    local currentTradeTarget = UnitName("NPC")
+    local currentTradeTarget = PEGetUnitName("NPC")
 
     matsDiff = ProEnchantersGetMatsDiff(currentTradeTarget)
     if type(matsDiff) ~= "table" then
