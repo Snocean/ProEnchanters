@@ -13,6 +13,6 @@ embeds.xml
 # Main
 PELocalization_classic.lua
 Enchants_Vanilla.lua
-MessageVariables.lua
 Helper_Vanilla.lua
+MessageVariables.lua
 ProEnchanters.lua

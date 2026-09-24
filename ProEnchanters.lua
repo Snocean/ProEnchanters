@@ -38,7 +38,10 @@ local target = ""
 local isConnected = true
 -- Outgoing messages go through PESendChatMessage (MessageVariables.lua), which
 -- expands LOCATION, MAPPIN and PROFLINK; plain SendChatMessage without it.
-local SendChatMessage = PESendChatMessage or SendChatMessage
+-- Resolved at call time, so the TOC load order of the two files does not matter.
+local SendChatMessage = function(...)
+	return (PESendChatMessage or _G.SendChatMessage)(...)
+end
 local LSM = LibStub("LibSharedMedia-3.0")
 local LibDD = LibStub:GetLibrary("LibUIDropDownMenu-4.0")
 local mouseFocus = ""
