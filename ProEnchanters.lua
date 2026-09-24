@@ -11034,7 +11034,7 @@ function PESearchInventoryForItems()
 						local info = C_Container.GetContainerItemInfo(bag, slot)
 						if info and info.stackCount then
 							local quantity = info.stackCount
-							local itemName = select(2, GetItemInfo(itemID)) or "Unknown Item"
+							local itemName = select(2, C_Item.GetItemInfo(itemID)) or "Unknown Item"
 							if availableMats[itemName] then
 								availableMats[itemName] = availableMats[itemName] + quantity
 								availableMatsIds[itemID] = availableMatsIds[itemID] + quantity
@@ -13197,7 +13197,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end
@@ -13449,7 +13449,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end
@@ -13679,7 +13679,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print("itemID returned as " .. itemID)
 							end
-							local newitemLink = select(2, GetItemInfo(itemID))
+							local newitemLink = select(2, C_Item.GetItemInfo(itemID))
 							if ProEnchantersOptions["DebugLevel"] == 88 then
 								print(newitemLink)
 							end
