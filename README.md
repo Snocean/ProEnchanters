@@ -4,6 +4,15 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 12.0 (Beta)
+*Huge shoutout to **EmptyProfile** that did all of the following changes*
+- **Added** WoW Forever support (Changed API Support, Enchants database)
+- **Added** Ability to Sync recipes without opening the enchanting window, and an optional auto sync.
+- **Added** Ability to add your enchanting link, your location and a clickable map pin to your sent auto messages
+- **Added** Ability to have the ProEnchanters addond messages in their own chat tab
+- **Changed** Hitting create work order will use your current target if no name is in the Customer Name box
+- **Fixed** pedebug issues
+
 ## Update 11.2.2
 - **Fixed** Soulfrost enchant should now work from the trade window enchant buttons (had wrong spellID listed on addon side)
 - **Changed** Party to raid conversion changed to use C_PartyInfo.ConfirmConvertToRaid() instead of C_PartyInfo.ConvertToRaid(), untested but should help make sure the party converts to raid when inviting a 5th+ person to your group
