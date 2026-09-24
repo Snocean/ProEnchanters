@@ -26,6 +26,17 @@ function PEAddSpellToTooltip(spellId)
 		GameTooltip:SetSpellByID(spellId)
 	end
 end
+
+-- SetRaidTarget is a protected function on the mainline UI engine (WoW Forever):
+-- calling it from addon code raises ADDON_ACTION_FORBIDDEN and the "blocked from
+-- an action only available to the Blizzard UI" popup. The raid icon put on the
+-- player when a customer joins the group is therefore only set on Classic clients.
+function PESetPlayerRaidIcon(iconIndex)
+	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+		return
+	end
+	SetRaidTarget(GetUnitName("player"), iconIndex)
+end
 local enchantButtons = {}
 local enchantFilterCheckboxes = {}
 PEFilteredWords = {}
@@ -12161,8 +12172,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			PECheckIfMsgShouldLog(name, "groupjoin")
 
 			if ProEnchantersCharOptions["WorkWhileClosed"] == true then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12255,8 +12265,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12369,8 +12378,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			PECheckIfMsgShouldLog(name, "groupjoin")
 
 			if ProEnchantersCharOptions["WorkWhileClosed"] == true then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
@@ -12466,8 +12474,7 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					ProEnchantersCustomerNameEditBox:SetText(playerName)
 				end
 			elseif ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
-				local unit = GetUnitName("player")
-				SetRaidTarget(unit, PESetRaidIcon)
+				PESetPlayerRaidIcon(PESetRaidIcon)
 				if ProEnchantersOptions["EnablePartyJoinSound"] == true then
 					PESound(ProEnchantersOptions["PartyJoinSound"])
 				end
