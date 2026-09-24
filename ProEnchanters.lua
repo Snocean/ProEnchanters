@@ -11854,10 +11854,9 @@ SlashCmdList["PROENCHANTERSDBG"] = function(msg)
 			print(ORANGE ..
 				"Debugging set to " .. ColorClose .. convertedNumber)
 		end
-	elseif ProEnchantersOptions["DebugLevel"] == 0 then
-		print(ORANGE .. "Current debugging set to " .. ColorClose .. convertedNumber)
 	else
-		print("Please input a number")
+		print(ORANGE .. "Current debugging set to " .. ColorClose .. tostring(ProEnchantersOptions["DebugLevel"] or 0))
+		print("Please input a number, e.g. /pedebug 0 to disable")
 	end
 end
 
