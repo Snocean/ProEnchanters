@@ -3,7 +3,7 @@
 ## Notes: Set of tools used for creating a better work flow while running enchanting services for other players
 ## IconTexture: Interface\AddOns\ProEnchanters\custom_icon.tga
 ## Author: EffinOwen
-## Version: 12.0
+## Version: 12.1
 ## SavedVariables: ProEnchantersOptions, ProEnchantersLog, ProEnchantersSessionLog, ProEnchantersTradeHistory, ProEnchantersWorkOrderFrames, ProEnchantersDB, ProEnchantersTables, ProEnchantersMsgLogHistory
 ## SavedVariablesPerCharacter: ProEnchantersCharOptions
 
@@ -14,6 +14,6 @@ embeds.xml
 ChatTab.lua
 PELocalization.lua
 Enchants_Forever.lua
-Helper_Vanilla.lua
+Helper_Forever.lua
 MessageVariables.lua
-ProEnchanters.lua
+ProEnchanters_Forever.lua

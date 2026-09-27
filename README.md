@@ -4,6 +4,9 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 12.1 (Beta)
+- **Fixed** One click enchanting buttons on trade window should be working again, if you notice any issues please let me know in the discord
+
 ## Update 12.0 (Beta)
 *Huge shoutout to **EmptyProfile** that did all of the following changes*
 - **Added** WoW Forever support (Changed API Support, Enchants database)
