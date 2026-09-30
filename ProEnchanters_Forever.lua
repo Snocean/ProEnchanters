@@ -3,7 +3,7 @@
 local print = PEPrint or print
 
 -- First Initilizations
-local version = "v12.1"
+local version = "v12.2"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersCharOptions = ProEnchantersCharOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
@@ -363,6 +363,13 @@ end
 
 
 function InviteUnitPEAddon(name, invtype)
+	if invtype == nil then
+		invtype = "nonexist"
+	end
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		print("InviteUnitPEAddon name: " .. name)
+		print("InviteUnitPEAddon invtype: " .. invtype)
+	end
 	local nameCheck = string.lower(name)
 	local selfnameCheck = string.lower(selfPlayerName)
 	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
@@ -371,6 +378,10 @@ function InviteUnitPEAddon(name, invtype)
 	local raidConvert = false
 	local nametrim = string.gsub(name, "%-.*", "")
 	local capPlayerName = CapFirstLetter(nametrim)
+	if ProEnchantersOptions["DebugLevel"] == 50 then
+		print("InviteUnitPEAddon nametrim: " .. nametrim)
+		print("InviteUnitPEAddon capPlayerName: " .. capPlayerName)
+	end
 	--local invtype = "disabled"
 
 	-- Play sound on any invite sent
@@ -574,7 +585,12 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 	button3 = "Temp Ignore",
 	OnAccept = function(self, data)
 		local playerName, msg, author2 = unpack(data)
+		if ProEnchantersOptions["DebugLevel"] == 50 then
+			print("Pop up playerName: " .. playerName)
+			print("Pop up author2: " .. author2)
+		end
 		local nametrim = string.gsub(author2, "%-.*", "")
+		local invType = "customerinvite"
 		-- AddonInvite = true
 		PEPlayerInvited[playerName] = msg
 		-- Add message to msg logs as well
@@ -592,7 +608,7 @@ StaticPopupDialogs["INVITE_PLAYER_POPUP"] = {
 				AddToAddonInvited(playerName, "msgsent")
 			end
 		else
-			InviteUnitPEAddon(author2)
+			InviteUnitPEAddon(author2, invType)
             -- Add message to msg logs as well
             PELogMsg(author2, msg, "invitemessage")
 		end
@@ -787,10 +803,14 @@ local function FullResetFrames()
 end
 
 -- New menu buttons
+local function getFullName(contextData)
+	local fullName = contextData.name .. (contextData.surname and (" " .. contextData.surname) or "")
+	return fullName
+end
 
 local function createCusFocusButton(menuButton, contextData)
 	menuButton:CreateButton("Focus Player", function()
-		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
+		ProEnchantersCustomerNameEditBox:SetText(getFullName(contextData))
 	end)
 end
 
@@ -800,15 +820,15 @@ local function createWorkOrderButton(menuButton, contextData)
 			-- line to add to table
 			local debugline = "CreateWorkOrderButton"
 			if contextData.name then
-				debugline = debugline .. " CreateCusWorkOrder for " .. contextData.name
+				debugline = debugline .. " CreateCusWorkOrder for " .. getFullName(contextData)
 			else
 				debugline = debugline .. " CreateCusWorkOrder for invalid name"
 			end
 			-- Add to table
 			table.insert(ProEnchantersTables["DebugResult"], debugline)
 		end
-		CreateCusWorkOrder(contextData.name)
-		ProEnchantersCustomerNameEditBox:SetText(contextData.name)
+		CreateCusWorkOrder(getFullName(contextData))
+		ProEnchantersCustomerNameEditBox:SetText(getFullName(contextData))
 		if ProEnchantersWorkOrderFrame and not ProEnchantersWorkOrderFrame:IsVisible() then
 			ProEnchantersWorkOrderFrame:Show()
 			ProEnchantersWorkOrderEnchantsFrame:Show()
@@ -817,15 +837,48 @@ local function createWorkOrderButton(menuButton, contextData)
 	end)
 end
 
+--[[local function recursiveExpand(t, indent, seen)
+	indent = indent or 0
+	seen = seen or {}
+	local pad = string.rep("  ", indent)
+
+	if seen[t] then
+		print(pad .. "<already visited>")
+		return
+	end
+	seen[t] = true
+
+	local count = 0
+	for _ in pairs(t) do
+		count = count + 1
+	end
+
+	if count > 30 then
+		print(pad .. "<table too big (" .. count .. " entries)>")
+		return
+	end
+
+	for key, value in pairs(t) do
+		if type(value) == "table" then
+			print(pad .. tostring(key) .. ":")
+			recursiveExpand(value, indent + 1, seen)
+		else
+			print(pad .. tostring(key) .. " = " .. tostring(value))
+		end
+	end
+end]]
+
 local function createTempIgnoreButton(menuButton, contextData)
+	--recursiveExpand(contextData)
+	--DevTools_Dump(contextData)
 	menuButton:CreateButton("Add Temp Ignore", function()
-		AddToTempIgnored(contextData.name)
+		AddToTempIgnored(getFullName(contextData))
 	end)
 end
 
 local function createTempUnIgnoreButton(menuButton, contextData)
 	menuButton:CreateButton("Remove Temp Ignore", function()
-		ClearTempIgnored(contextData.name)
+		ClearTempIgnored(getFullName(contextData))
 	end)
 end
 
@@ -835,12 +888,15 @@ end
         -- Retail 10.0.2 https://wowpedia.fandom.com/wiki/Patch_10.0.2/API_changes#Tooltip_Changes
 -- Add custom Pro Enchanters options to various menus
 local function addProEnchantersMenu(menuName)
+	if ProEnchantersOptions["DisableContextMenu"] == true then
+		return
+	end
 	Menu.ModifyMenu(menuName, function(_, menuButton, contextData)
 		menuButton:CreateDivider()
 		menuButton:CreateTitle("Pro Enchanters")
 		createWorkOrderButton(menuButton, contextData)
 		createCusFocusButton(menuButton, contextData)
-		if CheckIfTempIgnored(contextData.name) == true then
+		if CheckIfTempIgnored(getFullName(contextData)) == true then
 			createTempUnIgnoreButton(menuButton, contextData)
 		else
 			createTempIgnoreButton(menuButton, contextData)
@@ -849,14 +905,17 @@ local function addProEnchantersMenu(menuName)
 end
 
 -- Modify menus for different unit types
-addProEnchantersMenu("MENU_UNIT_SELF")   -- Right-click on Self
-addProEnchantersMenu("MENU_UNIT_PLAYER") -- Right-click on players
-addProEnchantersMenu("MENU_UNIT_PARTY")  -- Right-click on party members
-addProEnchantersMenu("MENU_UNIT_RAID")   -- Right-click on raid members
-addProEnchantersMenu("MENU_UNIT_FRIEND") -- Right-click on friends
-addProEnchantersMenu("MENU_CHAT")        -- Right-click in chat messages
-addProEnchantersMenu("MENU_VEHICLE")     -- Right-click on vehicles
-addProEnchantersMenu("MENU_NAMEPLATE")   -- Right-click on nameplates
+local function addProEnchantersContextMenus()
+	addProEnchantersMenu("MENU_UNIT_SELF")   -- Right-click on Self
+	addProEnchantersMenu("MENU_UNIT_PLAYER") -- Right-click on players
+	addProEnchantersMenu("MENU_UNIT_PARTY")  -- Right-click on party members
+	addProEnchantersMenu("MENU_UNIT_RAID")   -- Right-click on raid members
+	addProEnchantersMenu("MENU_UNIT_FRIEND") -- Right-click on friends
+	addProEnchantersMenu("MENU_CHAT")        -- Right-click in chat messages
+	addProEnchantersMenu("MENU_VEHICLE")     -- Right-click on vehicles
+	addProEnchantersMenu("MENU_NAMEPLATE")   -- Right-click on nameplates
+end
+
 
 -- Offsets for frames
 local yOffset = -5
@@ -4605,10 +4664,33 @@ function ProEnchantersCreateOptionsFrame()
 		ProEnchantersOptions["DelayWorkOrder"] = self:GetChecked()
 	end)
 
+	-- Create a header for AutoInviteAllChannels
+	local DisableContextMenuHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
+	DisableContextMenuHeader:SetFontObject(UIFontBasic)
+	DisableContextMenuHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
+	DisableContextMenuHeader:SetText("Disable right click context menu?")
+
+	-- Auto Invite Checkbox
+	local DisableContextMenuCb = CreateFrame("CheckButton", nil, ScrollChild, "ChatConfigCheckButtonTemplate")
+	DisableContextMenuCb:SetPoint("LEFT", DisableContextMenuHeader, "RIGHT", 10, 0)
+	DisableContextMenuCb:SetSize(24, 24) -- Set the size of the checkbox to 24x24 pixels
+	DisableContextMenuCb:SetHitRectInsets(0, 0, 0, 0)
+	DisableContextMenuCb:SetChecked(ProEnchantersOptions["DisableContextMenu"])
+	DisableContextMenuCb:SetScript("OnClick", function(self)
+		if ProEnchantersOptions["DisableContextMenu"] == true then 
+			print("Context menus loaded")
+			ProEnchantersOptions["DisableContextMenu"] = self:GetChecked()
+			addProEnchantersContextMenus()
+		else
+			print("Reload the UI to remove the context menu")
+			ProEnchantersOptions["DisableContextMenu"] = self:GetChecked()
+		end
+	end)
+
 	-- Enable warnings for whisper spam header
 	local EnableWhisperSpamWarningHeader = ScrollChild:CreateFontString(nil, "OVERLAY")
 	EnableWhisperSpamWarningHeader:SetFontObject(UIFontBasic)
-	EnableWhisperSpamWarningHeader:SetPoint("TOPLEFT", DelayWorkOrderHeader, "TOPLEFT", 0, -30)
+	EnableWhisperSpamWarningHeader:SetPoint("TOPLEFT", DisableContextMenuHeader, "TOPLEFT", 0, -30)
 	EnableWhisperSpamWarningHeader:SetText("Enable warning message for potential whisper spam? (60 whispers per 5 minutes triggers this)")
 
 	-- Enable warnings for whisper spam CB
@@ -11652,8 +11734,10 @@ local function OnAddonLoaded()
 
 	if ProEnchantersOptions["DelayWorkOrder"] ~= true then
 		ProEnchantersOptions["DelayWorkOrder"] = false
-	else
-		ProEnchantersOptions["DelayWorkOrder"] = ProEnchantersOptions["DelayWorkOrder"]
+	end
+
+	if ProEnchantersOptions["DisableContextMenu"] ~= true then
+		ProEnchantersOptions["DisableContextMenu"] = false
 	end
 
 	if ProEnchantersOptions["WhisperMats"] ~= true then
@@ -11873,6 +11957,16 @@ local function OnAddonLoaded()
 	end
 	
 	--ProEnchantersWoWFlavor = "Vanilla"
+	-- Modify menus for different unit types
+	addProEnchantersContextMenus()--[[
+	addProEnchantersMenu("MENU_UNIT_SELF")   -- Right-click on Self
+	addProEnchantersMenu("MENU_UNIT_PLAYER") -- Right-click on players
+	addProEnchantersMenu("MENU_UNIT_PARTY")  -- Right-click on party members
+	addProEnchantersMenu("MENU_UNIT_RAID")   -- Right-click on raid members
+	addProEnchantersMenu("MENU_UNIT_FRIEND") -- Right-click on friends
+	addProEnchantersMenu("MENU_CHAT")        -- Right-click in chat messages
+	addProEnchantersMenu("MENU_VEHICLE")     -- Right-click on vehicles
+	addProEnchantersMenu("MENU_NAMEPLATE")   -- Right-click on nameplates]]
 
 	ShowOpenWorkOrders()
 	ClearAllTempIgnored()
@@ -12003,6 +12097,11 @@ SlashCmdList["PROENCHANTERS"] = function(msg)
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame.PauseInviteCheckbox then
 			ProEnchantersWorkOrderFrame.PauseInviteCheckbox:SetChecked(ProEnchantersCharOptions["PauseInvites"])
 		end
+	elseif msg == "proflink" then
+		local profl = PEExpandMessageVariables("PROFLINK")
+		print(profl)
+		ChatEdit_ActivateChat(DEFAULT_CHAT_FRAME.editBox)
+		DEFAULT_CHAT_FRAME.editBox:SetText(profl)
 	elseif msg == "" then
 		if ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsShown() then
 			ProEnchantersWorkOrderFrame:Hide()
@@ -12815,6 +12914,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 			--end
 			--if AddonInvite == true then
 				--AddonInvite = false
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					print("Player already in a group - test 1")
+					print("localPlayerInGroup text to check: " .. localPlayerInGroup)
+					print("Comparing to text: " .. text)
+				end
+
 				local matchString = ""
 				if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 					matchString = "(.+)" .. localPlayerInGroup
@@ -12822,6 +12927,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					matchString = "(.+) " .. localPlayerInGroup
 				end
 				local playerName = string.match(text, matchString)
+				if ProEnchantersOptions["DebugLevel"] == 50 then
+					print("playerName listed as: " .. playerName)
+				end
 				local FailInvMsg = ProEnchantersOptions["FailInvMsg"]
 				local FailInvMsg2 = string.gsub(FailInvMsg, "CUSTOMER", playerName)
 
@@ -12864,6 +12972,9 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 					end
 				elseif playerName and ProEnchantersWorkOrderFrame and ProEnchantersWorkOrderFrame:IsVisible() then
 					if FailInvMsg2 == "" then
+						if ProEnchantersOptions["DebugLevel"] == 50 then
+							print("Player: " .. playerName .. " already in a group - test 1")
+						end
 						print("Invite failed for " .. playerName)
 					else
 						if ProEnchantersOptions["DelayInviteMsgTime"] > 0 then
@@ -12883,15 +12994,35 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 								end
 							end)
 						else
+							if ProEnchantersOptions["DebugLevel"] == 50 then
+								print("test 2")
+							end
+								if ProEnchantersOptions["DebugLevel"] == 50 then
+									print("Recently whispered?: " .. tostring(CheckRecentlyWhispered(playerName)))
+								end
 							if CheckRecentlyWhispered(playerName) ~= true then -- proceed with sending message
+								if ProEnchantersOptions["DebugLevel"] == 50 then
+									print("test 3")
+								end
 								ProEnchantersOptions["recentwhispers"][playerName]=GetTime()
 								AddWhisperCount()
+								if ProEnchantersOptions["DebugLevel"] == 50 then
+									print("Get whisper count: " .. tostring(GetWhisperCount()))
+								end
 								if GetWhisperCount() > 60 then
 									WarnWhisperCounter()
 								end
 								-- proceed with whisper strings
 								local addonInviteCheck, addonInviteType = CheckIfAddonInvited(playerName)
+								if ProEnchantersOptions["DebugLevel"] == 50 then
+									print("test 4")
+									print("Invite Check: " .. tostring(addonInviteCheck))
+									print("Invite Type: " .. tostring(addonInviteType))
+								end
 								if addonInviteCheck == true and addonInviteType == "customerinvite" then
+									if ProEnchantersOptions["DebugLevel"] == 50 then
+										print("test 5")
+									end
 									SendChatMessage(FailInvMsg2, "WHISPER", nil, playerName)
 									UpdateAddonInvited(playerName, "msgsent")
 								end

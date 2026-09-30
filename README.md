@@ -4,6 +4,10 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 12.2 (Beta)
+- **Fixed** Right click context menu not adding the players Firstname Lastname as the work order
+- **New** Disable Context Menus setting, disabling the context menu requires a UI reload, re-enabling it should not.
+
 ## Update 12.1 (Beta)
 - **Fixed** One click enchanting buttons on trade window should be working again, if you notice any issues please let me know in the discord
 
