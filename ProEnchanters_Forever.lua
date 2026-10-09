@@ -37,7 +37,7 @@ end
 -- an action only available to the Blizzard UI" popup. The raid icon put on the
 -- player when a customer joins the group is therefore only set on Classic clients.
 function PESetPlayerRaidIcon(iconIndex)
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	if WOW_PROJECT_ID == 18 then
 		return
 	end
 	SetRaidTarget(GetUnitName("player"), iconIndex)
@@ -4182,7 +4182,7 @@ end
 -- Can this client sync without the Professions window? (mainline engine only;
 -- Classic keeps its craft window based sync)
 local function CanSyncFromSpellbook()
-	return WOW_PROJECT_ID == WOW_PROJECT_MAINLINE and IsPlayerSpell ~= nil
+	return WOW_PROJECT_ID == 18 and IsPlayerSpell ~= nil
 end
 
 -- Same result as the Classic sync: only the enchants the player has learned stay
@@ -12496,9 +12496,6 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				return
 			end
 			
-			
-
-
 			local matchString = ""
 			if LocalLanguage == "Korean" or LocalLanguage == "Taiwanese" or LocalLanguage == "Chinese" then
 				matchString = "(.+)" .. localPlayerJoinsParty
