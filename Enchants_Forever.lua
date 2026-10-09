@@ -13326,7 +13326,190 @@ PEAllItems = {
 -- in PELocalization.lua holds the Classic names under the Classic keys; WoW
 -- Forever renamed several enchants ("Minor Health" became "Inferior Stamina"),
 -- so it is replaced by the Forever names under the keys of CombinedEnchants.
-PEenchantingLocales["Enchants"] = {
+PELocales = {
+    ["frFR"] = "French",
+    ["enGB"] = "English",
+    ["enUS"] = "English",
+    ["deDE"] = "German",
+    ["ruRU"] = "Russian",
+    ["esES"] = "Spanish",
+    ["esMX"] = "Mexican",
+    ["ptBR"] = "Portuguese",
+    ["koKR"] = "Korean",
+    ["zhCN"] = "Chinese",
+    ["zhTW"] = "Taiwanese",
+}
+
+PEenchantingLocales = {
+	["Enchanting"] = {
+		["Chinese"] = "附魔",
+		["English"] = "Enchanting",
+		["French"] = "Enchantement",
+		["German"] = "Verzauberkunst",
+		["Korean"] = "마법부여",
+		["Mexican"] = "Encantamiento",
+		["Portuguese"] = "Encantamento",
+		["Russian"] = "Наложение чар",
+		["Spanish"] = "Encantamiento",
+		["Taiwanese"] = "附魔"
+	},
+	["Reagents"] = {
+		["Chinese"] = "材料：", -- last
+		["English"] = "Reagents: ",
+		["French"] = "composants : ",
+		["German"] = "Reagenzien: ",
+		["Korean"] = "재료: ",
+		["Mexican"] = "Componentes: ",
+		["Portuguese"] = "Reagentes: ",
+		["Russian"] = "материалы: ",
+		["Spanish"] = "Componentes: ",
+		["Taiwanese"] = "材料: "
+	},
+	["LFGChannelName"] = {
+		["Chinese"] = "寻求组队",
+		["English"]="LookingForGroup",
+		["French"] = "RechercheGroupe",
+		["German"] = "SucheNachGruppe",
+		["Korean"] = "파티찾기",
+		["Mexican"] = "BuscarGrupo",
+		["Portuguese"] = "ProcurandoGrupo",
+		["Russian"] = "ПоискСпутников",
+		["Spanish"] = "BuscandoGrupo",
+		["Taiwanese"] = "尋求組隊"
+	},
+	["WorldChannelName"] = {
+		["Chinese"] = "世界",
+		["English"] = "World",
+		["French"] = "Monde",
+		["German"] = "Welt",
+		["Korean"] = "월드",
+		["Mexican"] = "Mundo",
+		["Portuguese"] = "Mundo",
+		["Russian"] = "Мир",
+		["Spanish"] = "Mundo",
+		["Taiwanese"] = "世界"
+	},
+	["ServicesChannelName"] = {
+		["Chinese"] = "服务",
+		["English"] = "Services",
+		["French"] = "Services",
+		["German"] = "Dienstleistungen",
+		["Korean"] = "서비스",
+		["Mexican"] = "Servicios",
+		["Portuguese"] = "Serviços",
+		["Russian"] = "Услуги",
+		["Spanish"] = "Servicios",
+		["Taiwanese"] = "服務"
+	},
+	["GeneralChannelName"] = {
+		["Chinese"] = "综合",
+		["English"]="General",
+		["French"] = "Général",
+		["German"] = "Allgemein",
+		["Korean"] = "공개",
+		["Mexican"] = "General",
+		["Portuguese"] = "Geral",
+		["Russian"] = "Общий",
+		["Spanish"] = "General",
+		["Taiwanese"] = "綜合"
+	},
+	["TradeChannelName"] = {
+		["Chinese"] = "交易",
+		["English"]="Trade",
+		["French"] = "Commerce",
+		["German"] = "Handel",
+		["Korean"] = "거래",
+		["Mexican"] = "Comercio",
+		["Portuguese"] = "Comércio",
+		["Russian"] = "Торговля",
+		["Spanish"] = "Comercio",
+		["Taiwanese"] = "交易"
+	},
+	["DefenseChannelName"] = {
+		["Chinese"] = "本地防务",
+		["English"]="LocalDefense",
+		["French"] = "DéfenseLocale",
+		["German"] = "LokaleVerteidigung",
+		["Korean"] = "수비",
+		["Mexican"] = "DefensaLocal",
+		["Portuguese"] = "DefesaLocal",
+		["Russian"] = "ОборонаЛокальный",
+		["Spanish"] = "DefensaLocal",
+		["Taiwanese"] = "本地防務"
+	},
+	["EnchantSearch"] = {
+		["Chinese"] = "附魔",
+		["English"] = "Enchant ",
+		["French"] = "Ench",
+		["German"] = " - ",
+		["Korean"] = " - ",
+		["Mexican"] = "Encantar ",
+		["Portuguese"] = "Encantamento ",
+		["Russian"] = "Чары ",
+		["Spanish"] = "Encantar ",
+		["Taiwanese"] = "附魔"
+	},
+	["PlayerInvitedText"] = {
+		["Chinese"] = "加入你的队伍",
+		["English"] = "to join your group.",
+		["French"] = "à rejoindre votre groupe.",
+		["German"] = "eingeladen, sich Eurer Gruppe anzuschließen.",
+		["Korean"] = "님을 파티에 초대했습니다.",
+		["Mexican"] = "a unirse a tu grupo.",
+		["Portuguese"] = "para fazer parte do grupo.",
+		["Russian"] = "приглашается в вашу группу.",
+		["Spanish"] = "a unirse a tu grupo.",
+		["Taiwanese"] = "加入你的隊伍"
+	},
+	["PlayerInvitedSpecificText"] = {
+		["Chinese"] = "你邀请PLAYER加入你的队伍",
+		["English"] = "You have invited PLAYER to join your group.",
+		["French"] = "Vous avez invité PLAYER à rejoindre votre groupe.",
+		["German"] = "Ihr habt PLAYER eingeladen, sich Eurer Gruppe anzuschließen.",
+		["Korean"] = "PLAYER님을 파티에 초대했습니다.",
+		["Mexican"] = "Has invitado a PLAYER a unirse a tu grupo.",
+		["Portuguese"] = "Você convidou PLAYER para fazer parte do grupo.",
+		["Russian"] = "PLAYER приглашается в вашу группу.",
+		["Spanish"] = "Has invitado a PLAYER a unirse a tu grupo.",
+		["Taiwanese"] = "你邀請PLAYER加入你的隊伍"
+	},
+	["PlayerJoinsPartyText"] = {
+		["Chinese"] = "加入了队伍。",
+		["English"] = "joins the party.",
+		["French"] = "rejoint le groupe.",
+		["German"] = "schließt sich der Gruppe an.",
+		["Korean"] = "님이 파티에 합류했습니다.",
+		["Mexican"] = "se une al grupo.",
+		["Portuguese"] = "entra no grupo.",
+		["Russian"] = "присоединяется к группе.",
+		["Spanish"] = "se une al grupo.",
+		["Taiwanese"] = "加入了隊伍。"
+	},
+	["PlayerJoinsRaidText"] = {
+		["Chinese"] = "加入了团队",
+		["English"] = "has joined the raid group",
+		["French"] = "a rejoint le groupe de raid",
+		["German"] = "hat sich der Schlachtgruppe angeschlossen.",
+		["Korean"] = "님이 공격대에 합류했습니다.",
+		["Mexican"] = "se ha unido al grupo de banda",
+		["Portuguese"] = "entrou no grupo de raide",
+		["Russian"] = "присоединяется к рейдовой группе",
+		["Spanish"] = "se ha unido a la banda.",
+		["Taiwanese"] = "加入了團隊"
+	},
+	["PlayerAlreadyInGroupText"] = {
+		["Chinese"] = "已经加入了别的队伍",
+		["English"] = "is already in a group.",
+		["French"] = "est déjà dans un groupe.",
+		["German"] = "gehört bereits zu einer Gruppe.",
+		["Korean"] = "님은 이미 파티에 속해 있습니다.",
+		["Mexican"] = "ya está en un grupo.",
+		["Portuguese"] = "já faz parte de um grupo.",
+		["Russian"] = "уже состоит в группе.",
+		["Spanish"] = "ya está en un grupo.",
+		["Taiwanese"] = "已經加入了別的隊伍"
+	},
+	["Enchants"] = {
 		["ENCH1001"] = {
 			["Chinese"] = "附魔双手武器 - 敏捷",
 			["English"] = "Enchant 2H Weapon - Agility",
@@ -15355,4 +15538,4 @@ PEenchantingLocales["Enchants"] = {
 			["Spanish"] = "Encantar arma: poderío del invierno",
 			["Taiwanese"] = "附魔武器 - 寒冬之力"
 		},
-}
+}}

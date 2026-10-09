@@ -3,7 +3,7 @@
 local print = PEPrint or print
 
 -- First Initilizations
-local version = "v12.2"
+local version = "v12.3"
 ProEnchantersOptions = ProEnchantersOptions or {}
 ProEnchantersCharOptions = ProEnchantersCharOptions or {}
 ProEnchantersLog = ProEnchantersLog or {}
@@ -21,6 +21,7 @@ ProEnchantersOptions.addoninvited = ProEnchantersOptions.addoninvited or {}
 ProEnchantersOptions.soundsettings = ProEnchantersOptions.soundsettings or {}
 ProEnchantersTables = {} or ProEnchantersTables
 ProEnchantersTables.CombinedEnchants = {} or ProEnchantersTables.CombinedEnchants
+PELastInvited = "start"
 
 -- Mainline-engine clients (WoW Forever) no longer have GameTooltip:AddSpellByID
 function PEAddSpellToTooltip(spellId)
@@ -56,10 +57,10 @@ PEtradeWhoItems.target = PEtradeWhoItems.target or {}
 -- trade history are keyed by the chat name, so the full name is used there.
 -- Classic clients keep UnitName, whose result is unchanged.
 function PEGetUnitName(unit)
-	if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+	if WOW_PROJECT_ID == 18 then
 		return GetUnitName(unit, true)
 	end
-	return (UnitName(unit))
+	return UnitName(unit)
 end
 
 -- Opens the chat edit box ready to whisper playerName. WoW Forever character
@@ -370,6 +371,7 @@ function InviteUnitPEAddon(name, invtype)
 		print("InviteUnitPEAddon name: " .. name)
 		print("InviteUnitPEAddon invtype: " .. invtype)
 	end
+	PELastInvited = name
 	local nameCheck = string.lower(name)
 	local selfnameCheck = string.lower(selfPlayerName)
 	local maxPartySize = tonumber(ProEnchantersOptions["MaxPartySize"]) or 40
@@ -12926,10 +12928,12 @@ function ProEnchanters_OnChatEvent(self, event, ...)
 				else
 					matchString = "(.+) " .. localPlayerInGroup
 				end
+
 				local playerName = string.match(text, matchString)
 				if ProEnchantersOptions["DebugLevel"] == 50 then
 					print("playerName listed as: " .. playerName)
 				end
+				playerName = PELastInvited
 				local FailInvMsg = ProEnchantersOptions["FailInvMsg"]
 				local FailInvMsg2 = string.gsub(FailInvMsg, "CUSTOMER", playerName)
 

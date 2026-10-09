@@ -324,7 +324,7 @@ function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
         if ProEnchantersCharOptions["AutoInvite"] == true then
             --AddonInvite = true
             --if AddonInvite == true then
-                InviteUnitPEAddon(author2)
+                InviteUnitPEAddon(author2, msgtype)
                 PEPlayerInvited[author3] = msg
                 -- Add message to msg logs as well
                 PELogMsg(author3, msg, "invitemessage")
@@ -344,7 +344,7 @@ function PEPotentialCustomerInvite(author3, author2, msg, msgtype)
         if ProEnchantersCharOptions["AutoInvite"] == true then
             --AddonInvite = true
             --if AddonInvite == true then
-                InviteUnitPEAddon(author2)
+                InviteUnitPEAddon(author2, msgtype)
                 PEPlayerInvited[author3] = msg
                 -- Add message to msg logs as well
                 PELogMsg(author3, msg, "invitemessage")
@@ -2803,7 +2803,7 @@ function AddToAddonInvited(name, invtype)
 end
 
 function UpdateAddonInvited(name, invtype)
-    if ProEnchantersOptions["DebugLevel"] == 6 then
+    if ProEnchantersOptions["DebugLevel"] == 50 then
         print("updating " .. name .. " with invtype " .. invtype)
     end
     if invtype == nil then
@@ -2812,7 +2812,7 @@ function UpdateAddonInvited(name, invtype)
     if ProEnchantersOptions.addoninvited[name] then
         ProEnchantersOptions.addoninvited[name] = invtype
     else
-        if ProEnchantersOptions["DebugLevel"] == 6 then
+        if ProEnchantersOptions["DebugLevel"] == 50 then
             print(name .. " not found")
         end
     end
@@ -2823,16 +2823,16 @@ function ClearAllAddonInvited()
 end
 
 function CheckIfAddonInvited(name)
-    if ProEnchantersOptions["DebugLevel"] == 6 then
+    if ProEnchantersOptions["DebugLevel"] == 50 then
         print("checking to remove " .. name .. " from addon invited table")
     end
     if ProEnchantersOptions.addoninvited then
-        if ProEnchantersOptions["DebugLevel"] == 6 then
+        if ProEnchantersOptions["DebugLevel"] == 50 then
             print("starting check loop")
         end
         for n, t in pairs(ProEnchantersOptions.addoninvited) do
             if n == name then
-                if ProEnchantersOptions["DebugLevel"] == 6 then
+                if ProEnchantersOptions["DebugLevel"] == 50 then
                     print(name .. " found, returning true with type " .. t)
                 end
                 return true, t
