@@ -4,6 +4,9 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 12.3.2
+- **Fixed** Disabled PE Chat based functionality while inside of instances, should no longer throw a bunch of errors while inside an instance (Blizzard made global chats protected while inside instances apparently)
+
 ## Update 12.3.1
 - **Fixed** Fixed some issues with the FirstName LastName stuff, tested and the failed invite whispers seem to be working but I've not had a partner to test trade window stuff with though the fixes I implemented may fix/improve some of that functionality. If you notice anything is worse than before please let me know, and if you're in the discord/post on curseforge and notice that you're no longer having issues with something in the trades (material or gold trades showing up in the work orders/enchant buttons taking traded mats back into account) let me know, thank you!
 - **Fixed** Raid icon should not be attempted to be set in WoW forever anymore

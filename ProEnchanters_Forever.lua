@@ -12379,6 +12379,9 @@ SlashCmdList["PROENCHANTERSHELP"] = function(msg)
 end
 
 function ProEnchanters_OnLootEvent(self, event, ...)
+	if IsInInstance() == true then
+		return
+	end
 	if event == "CHAT_MSG_LOOT" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
 		if ProEnchantersOptions["CraftingMode"] then
@@ -12398,6 +12401,9 @@ end
 
 -- Event handler function for chat and TRADES
 function ProEnchanters_OnChatEvent(self, event, ...)
+	if IsInInstance() == true then
+		return
+	end
 	local cmdFound = false
 	if event == "CHAT_MSG_SYSTEM" then
 		local text, playerName, languageName, channelName, playerName2, specialFlags, zoneChannelID, channelIndex, channelBaseName, languageID, lineID, guid, bnSenderID, isMobile, isSubtitle, hideSenderInLetterbox, supressRaidIcons = ...
