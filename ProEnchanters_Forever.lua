@@ -11329,7 +11329,7 @@ function ProEnchantersLoadTradeWindowFrame(PEtradeWho)
 	end
 end
 
--- Forwarded Scan to Parse entire area (like AH, but more frequent in idle)
+--[[ Forwarded Scan to Parse entire area (like AH, but more frequent in idle)
 function PESearchInventoryForItems()
 	local availableMats = {}
 	local availableMatsIds = {}
@@ -11357,7 +11357,7 @@ function PESearchInventoryForItems()
 		end
 	end
 	return availableMats, availableMatsIds
-end
+end]]
 
 local function LoadColorTables()
 	-- Initialize ProEnchantersOptions as a table if it's nil

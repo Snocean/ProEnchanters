@@ -704,7 +704,8 @@ end
 function PESearchInventoryForItems()
     local availableMats = {}
     local availableMatsIds = {}
-    for bag = 0, NUM_BAG_SLOTS do -- Start from 0 to include the backpack
+    local lastBag = NUM_BAG_SLOTS + (NUM_REAGENTBAG_SLOTS or 0)
+    for bag = 0, lastBag do
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemID = C_Container.GetContainerItemID(bag, slot)
             if itemID then

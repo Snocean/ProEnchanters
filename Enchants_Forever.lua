@@ -50,6 +50,7 @@ local blackmouthoil = "|cnIQ1:|Hitem:6370::::::::::::::::::|h[Blackmouth Oil]|h|
 local blackpearl = "|cnIQ2:|Hitem:7971::::::::::::::::::|h[Black Pearl]|h|r"
 local bloodofheroes = "|cnIQ1:|Hitem:12938::::::::::::::::::|h[Blood of Heroes]|h|r"
 local bloodofthemountain = "|cnIQ2:|Hitem:11382::::::::::::::::::|h[Blood of the Mountain]|h|r"
+local bluesapphire = "|cnIQ2:|Hitem:12361::::::::::::::::::|h[Blue Sapphire]|h|r"
 local breathofwind = "|cnIQ1:|Hitem:7081::::::::::::::::::|h[Breath of Wind]|h|r"
 local ceruleandye = "|cnIQ2:|Hitem:249409::::::::::::::::::|h[Cerulean Dye]|h|r"
 local copperrod = "|cnIQ1:|Hitem:6217::::::::::::::::::|h[Copper Rod]|h|r"
@@ -159,6 +160,7 @@ ProEnchantersItemCacheTable = {
     blackpearl = "7971",
     bloodofheroes = "12938",
     bloodofthemountain = "11382",
+    bluesapphire = "12361",
     breathofwind = "7081",
     ceruleandye = "249409",
     copperrod = "6217",
@@ -501,7 +503,7 @@ CombinedEnchants = {
         name = "Enchant Boots - Minor Speed",
         slot = "Boots",
         spell_id = 13890,
-        stats = " (8% Movespeed)",
+        stats = " (4% Movespeed)",
         materials = {
             "1x " .. smallradiantshard,
             "1x " .. aquamarine,
@@ -1998,6 +2000,18 @@ CombinedEnchants = {
             "1x " .. visiondust,
             "1x " .. largeglowingshard,
             "1x " .. wintersbite
+        },
+    },
+    ENCH100170 = {
+        name = "Enchant Boots - Speed",
+        slot = "Boots",
+        spell_id = 1328948,
+        stats = " (8% Movespeed)",
+        materials = {
+            "2x " .. largeradiantshard,
+            "8x " .. dreamdust,
+            "2x " .. greaternetheressence,
+            "1x " .. bluesapphire
         },
     },
 }
@@ -15537,5 +15551,17 @@ PEenchantingLocales = {
 			["Russian"] = "Чары для оружия: зимняя мощь",
 			["Spanish"] = "Encantar arma: poderío del invierno",
 			["Taiwanese"] = "附魔武器 - 寒冬之力"
+		},
+        ["ENCH100170"] = {
+			["Chinese"] = "附魔靴子 - 速度",
+			["English"] = "Enchant Boots - Speed",
+			["French"] = "Enchantement de bottes – Vitesse",
+			["German"] = "Stiefel - Geschwindigkeit",
+			["Korean"] = "장화 마법부여 - 이동 속도",
+			["Mexican"] = "Encantar botas: velocidad",
+			["Portuguese"] = "Encantamento de Velocidade - Botas",
+			["Russian"] = "Чары для обуви: скорость передвижения",
+			["Spanish"] = "Encantar botas: velocidad",
+			["Taiwanese"] = "附魔靴子 - 加速"
 		},
 }}

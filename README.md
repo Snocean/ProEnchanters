@@ -4,6 +4,13 @@ Enchanting Assistance Add-On for players running enchanting services for other p
 
 If you find any issues feel free to join https://discord.gg/9CMhszeJfu and send a message in support.
 
+## Update 12.3.4
+- **Fixed** Boots - Minor Speed enchant showing 8% instead of 4%
+- **Fixed** Boots - Speed enchant missing
+
+## Update 12.3.3
+- **Fixed** The add-on now includes the Reagent Bag when searching your inventory when you use "Use All Mats"
+
 ## Update 12.3.2
 - **Fixed** Disabled PE Chat based functionality while inside of instances, should no longer throw a bunch of errors while inside an instance (Blizzard made global chats protected while inside instances apparently)
 
